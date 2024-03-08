@@ -1,36 +1,82 @@
-# go-astm ![build status](https://travis-ci.org/78bit/uuid.svg?branch=master)
+# go-astm
 
-Golang library for handling ASTM lis2a2 Procotol
+Library for handling the ASTM LIS2-A2 Procotol in go.
 
 ###### Install
 `go get github.com/blutspende/go-astm`
 
 ## Features
-  - Encoding 
-    - UTF8 
-    - ASCII
-    - Windows1250 
-    - Windows1251 
-    - Windows1252 
-    - DOS852 
-    - DOS855 
-    - DOS866 
-	- ISO8859_1
-  - Timezone conversion on marshal and unmarshal
-  - Marshalling and Unmarshalling supported
-  - Custom delimiters are recognized in the Header and appplied (defaults are \^&)
-  - Supported Types : string, float32, float64, time.Time, enums, int
+  - Encoding UTF8, ASCII, Windows1250, Windows1251, Windows1252, DOS852, DOS855, DOS866, ISO8859_1
+  - Timezone conversion   
+  - Custom delimiters automatically identified (defaults are \^&)
 
-## Installation
+## Reading ASTM
 
-Install the package with the following command.
+The following Go code decodes a ASTM provided as a string and stores all its information in the &message.
 
-``` shell
-go get github.com/blutspende/go-astm/...
+``` go
+var message standardlis2a2.DefaultMessage
+
+err := astm.Unmarshal([]byte(textdata), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+if err != nil {
+  log.Fatal(err)		
+}
 ```
 
-## Messaage Structure
+## Reading ASTM with multiple message in one transmission
+The same code, just use DefaultMultiMessage:
 
+``` go
+  var message standardlis2a2.DefaultMultiMessage
+
+  astm.Unmarshal([]byte(textdata), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)		
+
+  for _, message := range message.Messages {
+	fmt.Printf("%+v", message)
+  }
+  
+```
+
+## Writing ASTM
+
+Converting an annotated Structure (see above) to an enocded bytestream. 
+
+The bytestream is encoded by-row, lacking the CR code at the end. 
+
+``` go
+lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+
+// output on screen
+for _, line := range lines {
+		linestr := string(line)
+		fmt.Println(linestr)
+}
+```
+
+## Identifying a message
+Identifying the type of a message without decoding it. There are 3 Types of messages 
+  - MessageTypeQuery 
+  - MessageTypeOrdersOnly
+  - MessageTypeOrdersAndResults
+
+``` go
+messageType, _ := astm.IdentifyMessage([]byte(astm), EncodingUTF8)
+
+switch (messageType) {
+	case MessageTypeUnkown :
+	  ...
+	case MessageTypeQuery :
+	  ...
+	case MessageTypeOrdersOnly :
+	  ...
+	case MessageTypeOrdersAndResults :
+	  ...
+}
+```
+
+# How the go-astm library works
 In order to encode (marshal) or decode (unmarshal) a message from or to lis, you need to annotate a struct in go to identify the record-types 
 and within the record the field's location.
 
@@ -78,75 +124,8 @@ type DefaultMessage struct {
 }
 ```
 
-## Reading ASTM
+### Message Structure and Annotation
 
-The following Go code decodes a ASTM provided as a string and stores all its information in the &message.
-
-``` go
-var message standardlis2a2.DefaultMessage
-
-err := lis2a2.Unmarshal([]byte(textdata), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
-if err != nil {
-  log.Fatal(err)		
-}
-```
-
-## Reading ASTM with multiple message in one transmission
-The same code, just use DefaultMultiMessage:
-
-``` go
-  var message standardlis2a2.DefaultMultiMessage
-
-  lis2a2.Unmarshal([]byte(textdata), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)		
-
-  for _, message := range message.Messages {
-	fmt.Printf("%+v", message)
-  }
-  
-```
-
-## Writing ASTM
-
-Converting an annotated Structure (see above) to an enocded bytestream. 
-
-The bytestream is encoded by-row, lacking the CR code at the end. 
-
-``` go
-lines, err := lis2a2.Marshal(msg, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
-
-// output on screen
-for _, line := range lines {
-		linestr := string(line)
-		fmt.Println(linestr)
-}
-```
-
-## Identifying a message
-Identifying the type of a message without decoding it. There are 3 Types of messages 
-  - MessageTypeQuery 
-  - MessageTypeOrdersOnly
-  - MessageTypeOrdersAndResults
-
-``` go
-messageType, _ := IdentifyMessage([]byte(astm), EncodingUTF8)
-
-switch (messageType) {
-	case MessageTypeUnkown :
-	  ...
-	case MessageTypeQuery :
-	  ...
-	case MessageTypeOrdersOnly :
-	  ...
-	case MessageTypeOrdersAndResults :
-	  ...
-}
-```
-
-## Message Structure and Annotation
-
-### Optional records
 ``` go
 type SimpleMessage struct  {
 	Header       standardlis2a2.Header       `astm:"H"`
@@ -174,8 +153,6 @@ type MessagePORC struct {
 	Terminator standardlis2a2.Terminator `astm:"L"`
 }
 ```
-
-## Custom Record Structure
 
 ### Addressing fields 
 Often the default is not enough. You can customize any record with annotation. 
