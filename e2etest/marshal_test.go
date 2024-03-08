@@ -323,3 +323,77 @@ func TestFailOnHeaderIsA_Reference(t *testing.T) {
 
 	assert.NotNil(t, err)
 }
+
+func TestQueryMessage(t *testing.T) {
+
+	var query standardlis2a2.QueryMessage
+
+	query.Terminator.TerminatorCode = "N"
+
+	// Test with no Querydata provided
+	filedata, err := lis2a2.Marshal(query, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
+	assert.Equal(t, "L|1|N", string(filedata[1]))
+
+	query.RequestInformations = append(query.RequestInformations, standardlis2a2.RequestInformation{
+		StartingRangeIDNumber: "SampleCode1",
+		UniversalTestID:       "ALL",
+	})
+	filedata, err = lis2a2.Marshal(query, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
+	assert.Equal(t, "Q|1|SampleCode1||ALL||||||||", string(filedata[1]))
+	assert.Equal(t, "L|1|N", string(filedata[2]))
+}
+
+func TestMarshalMultipleOrder(t *testing.T) {
+
+	msg := standardlis2a2.OrderMessage{
+		PatientOrders: []standardlis2a2.PatientOrder{
+			{
+				Patient: standardlis2a2.Patient{
+					LabAssignedPatientID: "Mate",
+				},
+				Orders: []standardlis2a2.Order{
+					{
+						SpecimenID:      "Samplecode1",
+						UniversalTestID: "Brains",
+					},
+					{
+						SpecimenID:      "Samplecode1",
+						UniversalTestID: "Gutts",
+					},
+				},
+			},
+			{
+				Patient: standardlis2a2.Patient{
+					LabAssignedPatientID: "Stephan",
+				},
+				Orders: []standardlis2a2.Order{
+					{
+						SpecimenID:      "Samplecode2",
+						UniversalTestID: "Looks",
+					},
+					{
+						SpecimenID:      "Samplecode2",
+						UniversalTestID: "Money",
+					},
+				},
+			},
+		},
+		Terminator: standardlis2a2.Terminator{
+			TerminatorCode: "N",
+		},
+	}
+
+	filedata, err := lis2a2.Marshal(msg, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	assert.Nil(t, err)
+
+	for _, row := range filedata {
+		fmt.Println(string(row))
+	}
+
+}

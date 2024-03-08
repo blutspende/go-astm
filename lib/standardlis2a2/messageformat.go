@@ -1,7 +1,5 @@
-//
 // Standard implementation for the lis2a2 protocol according to standard in every detail,
 // will work for most with some tinkering....
-//
 package standardlis2a2
 
 import "time"
@@ -194,4 +192,22 @@ type DefaultMessage struct {
 
 type DefaultMultiMessage struct {
 	Messages []DefaultMessage
+}
+
+// Default Query message
+type QueryMessage struct {
+	Header              Header               `astm:"H"`
+	RequestInformations []RequestInformation `astm:"Q"`
+	Terminator          Terminator           `astm:"L"`
+}
+
+type PatientOrder struct {
+	Patient Patient `astm:"P"`
+	Orders  []Order `astm:"O"`
+}
+
+type OrderMessage struct {
+	Header        Header `astm:"H"`
+	PatientOrders []PatientOrder
+	Terminator    Terminator `astm:"L"`
 }
