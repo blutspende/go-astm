@@ -130,7 +130,7 @@ func TestNestedStruct(t *testing.T) {
 	assert.Equal(t, "P|1||||Norris^Chuck|||||||||||||||||||||||Binaries||||||", string(lines[1]))
 	assert.Equal(t, "R|1|^^^^SulfurBloodCount^^|^^100|%||||||^|||", string(lines[2]))
 	assert.Equal(t, "R|2|^^^^Catblood^^|^^>100000|U/l||||||^|||", string(lines[3]))
-	assert.Equal(t, "P|1||||Cartman^Eric|||||||||||||||||||||||None||||||", string(lines[4]))
+	assert.Equal(t, "P|2||||Cartman^Eric|||||||||||||||||||||||None||||||", string(lines[4]))
 	assert.Equal(t, "R|1|^^^^Fungenes^^|^^present|none||||||^|||", string(lines[5]))
 	assert.Equal(t, "L|1|", string(lines[6]))
 }

@@ -36,7 +36,7 @@ func Marshal(message interface{}, enc Encoding, tz Timezone, notation Notation) 
 	componentDelimiter := "^"
 	escapeDelimiter := "&"
 
-	buffer, err := iterateStructFieldsAndBuildOutput(message, 1, enc, location, notation, &repeatDelimiter, &componentDelimiter, &escapeDelimiter)
+	buffer, err := iterateStructFieldsAndBuildOutput(message, 1, 1, enc, location, notation, &repeatDelimiter, &componentDelimiter, &escapeDelimiter)
 
 	return buffer, err
 }
@@ -48,7 +48,7 @@ type OutputRecord struct {
 
 type OutputRecords []OutputRecord
 
-func iterateStructFieldsAndBuildOutput(message interface{}, depth int, enc Encoding, location *time.Location, notation Notation,
+func iterateStructFieldsAndBuildOutput(message interface{}, depth, sequence int, enc Encoding, location *time.Location, notation Notation,
 	repeatDelimiter, componentDelimiter, escapeDelimiter *string) ([][]byte, error) {
 
 	buffer := make([][]byte, 0)
@@ -68,7 +68,7 @@ func iterateStructFieldsAndBuildOutput(message interface{}, depth int, enc Encod
 				for x := 0; x < currentRecord.Len(); x++ {
 					dood := currentRecord.Index(x).Interface()
 
-					if bytes, err := iterateStructFieldsAndBuildOutput(dood, depth+1, enc, location, notation, repeatDelimiter, componentDelimiter, escapeDelimiter); err != nil {
+					if bytes, err := iterateStructFieldsAndBuildOutput(dood, depth+1, (x + 1), enc, location, notation, repeatDelimiter, componentDelimiter, escapeDelimiter); err != nil {
 						return nil, err
 					} else {
 						for line := 0; line < len(bytes); line++ {
@@ -78,7 +78,7 @@ func iterateStructFieldsAndBuildOutput(message interface{}, depth int, enc Encod
 				}
 			} else if currentRecord.Kind() == reflect.Struct { // got the struct straignt = recurse directly
 
-				if bytes, err := iterateStructFieldsAndBuildOutput(currentRecord.Interface(), depth+1, enc, location, notation, repeatDelimiter, componentDelimiter, escapeDelimiter); err != nil {
+				if bytes, err := iterateStructFieldsAndBuildOutput(currentRecord.Interface(), depth+1, 1, enc, location, notation, repeatDelimiter, componentDelimiter, escapeDelimiter); err != nil {
 					return nil, err
 				} else {
 					for line := 0; line < len(bytes); line++ {
@@ -105,7 +105,7 @@ func iterateStructFieldsAndBuildOutput(message interface{}, depth int, enc Encod
 					}
 				}
 			} else {
-				outs, err := processOneRecord(recordType, currentRecord, 1, location, repeatDelimiter, componentDelimiter, escapeDelimiter) // fmt.Println(outp)
+				outs, err := processOneRecord(recordType, currentRecord, sequence, location, repeatDelimiter, componentDelimiter, escapeDelimiter) // fmt.Println(outp)
 				if err != nil {
 					return nil, err
 				}
