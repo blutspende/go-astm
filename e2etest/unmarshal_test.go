@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/blutspende/go-astm"
-	"github.com/blutspende/go-astm/lib/standardlis2a2"
+	"github.com/blutspende/go-astm/v2"
+	"github.com/blutspende/go-astm/v2/lib/standardlis2a2"
 
 	"github.com/stretchr/testify/assert"
 

@@ -3,7 +3,7 @@
 Library for handling the ASTM LIS2-A2 Procotol in go.
 
 ###### Install
-`go get github.com/blutspende/go-astm`
+`go get github.com/blutspende/go-astm/v2`
 
 ## Features
   - Encoding UTF8, ASCII, Windows1250, Windows1251, Windows1252, DOS852, DOS855, DOS866, ISO8859_1

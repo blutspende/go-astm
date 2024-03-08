@@ -1,4 +1,4 @@
-module github.com/blutspende/go-astm
+module github.com/blutspende/go-astm/v2
 
 go 1.17
 
