@@ -1,4 +1,4 @@
-package lis2a2
+package astm
 
 const (
 	ANNOTATION_DELIMITER = "delimiter" // annotation that triggers the delimiters in the scanner to be reset

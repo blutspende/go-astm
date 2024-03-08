@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/blutspende/go-astm"
 	"github.com/blutspende/go-astm/lib/standardlis2a2"
-	"github.com/blutspende/go-astm/lis2a2"
+
 	"github.com/stretchr/testify/assert"
 
 	"golang.org/x/text/encoding/charmap"
@@ -24,8 +25,8 @@ func TestReadMinimalMessage(t *testing.T) {
 	fileData = fileData + "L|1|N\n"
 
 	var message MinimalMessage
-	err := lis2a2.Unmarshal([]byte(fileData), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(fileData), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 
@@ -58,8 +59,8 @@ func TestFullSingleASTMMessage(t *testing.T) {
 	fileData = fileData + "L|1|N\n"
 
 	var message FullSingleASTMMessage
-	err := lis2a2.Unmarshal([]byte(fileData), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(fileData), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 
@@ -107,8 +108,8 @@ func TestNestedStructure(t *testing.T) {
 	data = data + "L|1|N\r"
 
 	var message MessagePORC
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 
@@ -141,8 +142,8 @@ func TestCustomDelimiters(t *testing.T) {
 	data = data + "L|1|N\n" // ! mixed line-endings (should not matter)
 
 	var message MessageCustomDelimiterTest
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 
@@ -181,8 +182,8 @@ func TestCustomRecord(t *testing.T) {
 	data = data + "L|1|N\r" // ! mixed line-endings (should not matter)
 
 	var message MessageWithOutOfStandardCustomRecord
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 	assert.Equal(t, float32(4.14159), message.CustomRecord.Float32Value)
@@ -221,8 +222,8 @@ func TestArrayMapping(t *testing.T) {
 	data = data + "!|1^2^3\\4^5^6|\r"
 
 	var message MessageWithSubArrayRecord
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 
@@ -266,8 +267,8 @@ func TestEnumEncoding(t *testing.T) {
 	data := "E|EnumValue1|\r"
 
 	var message TestUnmarshalEnumMessage
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 
@@ -313,12 +314,12 @@ func TestComponentAccessOnTime(t *testing.T) {
 	data = data + "L|1|N\r"
 
 	var message MessageTimeAccess
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 
-	location, err := time.LoadLocation(string(lis2a2.TimezoneEuropeBerlin))
+	location, err := time.LoadLocation(string(astm.TimezoneEuropeBerlin))
 	assert.Nil(t, err, "Can not parse timezone")
 
 	expDate, err := time.ParseInLocation("20060102", "20240131", location)
@@ -352,8 +353,8 @@ func TestCommentNoneBug(t *testing.T) {
 	data = data + "C|1|^^^||\r"
 
 	var message TestCommentNoneBugMessage
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 
@@ -386,13 +387,13 @@ func TestGermanLanguage(t *testing.T) {
 	var message MessageGermanLanguageTest
 
 	encdata := helperEncode(charmap.Windows1252, []byte(data))
-	err := lis2a2.Unmarshal([]byte(encdata), &message, lis2a2.EncodingWindows1252, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(encdata), &message, astm.EncodingWindows1252, astm.TimezoneEuropeBerlin)
 	assert.Nil(t, err)
 	assert.Equal(t, "König", message.Patient.LastName)
 	assert.Equal(t, "#$§?/+öäüß", message.Patient.FirstName)
 
 	encdata = helperEncode(charmap.ISO8859_1, []byte(data))
-	err = lis2a2.Unmarshal([]byte(encdata), &message, lis2a2.EncodingISO8859_1, lis2a2.TimezoneEuropeBerlin)
+	err = astm.Unmarshal([]byte(encdata), &message, astm.EncodingISO8859_1, astm.TimezoneEuropeBerlin)
 	assert.Nil(t, err)
 	assert.Equal(t, "König", message.Patient.LastName)
 	assert.Equal(t, "#$§?/+öäüß", message.Patient.FirstName)
@@ -404,7 +405,7 @@ func TestTransmissionWithoutLTerminator(t *testing.T) {
 	data = data + "P|1||DIA-27-079-5-1\r"
 
 	var message standardlis2a2.DefaultMessage
-	err := lis2a2.Unmarshal([]byte(data), &message, lis2a2.EncodingWindows1252, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, astm.EncodingWindows1252, astm.TimezoneEuropeBerlin)
 	assert.NotNil(t, err)
 }
 
@@ -458,10 +459,10 @@ func TestFullMultipleASTMMessage(t *testing.T) {
 	data = data + "L|1|N"
 
 	var message standardlis2a2.DefaultMultiMessage
-	err := lis2a2.Unmarshal(
+	err := astm.Unmarshal(
 		[]byte(data), &message,
-		lis2a2.EncodingUTF8,
-		lis2a2.TimezoneEuropeBerlin)
+		astm.EncodingUTF8,
+		astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, message)
@@ -518,11 +519,11 @@ func TestFullMultipleASTMMessageWithWrongInput(t *testing.T) {
 	data = data + "L|1|N"
 
 	var message standardlis2a2.DefaultMessage
-	err := lis2a2.Unmarshal(
+	err := astm.Unmarshal(
 		[]byte(data),
 		&message,
-		lis2a2.EncodingUTF8,
-		lis2a2.TimezoneEuropeBerlin)
+		astm.EncodingUTF8,
+		astm.TimezoneEuropeBerlin)
 
 	assert.NotNil(t, err)
 }
@@ -546,8 +547,8 @@ func TestFailOnUndisciplinedMultipleCRCRatEndOfLine(t *testing.T) {
 	data = data + "L|1|N\u000d\u000d"
 
 	var message standardlis2a2.DefaultMessage
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 }
@@ -566,8 +567,8 @@ func TestMultipleMessagesInOne(t *testing.T) {
 	data = data + "L|1|N\u000d\u000d"
 
 	var message standardlis2a2.DefaultMultiMessage
-	err := lis2a2.Unmarshal([]byte(data), &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(message.Messages))
@@ -580,8 +581,8 @@ func TestMultipleMessagesInOne(t *testing.T) {
 func TestNullValuesShouldGiveQualifiedError(t *testing.T) {
 
 	var message standardlis2a2.DefaultMultiMessage
-	err := lis2a2.Unmarshal(nil /*giving null as input*/, &message,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+	err := astm.Unmarshal(nil /*giving null as input*/, &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "message has nil value - aborting", err.Error())

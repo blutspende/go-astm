@@ -1,4 +1,4 @@
-package lis2a2
+package astm
 
 import (
 	"testing"
