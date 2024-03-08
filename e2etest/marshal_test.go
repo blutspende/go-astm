@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	lis2a2 "github.com/blutspende/go-astm"
+	"github.com/blutspende/go-astm"
 	"github.com/blutspende/go-astm/lib/standardlis2a2"
+
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/encoding/charmap"
 )
@@ -38,7 +39,7 @@ func TestSimpleMarshal(t *testing.T) {
 	msg.Ill.FirstFieldArray2 = "first-arr2"
 	msg.Ill.SecondfieldArray2 = "second-arr2"
 
-	lines, err := lis2a2.Marshal(msg, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 
 	for _, line := range lines {
 		linestr := string(line)
@@ -68,7 +69,7 @@ func TestGenverateSequence(t *testing.T) {
 	msg.Patient[1].LastName = "Secundus'"
 	msg.Patient[1].FirstName = "Secundie"
 
-	lines, err := lis2a2.Marshal(msg, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -116,7 +117,7 @@ func TestNestedStruct(t *testing.T) {
 	msg.PatientResult[1].Result[0].MeasurementValueOfDevice = "present"
 	msg.PatientResult[1].Result[0].Units = "none"
 
-	lines, err := lis2a2.Marshal(msg, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -154,7 +155,7 @@ func TestTimeLocalization(t *testing.T) {
 
 	msg.Header.DateAndTime = testTime.UTC()
 
-	lines, err := lis2a2.Marshal(msg, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 	assert.Nil(t, err)
 
 	assert.Equal(t, fmt.Sprintf("H|\\^&||||||||||||%s", timeInBerlin.Format("20060102150405")), string(lines[0]))
@@ -183,7 +184,7 @@ func TestEnumMarshal(t *testing.T) {
 
 	msg.Record.Field = SomeTestMarshalEnum2
 
-	lines, err := lis2a2.Marshal(msg, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -242,7 +243,7 @@ func TestFieldEnumeration(t *testing.T) {
 	var orq TestCorrectFieldEnumeration
 
 	orq.Request.ActionCode = "N"
-	record, err := lis2a2.Marshal(orq, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.StandardNotation)
+	record, err := astm.Marshal(orq, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 
 	assert.Nil(t, err)
 
@@ -262,7 +263,7 @@ func TestOneDlimiterTooMuch(t *testing.T) {
 	var record TestOneDlimiterTooMuchStruct
 
 	record.Terminator.TerminatorCode = "N"
-	filedata, err := lis2a2.Marshal(record, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.StandardNotation)
+	filedata, err := astm.Marshal(record, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
@@ -283,7 +284,7 @@ func TestGermanLanguageDecoder(t *testing.T) {
 
 	record.Patient.FirstName = "Högendäg"
 	record.Patient.LastName = "Nügendiß"
-	filedata, err := lis2a2.Marshal(record, lis2a2.EncodingWindows1252, lis2a2.TimezoneEuropeBerlin, lis2a2.StandardNotation)
+	filedata, err := astm.Marshal(record, astm.EncodingWindows1252, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
@@ -293,7 +294,7 @@ func TestGermanLanguageDecoder(t *testing.T) {
 	assert.Equal(t, expectedWindows1252, filedata[0])
 
 	// test for iso8859_1
-	filedata, err = lis2a2.Marshal(record, lis2a2.EncodingISO8859_1, lis2a2.TimezoneEuropeBerlin, lis2a2.StandardNotation)
+	filedata, err = astm.Marshal(record, astm.EncodingISO8859_1, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
@@ -308,7 +309,7 @@ func TestFailMarshalOnlyHeader(t *testing.T) {
 
 	var header standardlis2a2.Header
 
-	message, err := lis2a2.Marshal(header, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	message, err := astm.Marshal(header, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, message)
@@ -319,7 +320,7 @@ func TestFailOnHeaderIsA_Reference(t *testing.T) {
 
 	var header standardlis2a2.Header
 
-	_, err := lis2a2.Marshal(&header, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	_, err := astm.Marshal(&header, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 
 	assert.NotNil(t, err)
 }
@@ -331,7 +332,7 @@ func TestQueryMessage(t *testing.T) {
 	query.Terminator.TerminatorCode = "N"
 
 	// Test with no Querydata provided
-	filedata, err := lis2a2.Marshal(query, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	filedata, err := astm.Marshal(query, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
@@ -341,7 +342,7 @@ func TestQueryMessage(t *testing.T) {
 		StartingRangeIDNumber: "SampleCode1",
 		UniversalTestID:       "ALL",
 	})
-	filedata, err = lis2a2.Marshal(query, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	filedata, err = astm.Marshal(query, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
@@ -389,7 +390,7 @@ func TestMarshalMultipleOrder(t *testing.T) {
 		},
 	}
 
-	filedata, err := lis2a2.Marshal(msg, lis2a2.EncodingASCII, lis2a2.TimezoneEuropeBerlin, lis2a2.ShortNotation)
+	filedata, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 	assert.Nil(t, err)
 
 	for _, row := range filedata {
