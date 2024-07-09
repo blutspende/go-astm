@@ -587,7 +587,9 @@ func TestNullValuesShouldGiveQualifiedError(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Equal(t, "message has nil value - aborting", err.Error())
 }
-func TestFailingShit(t *testing.T) {
+
+/* A Result transmission needs to process multiple orders/results per patient*/
+func TestUnmarshalMultipleOrdersAndResultsForOnePatient(t *testing.T) {
 	data := ""
 	data = data + "H|\\^&|||RVT|||||LIS|||LIS2-A2|20240709103536\r"
 	data = data + "P|1||||^^^^|||U|||||||||||||||||Main||||||||||\r"
