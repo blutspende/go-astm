@@ -175,11 +175,15 @@ type CommentedResult struct {
 	Comment []Comment `astm:"C,optional"`
 }
 
-type PORC struct {
-	Patient         Patient   `astm:"P"`
-	Comment         []Comment `astm:"C,optional"`
-	Order           Order     `astm:"O"`
+type OrderCommentedResult struct {
+	Order           Order `astm:"O"`
 	CommentedResult []CommentedResult
+}
+
+type PORC struct {
+	Patient              Patient   `astm:"P"`
+	Comment              []Comment `astm:"C,optional"`
+	OrderCommentedResult []OrderCommentedResult
 }
 
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf Page 30 : Logial Structure of Message
