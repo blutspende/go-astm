@@ -574,8 +574,8 @@ func TestMultipleMessagesInOne(t *testing.T) {
 	assert.Equal(t, 2, len(message.Messages))
 	assert.Equal(t, "DIA-04-066-7-2", message.Messages[1].OrderResults[0].Patient.LabAssignedPatientID)
 
-	assert.Equal(t, "12,5", message.Messages[0].OrderResults[0].CommentedResult[0].Result.DataMeasurementValue)
-	assert.Equal(t, "99,66", message.Messages[1].OrderResults[0].CommentedResult[0].Result.DataMeasurementValue)
+	assert.Equal(t, "12,5", message.Messages[0].OrderResults[0].OrderCommentedResult[0].CommentedResult[0].Result.DataMeasurementValue)
+	assert.Equal(t, "99,66", message.Messages[1].OrderResults[0].OrderCommentedResult[0].CommentedResult[0].Result.DataMeasurementValue)
 }
 
 func TestNullValuesShouldGiveQualifiedError(t *testing.T) {
@@ -586,4 +586,22 @@ func TestNullValuesShouldGiveQualifiedError(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "message has nil value - aborting", err.Error())
+}
+func TestFailingShit(t *testing.T) {
+	data := ""
+	data = data + "H|\\^&|||RVT|||||LIS|||LIS2-A2|20240709103536\r"
+	data = data + "P|1||||^^^^|||U|||||||||||||||||Main||||||||||\r"
+	data = data + "O|1|CL5G2A118S||^^^Pool_Cell|R||||||||||^||||||||||F||||||\r"
+	data = data + "R|1|^^^Pool_Cell 1|0^0^3.0|||||F||saidam||20240625092245|5030100461|\r"
+	data = data + "R|2|^^^Pool_Cell|Negative|||||F||peilja||20240625092245|5030100461|\r"
+	data = data + "O|2|CL5G2A118S||^^^Weak_D1|R||||||||||^||||||||||F||||||\r"
+	data = data + "R|1|^^^Weak_D1|0^0^0.0|||||F||saidam||20240626193019|5030100461|\r"
+	data = data + "R|2|^^^Weak_D1|Negative|||||F||SCHMMI||20240626193019|5030100461|\r"
+	data = data + "L|1|N\r"
+
+	var message standardlis2a2.DefaultMessage
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+
+	assert.Nil(t, err)
 }
