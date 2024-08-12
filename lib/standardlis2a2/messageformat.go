@@ -155,7 +155,7 @@ type Terminator struct {
 // Lis2Manufacturer -Manufacturer Record
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Manufacturer struct {
-	SequenceNumber string `astm:"2,sequence"` // 14.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
+	SequenceNumber int    `astm:"2,sequence"` // 14.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
 	F2             string `astm:"3"`          // 14.3
 	F3             string `astm:"4"`          // 14.4
 	F4             string `astm:"5"`          // 14.5

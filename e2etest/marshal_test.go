@@ -441,4 +441,10 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 	filedata, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
 	fmt.Printf("%#v\n", filedata)
 	assert.Nil(t, err)
+	assert.Equal(t, 6, len(filedata))
+	assert.Equal(t, []byte("M|1|"), filedata[1])
+	assert.Equal(t, []byte("P|1|"), filedata[2])
+	assert.Equal(t, []byte("O|1|VAL24981209||Pool_Cell|R||||||N||||TestData"), filedata[3])
+	assert.Equal(t, []byte("O|2|VAL24981210||Pool_Cell|R||||||N||||TestData"), filedata[4])
+	assert.Equal(t, []byte("L|1|N"), filedata[5])
 }
