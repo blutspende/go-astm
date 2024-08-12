@@ -398,3 +398,47 @@ func TestMarshalMultipleOrder(t *testing.T) {
 	}
 
 }
+
+func TestShorthandOnStandardMessage(t *testing.T) {
+
+	msg := standardlis2a2.DefaultMessage{
+		Header: standardlis2a2.Header{
+			Delimiters:     "\\^&",
+			SenderNameOrID: "LIS",
+			ReceiverID:     "NotExistantTestSystem",
+			DateAndTime:    time.Now(),
+		},
+		OrderResults: []standardlis2a2.PORC{
+			{
+				Patient: standardlis2a2.Patient{},
+				OrderCommentedResult: []standardlis2a2.OrderCommentedResult{
+					{
+						Order: standardlis2a2.Order{
+							SpecimenID:         "VAL24981209",
+							UniversalTestID:    "Pool_Cell",
+							Priority:           "R",
+							ActionCode:         "N",
+							SpecimenDescriptor: "TestData",
+						},
+					},
+					{
+						Order: standardlis2a2.Order{
+							SpecimenID:         "VAL24981210",
+							UniversalTestID:    "Pool_Cell",
+							Priority:           "R",
+							ActionCode:         "N",
+							SpecimenDescriptor: "TestData",
+						},
+					},
+				},
+			},
+		},
+		Terminator: standardlis2a2.Terminator{
+			TerminatorCode: "N",
+		},
+	}
+
+	filedata, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	fmt.Printf("%#v\n", filedata)
+	assert.Nil(t, err)
+}
