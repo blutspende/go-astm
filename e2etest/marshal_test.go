@@ -39,7 +39,7 @@ func TestSimpleMarshal(t *testing.T) {
 	msg.Ill.FirstFieldArray2 = "first-arr2"
 	msg.Ill.SecondfieldArray2 = "second-arr2"
 
-	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 
 	for _, line := range lines {
 		linestr := string(line)
@@ -69,7 +69,7 @@ func TestGenverateSequence(t *testing.T) {
 	msg.Patient[1].LastName = "Secundus'"
 	msg.Patient[1].FirstName = "Secundie"
 
-	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -117,7 +117,7 @@ func TestNestedStruct(t *testing.T) {
 	msg.PatientResult[1].Result[0].MeasurementValueOfDevice = "present"
 	msg.PatientResult[1].Result[0].Units = "none"
 
-	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -332,7 +332,7 @@ func TestQueryMessage(t *testing.T) {
 	query.Terminator.TerminatorCode = "N"
 
 	// Test with no Querydata provided
-	filedata, err := astm.Marshal(query, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	filedata, err := astm.Marshal(query, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
@@ -342,7 +342,7 @@ func TestQueryMessage(t *testing.T) {
 		StartingRangeIDNumber: "SampleCode1",
 		UniversalTestID:       "ALL",
 	})
-	filedata, err = astm.Marshal(query, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	filedata, err = astm.Marshal(query, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
@@ -400,7 +400,6 @@ func TestMarshalMultipleOrder(t *testing.T) {
 }
 
 func TestShorthandOnStandardMessage(t *testing.T) {
-
 	msg := standardlis2a2.DefaultMessage{
 		Header: standardlis2a2.Header{
 			Delimiters:     "\\^&",
@@ -439,11 +438,11 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 	}
 
 	filedata, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
-	fmt.Printf("%#v\n", filedata)
+
 	assert.Nil(t, err)
 	assert.Equal(t, 6, len(filedata))
-	assert.Equal(t, []byte("M|1|"), filedata[1])
-	assert.Equal(t, []byte("P|1|"), filedata[2])
+	assert.Equal(t, []byte("M|1"), filedata[1])
+	assert.Equal(t, []byte("P|1"), filedata[2])
 	assert.Equal(t, []byte("O|1|VAL24981209||Pool_Cell|R||||||N||||TestData"), filedata[3])
 	assert.Equal(t, []byte("O|2|VAL24981210||Pool_Cell|R||||||N||||TestData"), filedata[4])
 	assert.Equal(t, []byte("L|1|N"), filedata[5])

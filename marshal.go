@@ -97,7 +97,7 @@ func iterateStructFieldsAndBuildOutput(message interface{}, depth, sequence int,
 			if currentRecord.Kind() == reflect.Slice { // it is an annotated slice
 				if !currentRecord.IsNil() {
 					for x := 0; x < currentRecord.Len(); x++ {
-						outs, err := processOneRecord(recordType, currentRecord.Index(x), x+1, location, repeatDelimiter, componentDelimiter, escapeDelimiter) // fmt.Println(outp)
+						outs, err := processOneRecord(recordType, currentRecord.Index(x), x+1, location, repeatDelimiter, componentDelimiter, escapeDelimiter, notation) // fmt.Println(outp)
 						if err != nil {
 							return nil, err
 						}
@@ -105,7 +105,7 @@ func iterateStructFieldsAndBuildOutput(message interface{}, depth, sequence int,
 					}
 				}
 			} else {
-				outs, err := processOneRecord(recordType, currentRecord, sequence, location, repeatDelimiter, componentDelimiter, escapeDelimiter) // fmt.Println(outp)
+				outs, err := processOneRecord(recordType, currentRecord, sequence, location, repeatDelimiter, componentDelimiter, escapeDelimiter, notation) // fmt.Println(outp)
 				if err != nil {
 					return nil, err
 				}
@@ -165,13 +165,16 @@ func EncodeUTF8ToCharset(charmap *charmap.Charmap, data []byte) []byte {
 	return resultdata
 }
 
-func processOneRecord(recordType string, currentRecord reflect.Value, generatedSequenceNumber int, location *time.Location, repeatDelimiter, componentDelimiter, escapeDelimiter *string) (string, error) {
+func processOneRecord(recordType string, currentRecord reflect.Value, generatedSequenceNumber int, location *time.Location,
+	repeatDelimiter, componentDelimiter, escapeDelimiter *string, notation Notation) (string, error) {
 
 	if currentRecord.Kind() != reflect.Struct {
 		return "", nil // beeing not a struct is not an error
 	}
 
 	fieldList := make(OutputRecords, 0)
+	emptyRecords := make(OutputRecords, 0)
+	isShortNotation := notation == ShortNotation
 
 	for i := 0; i < currentRecord.NumField(); i++ {
 
@@ -204,7 +207,7 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 				value = field.String()
 			}
 
-			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+			fieldList, emptyRecords = addASTMFieldToList(fieldList, emptyRecords, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
 		case reflect.Int:
 			value := fmt.Sprintf("%d", field.Int())
 			if sliceContainsString(fieldAstmTagsList, ANNOTATION_SEQUENCE) {
@@ -212,12 +215,12 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 				generatedSequenceNumber = generatedSequenceNumber + 1
 			}
 
-			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+			fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
 		case reflect.Float32:
 		case reflect.Float64:
 			//TODO: add annotation for decimal length
 			value := fmt.Sprintf("%.3f", field.Float())
-			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+			fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
 		case reflect.Struct:
 			switch field.Type().Name() {
 			case "Time":
@@ -227,13 +230,13 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 
 					if sliceContainsString(fieldAstmTagsList, ANNOTATION_LONGDATE) {
 						value := time.In(location).Format("20060102150405")
-						fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+						fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
 					} else { // short date
 						value := time.In(location).Format("20060102")
-						fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+						fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
 					}
 				} else {
-					fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, "")
+					fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, "", isShortNotation)
 				}
 			default:
 				return "", fmt.Errorf("invalid field type '%s' in struct '%s', input not processed", field.Type().Name(), currentRecord.Type().Name())
@@ -247,7 +250,7 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 	return generateOutputRecord(recordType, fieldList, *repeatDelimiter, *componentDelimiter, *escapeDelimiter), nil
 }
 
-func addASTMFieldToList(data []OutputRecord, field, repeat, component int, value string) []OutputRecord {
+func addASTMFieldToList(data []OutputRecord, emptyRecords []OutputRecord, field, repeat, component int, value string, isShortNotation bool) ([]OutputRecord, []OutputRecord) {
 
 	or := OutputRecord{
 		Field:     field,
@@ -256,8 +259,23 @@ func addASTMFieldToList(data []OutputRecord, field, repeat, component int, value
 		Value:     value,
 	}
 
+	if !isShortNotation {
+		data = append(data, or)
+		return data, emptyRecords
+	}
+
+	if value == "" {
+		emptyRecords = append(emptyRecords, or)
+		return data, emptyRecords
+	}
+
+	if len(emptyRecords) != 0 {
+		data = append(data, emptyRecords...)
+		emptyRecords = make(OutputRecords, 0)
+	}
 	data = append(data, or)
-	return data
+
+	return data, emptyRecords
 }
 
 // used for sorting
