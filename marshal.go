@@ -97,7 +97,7 @@ func iterateStructFieldsAndBuildOutput(message interface{}, depth, sequence int,
 			if currentRecord.Kind() == reflect.Slice { // it is an annotated slice
 				if !currentRecord.IsNil() {
 					for x := 0; x < currentRecord.Len(); x++ {
-						outs, err := processOneRecord(recordType, currentRecord.Index(x), x+1, location, repeatDelimiter, componentDelimiter, escapeDelimiter) // fmt.Println(outp)
+						outs, err := processOneRecord(recordType, currentRecord.Index(x), x+1, location, repeatDelimiter, componentDelimiter, escapeDelimiter, notation) // fmt.Println(outp)
 						if err != nil {
 							return nil, err
 						}
@@ -105,7 +105,7 @@ func iterateStructFieldsAndBuildOutput(message interface{}, depth, sequence int,
 					}
 				}
 			} else {
-				outs, err := processOneRecord(recordType, currentRecord, sequence, location, repeatDelimiter, componentDelimiter, escapeDelimiter) // fmt.Println(outp)
+				outs, err := processOneRecord(recordType, currentRecord, sequence, location, repeatDelimiter, componentDelimiter, escapeDelimiter, notation) // fmt.Println(outp)
 				if err != nil {
 					return nil, err
 				}
@@ -165,7 +165,8 @@ func EncodeUTF8ToCharset(charmap *charmap.Charmap, data []byte) []byte {
 	return resultdata
 }
 
-func processOneRecord(recordType string, currentRecord reflect.Value, generatedSequenceNumber int, location *time.Location, repeatDelimiter, componentDelimiter, escapeDelimiter *string) (string, error) {
+func processOneRecord(recordType string, currentRecord reflect.Value, generatedSequenceNumber int, location *time.Location,
+	repeatDelimiter, componentDelimiter, escapeDelimiter *string, notation Notation) (string, error) {
 
 	if currentRecord.Kind() != reflect.Struct {
 		return "", nil // beeing not a struct is not an error
@@ -242,6 +243,16 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 			return "", fmt.Errorf("invalid field type '%s' in struct '%s', input not processed", field.Type().Name(), currentRecord.Type().Name())
 		}
 
+	}
+
+	// TODO: also handle short notation on nested components
+	if notation == ShortNotation {
+		for i := len(fieldList) - 1; i >= 0; i-- {
+			if fieldList[i].Value != "" {
+				break
+			}
+			fieldList = fieldList[:i]
+		}
 	}
 
 	return generateOutputRecord(recordType, fieldList, *repeatDelimiter, *componentDelimiter, *escapeDelimiter), nil
