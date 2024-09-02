@@ -173,8 +173,6 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 	}
 
 	fieldList := make(OutputRecords, 0)
-	emptyRecords := make(OutputRecords, 0)
-	isShortNotation := notation == ShortNotation
 
 	for i := 0; i < currentRecord.NumField(); i++ {
 
@@ -207,7 +205,7 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 				value = field.String()
 			}
 
-			fieldList, emptyRecords = addASTMFieldToList(fieldList, emptyRecords, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
+			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
 		case reflect.Int:
 			value := fmt.Sprintf("%d", field.Int())
 			if sliceContainsString(fieldAstmTagsList, ANNOTATION_SEQUENCE) {
@@ -215,12 +213,12 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 				generatedSequenceNumber = generatedSequenceNumber + 1
 			}
 
-			fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
+			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
 		case reflect.Float32:
 		case reflect.Float64:
 			//TODO: add annotation for decimal length
 			value := fmt.Sprintf("%.3f", field.Float())
-			fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
+			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
 		case reflect.Struct:
 			switch field.Type().Name() {
 			case "Time":
@@ -230,13 +228,13 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 
 					if sliceContainsString(fieldAstmTagsList, ANNOTATION_LONGDATE) {
 						value := time.In(location).Format("20060102150405")
-						fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
+						fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
 					} else { // short date
 						value := time.In(location).Format("20060102")
-						fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, value, isShortNotation)
+						fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
 					}
 				} else {
-					fieldList, emptyRecords = addASTMFieldToList(fieldList, nil, fieldIdx, repeatIdx, componentIdx, "", isShortNotation)
+					fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, "")
 				}
 			default:
 				return "", fmt.Errorf("invalid field type '%s' in struct '%s', input not processed", field.Type().Name(), currentRecord.Type().Name())
@@ -247,10 +245,20 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 
 	}
 
+	// TODO: also handle short notation on nested components
+	if notation == ShortNotation {
+		for i := len(fieldList) - 1; i >= 0; i-- {
+			if fieldList[i].Value != "" {
+				break
+			}
+			fieldList = fieldList[:i]
+		}
+	}
+
 	return generateOutputRecord(recordType, fieldList, *repeatDelimiter, *componentDelimiter, *escapeDelimiter), nil
 }
 
-func addASTMFieldToList(data []OutputRecord, emptyRecords []OutputRecord, field, repeat, component int, value string, isShortNotation bool) ([]OutputRecord, []OutputRecord) {
+func addASTMFieldToList(data []OutputRecord, field, repeat, component int, value string) []OutputRecord {
 
 	or := OutputRecord{
 		Field:     field,
@@ -259,23 +267,8 @@ func addASTMFieldToList(data []OutputRecord, emptyRecords []OutputRecord, field,
 		Value:     value,
 	}
 
-	if !isShortNotation {
-		data = append(data, or)
-		return data, emptyRecords
-	}
-
-	if value == "" {
-		emptyRecords = append(emptyRecords, or)
-		return data, emptyRecords
-	}
-
-	if len(emptyRecords) != 0 {
-		data = append(data, emptyRecords...)
-		emptyRecords = make(OutputRecords, 0)
-	}
 	data = append(data, or)
-
-	return data, emptyRecords
+	return data
 }
 
 // used for sorting
