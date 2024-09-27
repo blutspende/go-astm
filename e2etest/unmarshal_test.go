@@ -607,3 +607,56 @@ func TestUnmarshalMultipleOrdersAndResultsForOnePatient(t *testing.T) {
 
 	assert.Nil(t, err)
 }
+
+type MessageMadeForTheNextTest struct {
+	//Header       standardlis2a2.Header `astm:"H"`
+	Manufacturer struct {
+		SequenceNumber int      `astm:"2,sequence"` // 14.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
+		F2             string   `astm:"3"`          // 14.3
+		Reagents       []string `astm:"4"`
+		ReagentInfo    []struct {
+			SerialNumber   string `astm:"1"`
+			UsedAtDateTime string `astm:"2"`
+			UseByDate      string `astm:"3"`
+		} `astm:"5"`
+	} `astm:"M,optional"`
+
+	ExtraTests struct {
+		SequenceNumber int       `astm:"2,sequence"`
+		ArrayOfInt     []int     `astm:"3"`
+		ArrayOfFloat32 []float32 `astm:"4"`
+		ArrayOfFloat64 []float64 `astm:"5"`
+	} `astm:"E,optional"`
+	Terminator standardlis2a2.Terminator `astm:"L"`
+}
+
+/* Test a funny fomrat with an array found with the yumizen Horiba instrument */
+func TestHoribleYumizenManufacturerRecordWithArray(t *testing.T) {
+	data := ""
+	//data = data + "H|\\^&|||Bio-Rad|IH v5.2||||||||20220315194227\n"
+	data = data + "M|1|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\240423H1(^20240905000000^20250305\\240411M11^20240828000000^20241028\n"
+	data = data + "E|1|1\\2\\3|6.0\\7.8|5.887\\88.1045|"
+	data = data + "L|1|N\n"
+
+	var message MessageMadeForTheNextTest
+	err := astm.Unmarshal([]byte(data), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+
+	assert.Nil(t, err)
+
+	assert.Equal(t, []string{"CLEANER", "DILUENT", "LYSE"}, message.Manufacturer.Reagents)
+	assert.Equal(t, []int{1, 2, 3}, message.ExtraTests.ArrayOfInt)
+	assert.Equal(t, []float32{6.0, 7.8}, message.ExtraTests.ArrayOfFloat32)
+	assert.Equal(t, []float64{5.887, 88.1045}, message.ExtraTests.ArrayOfFloat64)
+
+	assert.Equal(t, "240415I1(", message.Manufacturer.ReagentInfo[0].SerialNumber)
+	assert.Equal(t, "20240902000000", message.Manufacturer.ReagentInfo[0].UsedAtDateTime)
+	assert.Equal(t, "20241202", message.Manufacturer.ReagentInfo[0].UseByDate)
+	assert.Equal(t, "240423H1(", message.Manufacturer.ReagentInfo[1].SerialNumber)
+	assert.Equal(t, "20240905000000", message.Manufacturer.ReagentInfo[1].UsedAtDateTime)
+	assert.Equal(t, "20250305", message.Manufacturer.ReagentInfo[1].UseByDate)
+	assert.Equal(t, "240411M11", message.Manufacturer.ReagentInfo[2].SerialNumber)
+	assert.Equal(t, "20240828000000", message.Manufacturer.ReagentInfo[2].UsedAtDateTime)
+	assert.Equal(t, "20241028", message.Manufacturer.ReagentInfo[2].UseByDate)
+
+}
