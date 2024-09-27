@@ -615,9 +615,9 @@ type MessageMadeForTheNextTest struct {
 		F2             string   `astm:"3"`          // 14.3
 		Reagents       []string `astm:"4"`
 		ReagentInfo    []struct {
-			SerialNumber   string `astm:"1"`
-			UsedAtDateTime string `astm:"2"`
-			UseByDate      string `astm:"3"`
+			SerialNumber   string `astm:"1.1"`
+			UsedAtDateTime string `astm:"1.2"`
+			UseByDate      string `astm:"1.3"`
 		} `astm:"5"`
 	} `astm:"M,optional"`
 

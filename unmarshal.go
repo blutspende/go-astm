@@ -477,18 +477,14 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 				reflect.ValueOf(recordFieldInterface).Elem().Set(reflect.ValueOf(convertedArray))
 			case reflect.Struct:
 				decodedArray := strings.Split(inputFields[currentInputFieldNo], *repeatDelimiter)
-				sliceOfStruct := reflect.MakeSlice(recordfield.Type(), 1, len(decodedArray))
+				sliceOfStruct := reflect.MakeSlice(recordfield.Type(), len(decodedArray), len(decodedArray))
 				for i := 0; i < len(decodedArray); i++ {
-					// THIS target is the issue... allocate the structure
-					target := reflect.New(recordfield.Elem().Type())
-					// TODO: it doesnt work
 					err := reflectAnnotatedFields(decodedArray[i],
-						target, timezone, isHeader,
+						sliceOfStruct.Index(i), timezone, isHeader,
 						repeatDelimiter, componentDelimiter, escapeDelimiter)
 					if err != nil {
 						return fmt.Errorf("unable to decode array of []structs %s (%v) in '%s'", decodedArray[i], err, inputStr)
 					}
-					sliceOfStruct.Index(i).Set(target)
 				}
 				reflect.ValueOf(recordFieldInterface).Elem().Set(sliceOfStruct)
 			default:
