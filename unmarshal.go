@@ -439,7 +439,58 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 			} else {
 				return err
 			}
-
+		case reflect.Slice: // Decoding a slice in a field
+			switch recordfield.Type().Elem().Kind() {
+			case reflect.String: // []string
+				decodedArray := strings.Split(inputFields[currentInputFieldNo], *repeatDelimiter)
+				reflect.ValueOf(recordFieldInterface).Elem().Set(reflect.ValueOf(decodedArray))
+			case reflect.Int: // []int
+				decodedArray := strings.Split(inputFields[currentInputFieldNo], *repeatDelimiter)
+				convertedArray := make([]int, len(decodedArray))
+				for i := 0; i < len(decodedArray); i++ {
+					convertedArray[i], err = strconv.Atoi(decodedArray[i])
+					if err != nil {
+						return fmt.Errorf("invalid input type for decoding to []int %s in '%s'", decodedArray[i], inputStr)
+					}
+				}
+				reflect.ValueOf(recordFieldInterface).Elem().Set(reflect.ValueOf(convertedArray))
+			case reflect.Float32: // []float32
+				decodedArray := strings.Split(inputFields[currentInputFieldNo], *repeatDelimiter)
+				convertedArray := make([]float32, len(decodedArray))
+				for i := 0; i < len(decodedArray); i++ {
+					f64, err := strconv.ParseFloat(decodedArray[i], 32)
+					if err != nil {
+						return fmt.Errorf("invalid input type for decoding to []float32 %s (%v) in '%s'", decodedArray[i], err, inputStr)
+					}
+					convertedArray[i] = float32(f64)
+				}
+				reflect.ValueOf(recordFieldInterface).Elem().Set(reflect.ValueOf(convertedArray))
+			case reflect.Float64: // []float64
+				decodedArray := strings.Split(inputFields[currentInputFieldNo], *repeatDelimiter)
+				convertedArray := make([]float64, len(decodedArray))
+				for i := 0; i < len(decodedArray); i++ {
+					convertedArray[i], err = strconv.ParseFloat(decodedArray[i], 64)
+					if err != nil {
+						return fmt.Errorf("invalid input type for decoding to []float64 %s (%v) in '%s'", decodedArray[i], err, inputStr)
+					}
+				}
+				reflect.ValueOf(recordFieldInterface).Elem().Set(reflect.ValueOf(convertedArray))
+			case reflect.Struct:
+				decodedArray := strings.Split(inputFields[currentInputFieldNo], *repeatDelimiter)
+				sliceOfStruct := reflect.MakeSlice(recordfield.Type(), len(decodedArray), len(decodedArray))
+				for i := 0; i < len(decodedArray); i++ {
+					err := reflectAnnotatedFields(decodedArray[i],
+						sliceOfStruct.Index(i), timezone, isHeader,
+						repeatDelimiter, componentDelimiter, escapeDelimiter)
+					if err != nil {
+						return fmt.Errorf("unable to decode array of []structs %s (%v) in '%s'", decodedArray[i], err, inputStr)
+					}
+				}
+				reflect.ValueOf(recordFieldInterface).Elem().Set(sliceOfStruct)
+			default:
+				return fmt.Errorf("when resolving a slice within a record : Invalid type of Field '%s' while trying to unmarshal this string '%s'. This datatype is not implemented.",
+					reflect.TypeOf(recordfield.Interface()).Elem().Kind(), inputStr)
+			}
 		case reflect.Struct:
 			switch reflect.TypeOf(recordfield.Interface()).Name() {
 			case "Time":
