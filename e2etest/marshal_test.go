@@ -447,3 +447,84 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 	assert.Equal(t, []byte("O|2|VAL24981210||Pool_Cell|R||||||N||||TestData"), filedata[4])
 	assert.Equal(t, []byte("L|1|N"), filedata[5])
 }
+
+func TestEmbeddedStructsAndArrays(t *testing.T) {
+	message := MessageMadeForTheNextTest{
+		ExtraTests: struct {
+			SequenceNumber int       `astm:"2,sequence"`
+			ArrayOfInt     []int     `astm:"3"`
+			ArrayOfFloat32 []float32 `astm:"4"`
+			ArrayOfFloat64 []float64 `astm:"5"`
+		}(struct {
+			SequenceNumber int
+			ArrayOfInt     []int
+			ArrayOfFloat32 []float32
+			ArrayOfFloat64 []float64
+		}{
+			ArrayOfInt:     []int{1, 2, 3},
+			ArrayOfFloat32: []float32{4.1, 4.2, 4.3},
+			ArrayOfFloat64: []float64{5.111, 5.222},
+		}),
+		Manufacturer: ManufacturerInfo{
+			F2:       "REAGENT",
+			Reagents: []string{"CLEANER", "DILUENT", "LYSE"},
+			ReagentInfo: []TraceabilityReagentInfo{
+				{
+					SerialNumber:   "240415I1(",
+					UsedAtDateTime: "20240902000000",
+					UseByDate:      "20241202",
+				},
+				{
+					SerialNumber:   "240423H1(",
+					UsedAtDateTime: "20240905000000",
+					UseByDate:      "20250305",
+				},
+				{
+					SerialNumber:   "240411M11",
+					UsedAtDateTime: "20240828000000",
+					UseByDate:      "20241028",
+				},
+			},
+		},
+		Terminator: standardlis2a2.Terminator{
+			TerminatorCode: "N",
+		},
+	}
+	data, err := astm.Marshal(message, astm.EncodingUTF8, astm.TimezoneUTC, astm.StandardNotation)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "M|1|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\240423H1(^20240905000000^20250305\\240411M11^20240828000000^20241028", string(data[0]))
+	assert.Equal(t, "E|1|1\\2\\3|4.100\\4.200\\4.300|5.111\\5.222", string(data[1]))
+	assert.Equal(t, "L|1|N", string(data[2]))
+}
+
+func TestEmbeddedStructsAndArraysShortNotation(t *testing.T) {
+	message := MessageMadeForTheNextTest{
+		ExtraTests: struct {
+			SequenceNumber int       `astm:"2,sequence"`
+			ArrayOfInt     []int     `astm:"3"`
+			ArrayOfFloat32 []float32 `astm:"4"`
+			ArrayOfFloat64 []float64 `astm:"5"`
+		}(struct {
+			SequenceNumber int
+			ArrayOfInt     []int
+			ArrayOfFloat32 []float32
+			ArrayOfFloat64 []float64
+		}{
+			ArrayOfInt: []int{1, 2, 3},
+		}),
+		Manufacturer: ManufacturerInfo{
+			F2:       "REAGENT",
+			Reagents: []string{"DILUENT", "LYSE"},
+		},
+		Terminator: standardlis2a2.Terminator{
+			TerminatorCode: "N",
+		},
+	}
+	data, err := astm.Marshal(message, astm.EncodingUTF8, astm.TimezoneUTC, astm.ShortNotation)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "M|1|REAGENT|DILUENT\\LYSE", string(data[0]))
+	assert.Equal(t, "E|1|1\\2\\3", string(data[1]))
+	assert.Equal(t, "L|1|N", string(data[2]))
+}
