@@ -275,10 +275,10 @@ func reflectInputToStruct(bufferedInputLines []string, depth int, currentInputLi
 
 					// keep reading while same elements are up
 					currentInputLine = currentInputLine + 1
-					if expectInputRecordType != bufferedInputLines[currentInputLine][0] {
+					if currentInputLine >= len(bufferedInputLines) {
 						break
 					}
-					if currentInputLine >= len(bufferedInputLines) {
+					if expectInputRecordType != bufferedInputLines[currentInputLine][0] {
 						break
 					}
 				}
