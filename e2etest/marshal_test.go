@@ -126,7 +126,6 @@ func TestNestedStruct(t *testing.T) {
 		fmt.Println(linestr)
 	}
 
-	// TODO: ? with this struct the Patient sequence will not advance - always P|1...
 	assert.Equal(t, "H|\\^&||||||||||||", string(lines[0]))
 	assert.Equal(t, "P|1||||Norris^Chuck|||||||||||||||||||||||Binaries||||||", string(lines[1]))
 	assert.Equal(t, "R|1|^^^^SulfurBloodCount^^|^^100|%||||||^|||", string(lines[2]))
@@ -446,4 +445,124 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 	assert.Equal(t, []byte("O|1|VAL24981209||Pool_Cell|R||||||N||||TestData"), filedata[3])
 	assert.Equal(t, []byte("O|2|VAL24981210||Pool_Cell|R||||||N||||TestData"), filedata[4])
 	assert.Equal(t, []byte("L|1|N"), filedata[5])
+}
+
+func TestEmbeddedStructsAndArrays(t *testing.T) {
+	message := MessageMadeForTheNextTest{
+		ExtraTests: struct {
+			SequenceNumber int       `astm:"2,sequence"`
+			ArrayOfInt     []int     `astm:"3"`
+			ArrayOfFloat32 []float32 `astm:"4"`
+			ArrayOfFloat64 []float64 `astm:"5"`
+		}(struct {
+			SequenceNumber int
+			ArrayOfInt     []int
+			ArrayOfFloat32 []float32
+			ArrayOfFloat64 []float64
+		}{
+			ArrayOfInt:     []int{1, 2, 3},
+			ArrayOfFloat32: []float32{4.1, 4.2, 4.3},
+			ArrayOfFloat64: []float64{5.111, 5.222},
+		}),
+		Manufacturer: ManufacturerInfo{
+			F2:       "REAGENT",
+			Reagents: []string{"CLEANER", "DILUENT", "LYSE"},
+			ReagentInfo: []TraceabilityReagentInfo{
+				{
+					SerialNumber:   "240415I1(",
+					UsedAtDateTime: "20240902000000",
+					UseByDate:      "20241202",
+				},
+				{
+					SerialNumber:   "240423H1(",
+					UsedAtDateTime: "20240905000000",
+					UseByDate:      "20250305",
+				},
+				{
+					SerialNumber:   "240411M11",
+					UsedAtDateTime: "20240828000000",
+					UseByDate:      "20241028",
+				},
+			},
+		},
+		Terminator: standardlis2a2.Terminator{
+			TerminatorCode: "N",
+		},
+	}
+	data, err := astm.Marshal(message, astm.EncodingUTF8, astm.TimezoneUTC, astm.StandardNotation)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "M|1|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\240423H1(^20240905000000^20250305\\240411M11^20240828000000^20241028", string(data[0]))
+	assert.Equal(t, "E|1|1\\2\\3|4.100\\4.200\\4.300|5.111\\5.222", string(data[1]))
+	assert.Equal(t, "L|1|N", string(data[2]))
+}
+
+func TestEmbeddedStructsAndArraysShortNotation(t *testing.T) {
+	message := MessageMadeForTheNextTest{
+		ExtraTests: struct {
+			SequenceNumber int       `astm:"2,sequence"`
+			ArrayOfInt     []int     `astm:"3"`
+			ArrayOfFloat32 []float32 `astm:"4"`
+			ArrayOfFloat64 []float64 `astm:"5"`
+		}{
+			ArrayOfInt: []int{1, 2, 3},
+		},
+		Manufacturer: ManufacturerInfo{
+			F2:       "REAGENT",
+			Reagents: []string{"DILUENT", "LYSE"},
+		},
+		Terminator: standardlis2a2.Terminator{
+			TerminatorCode: "N",
+		},
+	}
+	data, err := astm.Marshal(message, astm.EncodingUTF8, astm.TimezoneUTC, astm.ShortNotation)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "M|1|REAGENT|DILUENT\\LYSE", string(data[0]))
+	assert.Equal(t, "E|1|1\\2\\3", string(data[1]))
+	assert.Equal(t, "L|1|N", string(data[2]))
+}
+
+type CustomDecimalLength struct {
+	Float1 float32 `astm:"1,length:4"`
+	Float2 float64 `astm:"2,length:1"`
+	Floats []struct {
+		EmbeddedFloat1 float32 `astm:"1.1,length:7"`
+		EmbeddedFloat2 float64 `astm:"1.2,length:2"`
+		EmbeddedFloat3 float64 `astm:"1.3"`
+		EmbeddedFloat4 float32 `astm:"1.4,length:invalidshoulddefaultto3"`
+	} `astm:"3"`
+}
+
+func TestCustomDecimalLengthAnnotation(t *testing.T) {
+	message := struct {
+		DecimalLength CustomDecimalLength `astm:"D"`
+	}{
+		DecimalLength: CustomDecimalLength{
+			Float1: 0.34567,
+			Float2: 0.40001,
+			Floats: []struct {
+				EmbeddedFloat1 float32 `astm:"1.1,length:7"`
+				EmbeddedFloat2 float64 `astm:"1.2,length:2"`
+				EmbeddedFloat3 float64 `astm:"1.3"`
+				EmbeddedFloat4 float32 `astm:"1.4,length:invalidshoulddefaultto3"`
+			}{
+				{
+					EmbeddedFloat1: 0.123456711,
+					EmbeddedFloat2: 0.984654321,
+					EmbeddedFloat3: 0.234444,
+					EmbeddedFloat4: 0.345444,
+				},
+				{
+					EmbeddedFloat1: 0.99,
+					EmbeddedFloat2: 0.1122334455,
+					EmbeddedFloat3: 0.2233445566,
+					EmbeddedFloat4: 0.3344556677,
+				},
+			},
+		},
+	}
+	data, err := astm.Marshal(message, astm.EncodingUTF8, astm.TimezoneUTC, astm.ShortNotation)
+	assert.Nil(t, err)
+	assert.Equal(t, "D|0.3457|0.4|0.1234567^0.98^0.234^0.345\\0.9900000^0.11^0.223^0.334", string(data[0]))
 }
