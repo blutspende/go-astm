@@ -610,18 +610,8 @@ func TestUnmarshalMultipleOrdersAndResultsForOnePatient(t *testing.T) {
 
 type MessageMadeForTheNextTest struct {
 	//Header       standardlis2a2.Header `astm:"H"`
-	Manufacturer struct {
-		SequenceNumber int      `astm:"2,sequence"` // 14.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
-		F2             string   `astm:"3"`          // 14.3
-		Reagents       []string `astm:"4"`
-		ReagentInfo    []struct {
-			SerialNumber   string `astm:"1.1"`
-			UsedAtDateTime string `astm:"1.2"`
-			UseByDate      string `astm:"1.3"`
-		} `astm:"5"`
-	} `astm:"M,optional"`
-
-	ExtraTests struct {
+	Manufacturer ManufacturerInfo `astm:"M,optional"`
+	ExtraTests   struct {
 		SequenceNumber int       `astm:"2,sequence"`
 		ArrayOfInt     []int     `astm:"3"`
 		ArrayOfFloat32 []float32 `astm:"4"`
@@ -629,11 +619,22 @@ type MessageMadeForTheNextTest struct {
 	} `astm:"E,optional"`
 	Terminator standardlis2a2.Terminator `astm:"L"`
 }
+type ManufacturerInfo struct {
+	SequenceNumber int                       `astm:"2,sequence"`
+	F2             string                    `astm:"3"`
+	Reagents       []string                  `astm:"4"`
+	ReagentInfo    []TraceabilityReagentInfo `astm:"5"`
+}
 
-/* Test a funny fomrat with an array found with the yumizen Horiba instrument */
-func TestHoribleYumizenManufacturerRecordWithArray(t *testing.T) {
+type TraceabilityReagentInfo struct {
+	SerialNumber   string `astm:"1.1"`
+	UsedAtDateTime string `astm:"1.2"`
+	UseByDate      string `astm:"1.3"`
+}
+
+/* Test a funny format with an array found with the yumizen Horiba instrument */
+func TestHoribaYumizenManufacturerRecordWithArray(t *testing.T) {
 	data := ""
-	//data = data + "H|\\^&|||Bio-Rad|IH v5.2||||||||20220315194227\n"
 	data = data + "M|1|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\240423H1(^20240905000000^20250305\\240411M11^20240828000000^20241028\n"
 	data = data + "E|1|1\\2\\3|6.0\\7.8|5.887\\88.1045|"
 	data = data + "L|1|N\n"

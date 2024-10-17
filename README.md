@@ -221,3 +221,26 @@ type Result struct {
 	IntstrumentIdentification                string    `astm:"14"`          
 }
 ```
+
+### Custom decimal length for marshal
+``` go
+type CustomDecimal struct {
+        DefaultFormat float32 `astm:"1"`
+	    CustomFormat  float64 `astm:"2,length:6"`
+}
+
+type Record struct {
+    CustomDecimalRecord CustomDecimal `astm:"R"`
+}
+
+message := Record{
+    CustomDecimalRecord: CustomDecimal {
+        DefaultFormat: 1.222222222,
+        CustomFormat:  2.111111111,
+    }
+}
+
+astm.Marshal(message, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+output:
+    R|1.222|2.111111
+```

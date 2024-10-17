@@ -6,6 +6,7 @@ const (
 	ANNOTATION_OPTIONAL  = "optional"  // record-annotation: by default all records are mandatory
 	ANNOTATION_SEQUENCE  = "sequence"  // indicating that a sequence number should be generated (output only)
 	ANNOTATION_LONGDATE  = "longdate"
+	ANNOTATION_LENGTH    = "length" // used for specifying the decimal length of float fields - astm:"1,length:2" (output only)
 )
 
 type Encoding int
