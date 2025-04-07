@@ -80,7 +80,7 @@ func TestFullSingleASTMMessage(t *testing.T) {
 	fileData := ""
 	fileData = fileData + "H|\\^&|||Bio-Rad|IH v5.2||||||||20220315194227\n"
 	fileData = fileData + "P|1||1010868845||Testus^Test||19400607|M||||||||||||||||||||||||^\n"
-	fileData = fileData + "O|1|1122206642|specimen1|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\n"
+	fileData = fileData + "O|1|1122206642|specimen1^^^\\\\specimen2^^^|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\n"
 	fileData = fileData + "R|1|^^^AntiA^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|40^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\n"
 	fileData = fileData + "L|1|N\n"
 
@@ -93,7 +93,7 @@ func TestFullSingleASTMMessage(t *testing.T) {
 	assert.Equal(t, "Testus", message.Patient.LastName)
 	assert.Equal(t, "Test", message.Patient.FirstName)
 	assert.Equal(t, "19400607", message.Patient.DOB.Format("20060102")) // dates are read okay
-	assert.Equal(t, "specimen1", message.Order.InstrumentSpecimenID)
+	assert.Equal(t, "specimen1^^^", message.Order.InstrumentSpecimenID)
 	assert.Equal(t, "lalina", message.Result.OperatorIDPerformed)
 }
 
@@ -123,8 +123,8 @@ func TestNestedStructure(t *testing.T) {
 	data = data + "P|1||1010868845||Testus^Test||19400607|M||||||||||||||||||||||||^\r"
 	data = data + "O|1|1122206642|1122206642^^^\\1122206642^^^|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\r"
 	data = data + "R|1|^^^AntiA^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|40^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
-	data = data + "C|1|FirstComment|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
-	data = data + "C|2|SecondComment|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
+	data = data + "C|1|FirstComment^^05761.03.12^20240131\\\\^^^|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
+	data = data + "C|2|SecondComment^^05761.03.12^20240131\\\\^^^|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
 	data = data + "R|2|^^^AntiB^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|0^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
 	data = data + "C|1|ID-Diluent 2^^05761.03.12^20240131\\^^^|CAS^5005352062212117030^50053.52.06^20221231^5||\r"
 	data = data + "R|3|^^^AntiD^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|0^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
@@ -145,8 +145,8 @@ func TestNestedStructure(t *testing.T) {
 
 	// the array of comments was produced in two entries into the array
 	assert.Equal(t, 2, len(message.OrderResults[0].CommentedResult[0].Comment))
-	assert.Equal(t, "FirstComment", message.OrderResults[0].CommentedResult[0].Comment[0].CommentSource)
-	assert.Equal(t, "SecondComment", message.OrderResults[0].CommentedResult[0].Comment[1].CommentSource)
+	assert.Equal(t, "FirstComment^^05761.03.12^20240131", message.OrderResults[0].CommentedResult[0].Comment[0].CommentSource)
+	assert.Equal(t, "SecondComment^^05761.03.12^20240131", message.OrderResults[0].CommentedResult[0].Comment[1].CommentSource)
 }
 
 // -----------------------------------------------------------------------------------
@@ -711,4 +711,23 @@ func TestUnmarshalSliceOfOneRecordType(t *testing.T) {
 	assert.Equal(t, 3, len(message.ImageData))
 	assert.Equal(t, "HISTOGRAM", message.ImageData[0].Field1)
 	assert.Equal(t, "MATRIX", message.ImageData[2].Field1)
+}
+
+// Fix a bug in which the decodes message couldn't exceed 4096 bytes
+func TestEncodingVeryLongCharsets(t *testing.T) {
+
+	veryLongMessage := []byte{}
+	for i := 0; i < 100000; i++ {
+		veryLongMessage = append(veryLongMessage, []byte("Ich bin ein sehr langer Text")...)
+	}
+
+	encoded, err := astm.EncodeCharsetToUTF8From(charmap.Windows1252, veryLongMessage)
+	assert.Nil(t, err)
+
+	// in this case the encoding should equal the coded part (no special characters)
+	assert.Equal(t, len(veryLongMessage), len(encoded))
+
+	for i := 0; i < len(veryLongMessage); i++ {
+		assert.Equal(t, veryLongMessage[i], encoded[i])
+	}
 }
