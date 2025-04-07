@@ -14,7 +14,7 @@ import (
 	"golang.org/x/text/transform"
 )
 
-type ComponentTestMessage struct {
+type ComponentedTestMessage struct {
 	Componented Componented `astm:"C"`
 }
 type Componented struct {
@@ -27,7 +27,7 @@ func TestComponentMessage(t *testing.T) {
 	// Arrange
 	fileData := ""
 	fileData = fileData + "C|First^Second|First^Second\n"
-	var message ComponentTestMessage
+	var message ComponentedTestMessage
 
 	// Act
 	err := astm.Unmarshal([]byte(fileData), &message,
@@ -80,7 +80,7 @@ func TestFullSingleASTMMessage(t *testing.T) {
 	fileData := ""
 	fileData = fileData + "H|\\^&|||Bio-Rad|IH v5.2||||||||20220315194227\n"
 	fileData = fileData + "P|1||1010868845||Testus^Test||19400607|M||||||||||||||||||||||||^\n"
-	fileData = fileData + "O|1|1122206642|specimen1^^^\\specimen2^^^|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\n"
+	fileData = fileData + "O|1|1122206642|specimen1|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\n"
 	fileData = fileData + "R|1|^^^AntiA^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|40^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\n"
 	fileData = fileData + "L|1|N\n"
 
@@ -123,8 +123,8 @@ func TestNestedStructure(t *testing.T) {
 	data = data + "P|1||1010868845||Testus^Test||19400607|M||||||||||||||||||||||||^\r"
 	data = data + "O|1|1122206642|1122206642^^^\\1122206642^^^|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\r"
 	data = data + "R|1|^^^AntiA^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|40^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
-	data = data + "C|1|FirstComment^^05761.03.12^20240131\\^^^|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
-	data = data + "C|2|SecondComment^^05761.03.12^20240131\\^^^|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
+	data = data + "C|1|FirstComment|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
+	data = data + "C|2|SecondComment|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
 	data = data + "R|2|^^^AntiB^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|0^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
 	data = data + "C|1|ID-Diluent 2^^05761.03.12^20240131\\^^^|CAS^5005352062212117030^50053.52.06^20221231^5||\r"
 	data = data + "R|3|^^^AntiD^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|0^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
@@ -259,6 +259,18 @@ func TestArrayMapping(t *testing.T) {
 	assert.Equal(t, "d", message.Anonymous.Rec.Field21)
 	assert.Equal(t, "e", message.Anonymous.Rec.Field22)
 	assert.Equal(t, "f", message.Anonymous.Rec.Field23)
+
+	//type SubMessageRecord struct {
+	//	Field11 string `astm:"2.1.1"`
+	//	Field12 string `astm:"2.1.2"`
+	//	Field13 string `astm:"2.1.3"`
+	//	Field21 string `astm:"2.2.1"`
+	//	Field22 string `astm:"2.2.2"`
+	//	Field23 string `astm:"2.2.3"`
+	//}
+	//data := "?|a^^c\\d^e^f|\r"
+	//data = data + "!|x^y\\z^^|\r"
+	//data = data + "!|1^2^3\\4^5^6|\r"
 
 	// now test that the subarray values have been read
 	assert.Equal(t, 2, len(message.AnonymousArray))
@@ -598,10 +610,10 @@ func TestMultipleMessagesInOne(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(message.Messages))
-	assert.Equal(t, "DIA-04-066-7-2", message.Messages[1].OrderResults[0].Patient.LabAssignedPatientID)
+	assert.Equal(t, "DIA-04-066-7-2", message.Messages[1].PatientOrderCommentedResults[0].Patient.LabAssignedPatientID)
 
-	assert.Equal(t, "12,5", message.Messages[0].OrderResults[0].OrderCommentedResult[0].CommentedResult[0].Result.DataMeasurementValue)
-	assert.Equal(t, "99,66", message.Messages[1].OrderResults[0].OrderCommentedResult[0].CommentedResult[0].Result.DataMeasurementValue)
+	assert.Equal(t, "12,5", message.Messages[0].PatientOrderCommentedResults[0].OrderCommentedResults[0].CommentedResults[0].Result.DataMeasurementValue)
+	assert.Equal(t, "99,66", message.Messages[1].PatientOrderCommentedResults[0].OrderCommentedResults[0].CommentedResults[0].Result.DataMeasurementValue)
 }
 
 func TestNullValuesShouldGiveQualifiedError(t *testing.T) {

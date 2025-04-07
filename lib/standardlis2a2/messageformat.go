@@ -65,7 +65,10 @@ type Order struct {
 	SequenceNumber               int       `astm:"2,sequence"`  // 8.4.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
 	SpecimenID                   string    `astm:"3"`           // 8.4.3
 	InstrumentSpecimenID         string    `astm:"4"`           // 8.4.4
-	UniversalTestID              string    `astm:"5"`           // 8.4.5
+	UniversalTestID              string    `astm:"5.1"`         // 8.4.5
+	UniversalTestIDName          string    `astm:"5.2"`         // 8.4.5
+	UniversalTestIDType          string    `astm:"5.3"`         // 8.4.5
+	ManufacturersTestType        string    `astm:"5.4"`         // 8.4.5
 	Priority                     string    `astm:"6"`           // 8.4.6
 	RequestedOrderDateTime       time.Time `astm:"7,longdate"`  // 8.4.7
 	SpecimenCollectionDateTime   time.Time `astm:"8,longdate"`  // 8.4.8
@@ -76,7 +79,8 @@ type Order struct {
 	DangerCode                   string    `astm:"13"`          // 8.4.13
 	RelevantClinicalInformation  string    `astm:"14"`          // 8.4.14
 	DateTimeSpecimenReceived     string    `astm:"15"`          // 8.4.15
-	SpecimenDescriptor           string    `astm:"16"`          // 8.4.16
+	SpecimenType                 string    `astm:"16.1"`        // 8.4.16
+	SpecimenSource               string    `astm:"16.2"`        // 8.4.16
 	OrderingPhysician            string    `astm:"17"`          // 8.4.17
 	PhysicianTelephone           string    `astm:"18"`          // 8.4.18
 	UserField1                   string    `astm:"19"`          // 8.4.19
@@ -171,27 +175,27 @@ type Manufacturer struct {
 }
 
 type CommentedResult struct {
-	Result  Result    `astm:"R"`
-	Comment []Comment `astm:"C,optional"`
+	Result   Result    `astm:"R"`
+	Comments []Comment `astm:"C,optional"`
 }
 
 type OrderCommentedResult struct {
-	Order           Order `astm:"O"`
-	CommentedResult []CommentedResult
+	Order            Order `astm:"O"`
+	CommentedResults []CommentedResult
 }
 
 type PORC struct {
-	Patient              Patient   `astm:"P"`
-	Comment              []Comment `astm:"C,optional"`
-	OrderCommentedResult []OrderCommentedResult
+	Patient               Patient   `astm:"P"`
+	Comment               []Comment `astm:"C,optional"`
+	OrderCommentedResults []OrderCommentedResult
 }
 
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf Page 30 : Logial Structure of Message
 type DefaultMessage struct {
-	Header       Header       `astm:"H"`
-	Manufacturer Manufacturer `astm:"M,optional"`
-	OrderResults []PORC
-	Terminator   Terminator `astm:"L"`
+	Header                       Header       `astm:"H"`
+	Manufacturer                 Manufacturer `astm:"M,optional"`
+	PatientOrderCommentedResults []PORC
+	Terminator                   Terminator `astm:"L"`
 }
 
 type DefaultMultiMessage struct {

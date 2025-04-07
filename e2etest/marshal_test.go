@@ -406,26 +406,26 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 			ReceiverID:     "NotExistantTestSystem",
 			DateAndTime:    time.Now(),
 		},
-		OrderResults: []standardlis2a2.PORC{
+		PatientOrderCommentedResults: []standardlis2a2.PORC{
 			{
 				Patient: standardlis2a2.Patient{},
-				OrderCommentedResult: []standardlis2a2.OrderCommentedResult{
+				OrderCommentedResults: []standardlis2a2.OrderCommentedResult{
 					{
 						Order: standardlis2a2.Order{
-							SpecimenID:         "VAL24981209",
-							UniversalTestID:    "Pool_Cell",
-							Priority:           "R",
-							ActionCode:         "N",
-							SpecimenDescriptor: "TestData",
+							SpecimenID:      "VAL24981209",
+							UniversalTestID: "Pool_Cell",
+							Priority:        "R",
+							ActionCode:      "N",
+							SpecimenType:    "TestData",
 						},
 					},
 					{
 						Order: standardlis2a2.Order{
-							SpecimenID:         "VAL24981210",
-							UniversalTestID:    "Pool_Cell",
-							Priority:           "R",
-							ActionCode:         "N",
-							SpecimenDescriptor: "TestData",
+							SpecimenID:      "VAL24981210",
+							UniversalTestID: "Pool_Cell",
+							Priority:        "R",
+							ActionCode:      "N",
+							SpecimenType:    "TestData",
 						},
 					},
 				},

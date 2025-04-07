@@ -347,7 +347,7 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 			return errors.New(fmt.Sprintf("Invalid annotation for field %s. (%s)", record.Type().Field(j).Name, err))
 		}
 		if currentInputFieldNo >= len(inputFields) || currentInputFieldNo < 0 {
-			//TODO: user should be able to toggle weather he wants an exact match = error or bestfit = skip silent
+			//TODO: user should be able to toggle whether he wants an exact match = error or bestfit = skip silent
 			continue // mapped field is beyond the data
 		}
 
@@ -540,7 +540,7 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 
 // Translating the annotation of a field to field, index/repeat, component
 // Input of one value : e.g."4" -> field -> 4
-// Input of two values :"4.2" -> field, compoennt -> 4,1,2
+// Input of two values :"4.2" -> field, component -> 4,1,2
 // Input of three values "4.1.1" -> field, repeat, component -> 4,1,1
 // "whereas field indexes should be 1-99 (check plz)
 func readFieldAddressAnnotation(annotation string) (field int, repeat int, component int, hasComponents bool, err error) {
@@ -551,6 +551,7 @@ func readFieldAddressAnnotation(annotation string) (field int, repeat int, compo
 	field = 1
 	repeat = 1
 	component = 1
+	hasComponents = false
 	fieldSplitted := strings.Split(annotation, ".")
 
 	if len(fieldSplitted) >= 1 {
