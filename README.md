@@ -1,18 +1,18 @@
 # go-astm
 
-Library for handling the ASTM LIS2-A2 Procotol in go.
+Library for handling the ASTM LIS2-A2 protocol in go.
 
 ###### Install
 `go get github.com/blutspende/go-astm/v2`
 
 ## Features
   - Encoding UTF8, ASCII, Windows1250, Windows1251, Windows1252, DOS852, DOS855, DOS866, ISO8859_1
-  - Timezone conversion   
+  - Timezone conversion
   - Custom delimiters automatically identified (defaults are \^&)
 
 ## Reading ASTM
 
-The following Go code decodes a ASTM provided as a string and stores all its information in the &message.
+The following Go code decodes a ASTM provided as a string and stores all its information in the message.
 
 ``` go
 var message standardlis2a2.DefaultMessage
@@ -24,7 +24,7 @@ if err != nil {
 }
 ```
 
-## Reading ASTM with multiple message in one transmission
+## Reading ASTM with multiple messages in one transmission
 The same code, just use DefaultMultiMessage:
 
 ``` go
@@ -41,7 +41,7 @@ The same code, just use DefaultMultiMessage:
 
 ## Writing ASTM
 
-Converting an annotated Structure (see above) to an enocded bytestream. 
+Converting an annotated Structure (see above) to an encoded bytestream.
 
 The bytestream is encoded by-row, lacking the CR code at the end. 
 
@@ -56,7 +56,7 @@ for _, line := range lines {
 ```
 
 ## Identifying a message
-Identifying the type of a message without decoding it. There are 3 Types of messages 
+Identifying the type of a message without decoding it. There are 3 types of messages 
   - MessageTypeQuery 
   - MessageTypeOrdersOnly
   - MessageTypeOrdersAndResults
@@ -77,7 +77,7 @@ switch (messageType) {
 ```
 
 # How the go-astm library works
-In order to encode (marshal) or decode (unmarshal) a message from or to lis, you need to annotate a struct in go to identify the record-types 
+In order to encode (marshal) or decode (unmarshal) a message from or to LIS, you need to annotate a struct in go to identify the record-types 
 and within the record the field's location.
 
 The Message does now  the information of what type of message is mapped by annotation. 
@@ -220,4 +220,29 @@ type Result struct {
 	DateTimeCompleted                        time.Time `astm:"13,longdate"` 
 	IntstrumentIdentification                string    `astm:"14"`          
 }
+```
+
+### Custom decimal length for marshal
+The default decimal representation is 3 digits long, which can be overridden with the `length` annotation.
+This annotation is ignored if the field is not of type `float32` or `float64`.
+``` go
+type CustomDecimal struct {
+    DefaultFormat float32 `astm:"1"`
+    CustomFormat  float64 `astm:"2,length:6"`
+}
+
+type Record struct {
+    CustomDecimalRecord CustomDecimal `astm:"R"`
+}
+
+message := Record{
+    CustomDecimalRecord: CustomDecimal {
+        DefaultFormat: 1.222222222,
+        CustomFormat:  2.111111111,
+    }
+}
+
+astm.Marshal(message, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+output:
+    R|1.222|2.111111
 ```

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -173,79 +174,135 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 	}
 
 	fieldList := make(OutputRecords, 0)
-
+	var err error
 	for i := 0; i < currentRecord.NumField(); i++ {
-
 		field := currentRecord.Field(i)
 		fieldAstmTag := currentRecord.Type().Field(i).Tag.Get("astm")
-
 		if fieldAstmTag == "" {
 			continue
 		}
-
-		fieldAstmTagsList := strings.Split(fieldAstmTag, ",")
-
-		fieldIdx, repeatIdx, componentIdx, err := readFieldAddressAnnotation(fieldAstmTagsList[0])
+		fieldList, err = getOutputRecords(
+			field,
+			fieldAstmTag,
+			fieldList,
+			currentRecord,
+			generatedSequenceNumber,
+			location,
+			repeatDelimiter,
+			componentDelimiter,
+			escapeDelimiter,
+			notation)
 		if err != nil {
-			return "", fmt.Errorf("invalid annotation for field %s : (%w)", currentRecord.Type().Field(i).Name, err)
-		}
-
-		switch field.Type().Kind() {
-		case reflect.String:
-			value := ""
-
-			if sliceContainsString(fieldAstmTagsList, ANNOTATION_SEQUENCE) {
-				return "", fmt.Errorf("invalid annotation %s for string-field", ANNOTATION_SEQUENCE)
-			}
-
-			// if no delimiters are given, default is \^&
-			if sliceContainsString(fieldAstmTagsList, ANNOTATION_DELIMITER) && field.String() == "" {
-				value = *repeatDelimiter + *componentDelimiter + *escapeDelimiter
-			} else {
-				value = field.String()
-			}
-
-			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
-		case reflect.Int:
-			value := fmt.Sprintf("%d", field.Int())
-			if sliceContainsString(fieldAstmTagsList, ANNOTATION_SEQUENCE) {
-				value = fmt.Sprintf("%d", generatedSequenceNumber)
-				generatedSequenceNumber = generatedSequenceNumber + 1
-			}
-
-			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
-		case reflect.Float32:
-		case reflect.Float64:
-			//TODO: add annotation for decimal length
-			value := fmt.Sprintf("%.3f", field.Float())
-			fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
-		case reflect.Struct:
-			switch field.Type().Name() {
-			case "Time":
-				time := field.Interface().(time.Time)
-
-				if !time.IsZero() {
-
-					if sliceContainsString(fieldAstmTagsList, ANNOTATION_LONGDATE) {
-						value := time.In(location).Format("20060102150405")
-						fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
-					} else { // short date
-						value := time.In(location).Format("20060102")
-						fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
-					}
-				} else {
-					fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, "")
-				}
-			default:
-				return "", fmt.Errorf("invalid field type '%s' in struct '%s', input not processed", field.Type().Name(), currentRecord.Type().Name())
-			}
-		default:
-			return "", fmt.Errorf("invalid field type '%s' in struct '%s', input not processed", field.Type().Name(), currentRecord.Type().Name())
+			return "", err
 		}
 
 	}
 
-	// TODO: also handle short notation on nested components
+	return generateOutputString(recordType, fieldList, *repeatDelimiter, *componentDelimiter, *escapeDelimiter), nil
+}
+
+func getOutputRecords(
+	field reflect.Value,
+	fieldAstmTag string,
+	fieldList []OutputRecord,
+	currentRecord reflect.Value,
+	generatedSequenceNumber int,
+	location *time.Location,
+	repeatDelimiter, componentDelimiter, escapeDelimiter *string,
+	notation Notation,
+) ([]OutputRecord, error) {
+	fieldAstmTagsList := strings.Split(fieldAstmTag, ",")
+	fieldIdx, repeatIdx, componentIdx, err := readFieldAddressAnnotation(fieldAstmTagsList[0])
+	if err != nil {
+		return nil, fmt.Errorf("invalid annotation for field %s : (%w)", reflect.TypeOf(field).Name(), err)
+	}
+
+	switch field.Type().Kind() {
+	case reflect.String:
+		value := ""
+
+		if sliceContainsString(fieldAstmTagsList, ANNOTATION_SEQUENCE) {
+			return nil, fmt.Errorf("invalid annotation %s for string-field", ANNOTATION_SEQUENCE)
+		}
+
+		// if no delimiters are given, default is \^&
+		if sliceContainsString(fieldAstmTagsList, ANNOTATION_DELIMITER) && field.String() == "" {
+			value = *repeatDelimiter + *componentDelimiter + *escapeDelimiter
+		} else {
+			value = field.String()
+		}
+
+		fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+	case reflect.Int:
+		value := fmt.Sprintf("%d", field.Int())
+		if sliceContainsString(fieldAstmTagsList, ANNOTATION_SEQUENCE) {
+			value = fmt.Sprintf("%d", generatedSequenceNumber)
+			generatedSequenceNumber = generatedSequenceNumber + 1
+		}
+
+		fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+	case reflect.Float32, reflect.Float64:
+		decimalLength := getDecimalLengthByASTMTagList(fieldAstmTagsList)
+		format := fmt.Sprintf("%%.%df", decimalLength)
+		value := fmt.Sprintf(format, field.Float())
+		fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+	case reflect.Slice:
+		for i := 0; i < field.Len(); i++ {
+			switch field.Type().Elem().Kind() {
+			case reflect.Struct:
+				for j := 0; j < field.Index(i).NumField(); j++ {
+					subfieldList := make([]OutputRecord, 0)
+					subfield := field.Index(i).Field(j)
+					subfieldAstmTag := field.Index(i).Type().Field(j).Tag.Get("astm")
+					if subfieldAstmTag == "" {
+						continue
+					}
+					subfieldList, err = getOutputRecords(subfield, subfieldAstmTag, subfieldList, field.Index(i), generatedSequenceNumber, location, repeatDelimiter, componentDelimiter, escapeDelimiter, notation)
+					for k := range subfieldList {
+						subfieldList[k].Field += fieldIdx
+						subfieldList[k].Repeat += i
+						subfieldList[k].Component += componentIdx
+					}
+					fieldList = append(fieldList, subfieldList...)
+				}
+			case reflect.String:
+				fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx+i, componentIdx, field.Index(i).String())
+			case reflect.Int:
+				fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx+i, componentIdx, fmt.Sprintf("%d", field.Index(i).Int()))
+			case reflect.Float32, reflect.Float64:
+				decimalLength := getDecimalLengthByASTMTagList(fieldAstmTagsList)
+				format := fmt.Sprintf("%%.%df", decimalLength)
+				value := fmt.Sprintf(format, field.Index(i).Float())
+				fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx+i, componentIdx, value)
+			default:
+				return nil, fmt.Errorf("while resolving slice: invalid type '%s'", field.Type().Elem().Kind().String())
+			}
+
+		}
+	case reflect.Struct:
+		switch field.Type().Name() {
+		case "Time":
+			time := field.Interface().(time.Time)
+
+			if !time.IsZero() {
+
+				if sliceContainsString(fieldAstmTagsList, ANNOTATION_LONGDATE) {
+					value := time.In(location).Format("20060102150405")
+					fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+				} else { // short date
+					value := time.In(location).Format("20060102")
+					fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, value)
+				}
+			} else {
+				fieldList = addASTMFieldToList(fieldList, fieldIdx, repeatIdx, componentIdx, "")
+			}
+		default:
+			return nil, fmt.Errorf("invalid field type '%s' in struct '%s', input not processed", field.Type().Name(), currentRecord.Type().Name())
+		}
+	default:
+		return nil, fmt.Errorf("invalid field type '%s' in struct '%s', input not processed", field.Type().Name(), currentRecord.Type().Name())
+	}
+
 	if notation == ShortNotation {
 		for i := len(fieldList) - 1; i >= 0; i-- {
 			if fieldList[i].Value != "" {
@@ -255,7 +312,7 @@ func processOneRecord(recordType string, currentRecord reflect.Value, generatedS
 		}
 	}
 
-	return generateOutputRecord(recordType, fieldList, *repeatDelimiter, *componentDelimiter, *escapeDelimiter), nil
+	return fieldList, nil
 }
 
 func addASTMFieldToList(data []OutputRecord, field, repeat, component int, value string) []OutputRecord {
@@ -298,7 +355,27 @@ func (or OutputRecords) Swap(i, j int) { or[i], or[j] = or[j], or[i] }
 	returns the full record for output to astm file
 */
 
-func generateOutputRecord(recordtype string, fieldList OutputRecords, REPEAT_DELIMITER, COMPONENT_DELIMITER, ESCAPE_DELMITER string) string {
+func getDecimalLengthByASTMTagList(astmTagList []string) int {
+	decimalLength := 3
+	for _, tag := range astmTagList {
+		if strings.Contains(tag, ANNOTATION_LENGTH) {
+			decimalLengthTags := strings.Split(tag, ":")
+			if len(decimalLengthTags) < 2 {
+				break
+			}
+			customLength, err := strconv.Atoi(decimalLengthTags[1])
+			if err != nil || customLength == 0 {
+				break
+			}
+			decimalLength = customLength
+			break
+		}
+	}
+
+	return decimalLength
+}
+
+func generateOutputString(recordtype string, fieldList OutputRecords, REPEAT_DELIMITER, COMPONENT_DELIMITER, ESCAPE_DELMITER string) string {
 
 	var output = ""
 
