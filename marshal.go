@@ -63,7 +63,7 @@ func iterateStructFieldsAndBuildOutput(message interface{}, depth, sequence int,
 		recordAstmTag := messageType.Field(i).Tag.Get("astm")
 		recordAstmTagsList := strings.Split(recordAstmTag, ",")
 
-		if len(recordAstmTag) == 0 { // no annotation = Descend if its an array or a struct of such
+		if len(recordAstmTag) == 0 { // no annotation = Descend if it's an array or a struct of such
 
 			if currentRecord.Kind() == reflect.Slice { // array of something = iterate and recurse
 				for x := 0; x < currentRecord.Len(); x++ {
@@ -212,7 +212,8 @@ func getOutputRecords(
 	notation Notation,
 ) ([]OutputRecord, error) {
 	fieldAstmTagsList := strings.Split(fieldAstmTag, ",")
-	fieldIdx, repeatIdx, componentIdx, err := readFieldAddressAnnotation(fieldAstmTagsList[0])
+	//TODO: this should not depend on the unmarshal code, or make it explicit
+	fieldIdx, repeatIdx, componentIdx, _, err := readFieldAddressAnnotation(fieldAstmTagsList[0])
 	if err != nil {
 		return nil, fmt.Errorf("invalid annotation for field %s : (%w)", reflect.TypeOf(field).Name(), err)
 	}

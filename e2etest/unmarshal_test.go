@@ -14,6 +14,32 @@ import (
 	"golang.org/x/text/transform"
 )
 
+type ComponentTestMessage struct {
+	Componented Componented `astm:"C"`
+}
+type Componented struct {
+	Combined   string `astm:"2"`
+	Component1 string `astm:"3.1"`
+	Component2 string `astm:"3.2"`
+}
+
+func TestComponentMessage(t *testing.T) {
+	// Arrange
+	fileData := ""
+	fileData = fileData + "C|First^Second|First^Second\n"
+	var message ComponentTestMessage
+
+	// Act
+	err := astm.Unmarshal([]byte(fileData), &message,
+		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "First^Second", message.Componented.Combined)
+	assert.Equal(t, "First", message.Componented.Component1)
+	assert.Equal(t, "Second", message.Componented.Component2)
+}
+
 type MinimalMessage struct {
 	Header     standardlis2a2.Header     `astm:"H"`
 	Terminator standardlis2a2.Terminator `astm:"L"`
