@@ -260,18 +260,6 @@ func TestArrayMapping(t *testing.T) {
 	assert.Equal(t, "e", message.Anonymous.Rec.Field22)
 	assert.Equal(t, "f", message.Anonymous.Rec.Field23)
 
-	//type SubMessageRecord struct {
-	//	Field11 string `astm:"2.1.1"`
-	//	Field12 string `astm:"2.1.2"`
-	//	Field13 string `astm:"2.1.3"`
-	//	Field21 string `astm:"2.2.1"`
-	//	Field22 string `astm:"2.2.2"`
-	//	Field23 string `astm:"2.2.3"`
-	//}
-	//data := "?|a^^c\\d^e^f|\r"
-	//data = data + "!|x^y\\z^^|\r"
-	//data = data + "!|1^2^3\\4^5^6|\r"
-
 	// now test that the subarray values have been read
 	assert.Equal(t, 2, len(message.AnonymousArray))
 	assert.Equal(t, "x", message.AnonymousArray[0].Rec.Field11)
