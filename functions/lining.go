@@ -8,7 +8,7 @@ import (
 
 func SliceLines(input string) (output []string, err error) {
 	if input == "" {
-		return nil, errmsg.Parsing_ErrNotEnoughLines
+		return nil, errmsg.Lining_ErrNotEnoughLines
 	}
 
 	lfCnt := 0
@@ -21,10 +21,10 @@ func SliceLines(input string) (output []string, err error) {
 		}
 	}
 	if lfCnt == 0 && crCnt == 0 {
-		return nil, errmsg.Parsing_ErrInvalidLinebreak
+		return nil, errmsg.Lining_ErrInvalidLinebreak
 	}
 	if lfCnt > 0 && crCnt > 0 && lfCnt != crCnt {
-		return nil, errmsg.Parsing_ErrInvalidLinebreak
+		return nil, errmsg.Lining_ErrInvalidLinebreak
 	}
 
 	if lfCnt == 0 {

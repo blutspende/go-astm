@@ -55,6 +55,6 @@ func findCharmapForEncoding(encoding constants.Encoding) (*charmap.Charmap, erro
 	case constants.ENCODING_ISO8859_1:
 		return charmap.ISO8859_1, nil
 	default:
-		return nil, fmt.Errorf(errmsg.Parsing_MsgInvalidEncoding, encoding)
+		return nil, fmt.Errorf(errmsg.Encoding_MsgInvalidEncoding, encoding)
 	}
 }

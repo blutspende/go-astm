@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestSliceLinesLf(t *testing.T) {
+func TestSliceLines_Lf(t *testing.T) {
 	// Arrange
 	input := "first\nsecond"
 	// Act
@@ -18,7 +18,7 @@ func TestSliceLinesLf(t *testing.T) {
 	assert.Equal(t, "first", lines[0])
 	assert.Equal(t, "second", lines[1])
 }
-func TestSliceLinesCr(t *testing.T) {
+func TestSliceLines_Cr(t *testing.T) {
 	// Arrange
 	input := "first\rsecond"
 	// Act
@@ -29,7 +29,7 @@ func TestSliceLinesCr(t *testing.T) {
 	assert.Equal(t, "first", lines[0])
 	assert.Equal(t, "second", lines[1])
 }
-func TestSliceLinesLfCr(t *testing.T) {
+func TestSliceLines_LfCr(t *testing.T) {
 	// Arrange
 	input := "first\n\rsecond"
 	// Act
@@ -40,7 +40,7 @@ func TestSliceLinesLfCr(t *testing.T) {
 	assert.Equal(t, "first", lines[0])
 	assert.Equal(t, "second", lines[1])
 }
-func TestSliceLinesCrLf(t *testing.T) {
+func TestSliceLines_CrLf(t *testing.T) {
 	// Arrange
 	input := "first\r\nsecond"
 	// Act
@@ -52,7 +52,7 @@ func TestSliceLinesCrLf(t *testing.T) {
 	assert.Equal(t, "second", lines[1])
 }
 
-func TestSliceLinesLfSpace(t *testing.T) {
+func TestSliceLines_LfSpace(t *testing.T) {
 	// Arrange
 	input := "first\nsecond "
 	// Act
@@ -63,7 +63,7 @@ func TestSliceLinesLfSpace(t *testing.T) {
 	assert.Equal(t, "first", lines[0])
 	assert.Equal(t, "second", lines[1])
 }
-func TestSliceLinesLfEmptyLine(t *testing.T) {
+func TestSliceLines_LfEmptyLine(t *testing.T) {
 	// Arrange
 	input := "first\nsecond\n"
 	// Act
@@ -74,7 +74,7 @@ func TestSliceLinesLfEmptyLine(t *testing.T) {
 	assert.Equal(t, "first", lines[0])
 	assert.Equal(t, "second", lines[1])
 }
-func TestSliceLinesComplex(t *testing.T) {
+func TestSliceLines_Complex(t *testing.T) {
 	// Arrange
 	input := "first \n\rsecond \n\r\n\r  third\n\r"
 	// Act
@@ -86,32 +86,32 @@ func TestSliceLinesComplex(t *testing.T) {
 	assert.Equal(t, "second", lines[1])
 	assert.Equal(t, "third", lines[2])
 }
-func TestSliceLinesEmpty(t *testing.T) {
+func TestSliceLines_Empty(t *testing.T) {
 	// Arrange
 	input := ""
 	// Act
 	_, err := SliceLines(input)
 	// Assert
-	assert.Error(t, err, errmsg.Parsing_ErrNotEnoughLines)
+	assert.Error(t, err, errmsg.Lining_ErrNotEnoughLines)
 }
-func TestSliceLinesOneLine(t *testing.T) {
+func TestSliceLines_OneLine(t *testing.T) {
 	// Arrange
 	input := "first"
 	// Act
 	_, err := SliceLines(input)
 	// Assert
-	assert.Error(t, err, errmsg.Parsing_ErrNotEnoughLines)
+	assert.Error(t, err, errmsg.Lining_ErrNotEnoughLines)
 }
-func TestSliceLinesInvalid(t *testing.T) {
+func TestSliceLines_Invalid(t *testing.T) {
 	// Arrange
 	input := "first\r\r\nsecond"
 	// Act
 	_, err := SliceLines(input)
 	// Assert
-	assert.Error(t, err, errmsg.Parsing_ErrInvalidLinebreak)
+	assert.Error(t, err, errmsg.Lining_ErrInvalidLinebreak)
 }
 
-func TestBuildLinesLF(t *testing.T) {
+func TestBuildLines_LF(t *testing.T) {
 	// Arrange
 	input := []string{"first", "second"}
 	// Act
@@ -119,7 +119,7 @@ func TestBuildLinesLF(t *testing.T) {
 	// Assert
 	assert.Equal(t, "first\nsecond", output)
 }
-func TestBuildLinesLFCR(t *testing.T) {
+func TestBuildLines_LFCR(t *testing.T) {
 	// Arrange
 	input := []string{"first", "second"}
 	// Act
