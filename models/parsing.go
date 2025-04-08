@@ -1,10 +1,12 @@
 package models
 
+import "time"
+
 type AstmFieldAnnotation struct {
 	Raw               string
 	IsArray           bool
 	FieldPos          int
-	HasComponent      bool
+	IsComponent       bool
 	ComponentPos      int
 	HasAttribute      bool
 	Attribute         string
@@ -32,4 +34,9 @@ var DefaultDelimiters = Delimiters{
 	Repeat:    `\`,
 	Component: `^`,
 	Escape:    `&`,
+}
+
+type Configuration struct {
+	Delimiters   Delimiters
+	TimeLocation *time.Location
 }

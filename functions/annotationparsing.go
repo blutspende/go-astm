@@ -61,7 +61,7 @@ func parseAstmFieldAnnotationString(input string) (result models.AstmFieldAnnota
 		return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation
 	}
 	if len(segments) == 2 {
-		result.HasComponent = true
+		result.IsComponent = true
 		result.ComponentPos, err = strconv.Atoi(segments[1])
 		if err != nil {
 			return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation
