@@ -16,6 +16,7 @@ type AstmFieldAnnotation struct {
 
 type AstmStructAnnotation struct {
 	Raw          string
+	IsComposite  bool
 	IsArray      bool
 	StructName   string
 	HasAttribute bool
@@ -37,6 +38,6 @@ var DefaultDelimiters = Delimiters{
 }
 
 type Configuration struct {
-	Delimiters   Delimiters
+	Delimiters   *Delimiters
 	TimeLocation *time.Location
 }

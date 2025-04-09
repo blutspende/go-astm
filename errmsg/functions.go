@@ -19,4 +19,17 @@ var (
 	AnnotationParsing_ErrInvalidAstmAnnotation = errors.New("invalid astm annotation")
 	AnnotationParsing_ErrTooManyAttributes     = errors.New("only one astm attribute is allowed")
 	AnnotationParsing_ErrInvalidAstmAttribute  = errors.New("invalid astm attribute")
+	AnnotationParsing_ErrInvalidTargetStruct   = errors.New("invalid target struct")
+)
+
+// LineParsing
+var (
+	LineParsing_ErrLineTypeNameMismatch   = errors.New("line type name mismatch")
+	LineParsing_ErrSequenceNumberMismatch = errors.New("sequence number mismatch")
+)
+
+// StructureParsing
+var (
+	StructureParsing_ErrMaxDepthReached    = errors.New("max depth reached")
+	StructureParsing_ErrInputLinesDepleted = errors.New("input lines depleted")
 )

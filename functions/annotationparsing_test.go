@@ -183,6 +183,7 @@ func TestParseAstmStructAnnotation_SingleLineStruct(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "L", result.Raw)
+	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, false, result.IsArray)
 	assert.Equal(t, "L", result.StructName)
 	assert.Equal(t, false, result.HasAttribute)
@@ -202,8 +203,49 @@ func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "L,require", result.Raw)
+	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, "L", result.StructName)
 	assert.Equal(t, true, result.HasAttribute)
 	assert.Equal(t, constants.ATTRIBUTE_REQUIRE, result.Attribute)
+}
+
+type CompositeStruct struct {
+	Composite AnnotatedArrayStruct
+}
+
+func TestParseAstmStructAnnotation_CompositeStruct(t *testing.T) {
+	// Arrange
+	var input CompositeStruct
+	field, _ := reflect.TypeOf(input).FieldByName("Composite")
+	// Act
+	result, err := ParseAstmStructAnnotation(field)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "", result.Raw)
+	assert.Equal(t, true, result.IsComposite)
+	assert.Equal(t, false, result.IsArray)
+	assert.Equal(t, "", result.StructName)
+	assert.Equal(t, false, result.HasAttribute)
+	assert.Equal(t, "", result.Attribute)
+}
+
+type CompositeArrayStruct struct {
+	Composite []AnnotatedArrayStruct
+}
+
+func TestParseAstmStructAnnotation_CompositeArrayStruct(t *testing.T) {
+	// Arrange
+	var input CompositeArrayStruct
+	field, _ := reflect.TypeOf(input).FieldByName("Composite")
+	// Act
+	result, err := ParseAstmStructAnnotation(field)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "", result.Raw)
+	assert.Equal(t, true, result.IsComposite)
+	assert.Equal(t, true, result.IsArray)
+	assert.Equal(t, "", result.StructName)
+	assert.Equal(t, false, result.HasAttribute)
+	assert.Equal(t, "", result.Attribute)
 }

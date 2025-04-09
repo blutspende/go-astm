@@ -76,15 +76,20 @@ func parseAstmFieldAnnotationString(input string) (result models.AstmFieldAnnota
 }
 
 func ParseAstmStructAnnotation(input reflect.StructField) (result models.AstmStructAnnotation, err error) {
-	// Get the "astm" tag value and check if it is empty
+	// Get the "astm" tag value
 	raw := input.Tag.Get("astm")
-	if raw == "" {
-		return models.AstmStructAnnotation{}, errmsg.AnnotationParsing_ErrMissingAstmAnnotation
-	}
 	result.Raw = raw
+
+	// Determine if the struct is composite (no tag) or not
+	result.IsComposite = raw == ""
 
 	// Determine if the field is an array or not
 	result.IsArray = input.Type.Kind() == reflect.Slice || input.Type.Kind() == reflect.Array
+
+	// Composite has no tag so further parsing is not needed
+	if result.IsComposite {
+		return result, nil
+	}
 
 	// Separate attribute (if any) and the struct name
 	mainParts := strings.Split(result.Raw, ",")
@@ -108,6 +113,34 @@ func ParseAstmStructAnnotation(input reflect.StructField) (result models.AstmStr
 	result.StructName = mainParts[0]
 
 	return result, err
+}
+
+// TODO: find a better place for this
+func ProcessStructReflection(targetStruct interface{}) (targetTypes []reflect.StructField, targetValues []reflect.Value, length int, err error) {
+	// Ensure the targetStruct is a pointer to a struct
+	targetPtrValue := reflect.ValueOf(targetStruct)
+	if targetPtrValue.Kind() != reflect.Ptr || targetPtrValue.Elem().Kind() != reflect.Struct {
+		// targetStruct must be a pointer to a struct
+		return nil, nil, 0, errmsg.AnnotationParsing_ErrInvalidTargetStruct
+	}
+
+	// Get the underlying struct
+	targetValue := targetPtrValue.Elem()
+	targetType := targetPtrValue.Type()
+
+	// Allocate the results
+	targetTypes = make([]reflect.StructField, targetType.NumField())
+	targetValues = make([]reflect.Value, targetType.NumField())
+	length = targetType.NumField()
+
+	// Iterate and save targetTypes and targetValues
+	for i := 0; i < targetType.NumField(); i++ {
+		targetTypes[i] = targetType.Field(i)
+		targetValues[i] = targetValue.Field(i)
+	}
+
+	// Return the results
+	return targetTypes, targetValues, length, nil
 }
 
 func isValidAttribute(attribute string) bool {

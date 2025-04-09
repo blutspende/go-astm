@@ -2,6 +2,7 @@ package functions
 
 import (
 	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
 	"reflect"
 	"strconv"
@@ -11,7 +12,23 @@ import (
 
 // TODO: Add error handling
 // TODO: figue out how to better pass parent data
-func ParseLine(inputLine string, targetStruct interface{}, lineName string, squenceNum int, config models.Configuration) {
+func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, sequenceNumber int, config models.Configuration) (err error) {
+	// Check for input line length
+	if len(inputLine) == 0 {
+		return
+	}
+	// Handle header special case
+	if inputLine[0] == 'H' {
+		// Check if the inputLine is long enough to contain delimiters
+		if len(inputLine) < 5 {
+			return
+		}
+		config.Delimiters.Field = string(inputLine[1])
+		config.Delimiters.Repeat = string(inputLine[2])
+		config.Delimiters.Component = string(inputLine[3])
+		config.Delimiters.Escape = string(inputLine[4])
+	}
+
 	// Split the input with the field delimiter
 	inputFields := strings.Split(inputLine, config.Delimiters.Field)
 
@@ -19,24 +36,20 @@ func ParseLine(inputLine string, targetStruct interface{}, lineName string, sque
 	if len(inputFields) < 2 {
 		return
 	}
-	if inputFields[0] != lineName || inputFields[1] != strconv.Itoa(squenceNum) {
-		return
+	if inputFields[0] != lineTypeName {
+		return errmsg.LineParsing_ErrLineTypeNameMismatch
+	}
+	if inputFields[1] != strconv.Itoa(sequenceNumber) {
+		return errmsg.LineParsing_ErrSequenceNumberMismatch
 	}
 
-	// Ensure the targetStruct is a pointer to a struct
-	targetPtrValue := reflect.ValueOf(targetStruct)
-	if targetPtrValue.Kind() != reflect.Ptr || targetPtrValue.Elem().Kind() != reflect.Struct {
-		// targetStruct must be a pointer to a struct
-		return
-	}
-	// Get the underlying struct
-	targetValue := targetPtrValue.Elem()
-	targetType := targetPtrValue.Type()
+	// Process the target structure
+	targetTypes, targetValues, targetFieldCount, _ := ProcessStructReflection(targetStruct)
 
 	// Iterate over the inputFields of the targetStruct struct
-	for i := 0; i < targetType.NumField(); i++ {
+	for i, targetType := range targetTypes {
 		// Parse the targetStruct field targetFieldAnnotation
-		targetFieldAnnotation, _ := ParseAstmFieldAnnotation(targetType.Field(i))
+		targetFieldAnnotation, _ := ParseAstmFieldAnnotation(targetType)
 
 		// Not enough inputFields in the input inputLine
 		if len(inputFields) < targetFieldAnnotation.FieldPos {
@@ -72,20 +85,22 @@ func ParseLine(inputLine string, targetStruct interface{}, lineName string, sque
 			if len(components) < targetFieldAnnotation.ComponentPos {
 				return
 			}
-			setField(targetValue.Field(i), components[targetFieldAnnotation.ComponentPos-1], config)
+			setField(targetValues[i], components[targetFieldAnnotation.ComponentPos-1], config)
 			// Field is not an array or component (normal singular field)
 		} else {
-			setField(targetValue.Field(i), inputField, config)
+			setField(targetValues[i], inputField, config)
 		}
 		//TODO: handle componented array case
 		// |comp1^comp2^comp3\comp1^comp2^comp3\comp1^comp2^comp3|
 
 		// Check if there are more inputFields in the input not mapped to the struct
-		if i == targetType.NumField()-1 && len(inputFields) > targetFieldAnnotation.FieldPos {
+		if i == targetFieldCount-1 && len(inputFields) > targetFieldAnnotation.FieldPos {
 			// TODO: this could be a warning about lost data
 			//return
 		}
 	}
+	// Return nil if everything went well
+	return nil
 }
 
 func setField(field reflect.Value, value string, config models.Configuration) {
