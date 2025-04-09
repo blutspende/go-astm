@@ -42,17 +42,17 @@ func TestParseAstmFieldAnnotationString_Componented(t *testing.T) {
 }
 func TestParseAstmFieldAnnotationString_Attributed(t *testing.T) {
 	// Arrange
-	input := "4,require"
+	input := "4,required"
 	// Act
 	result, err := parseAstmFieldAnnotationString(input)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "4,require", result.Raw)
+	assert.Equal(t, "4,required", result.Raw)
 	assert.Equal(t, 4, result.FieldPos)
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, 0, result.ComponentPos)
 	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, constants.ATTRIBUTE_REQUIRE, result.Attribute)
+	assert.Equal(t, constants.ATTRIBUTE_REQUIRED, result.Attribute)
 	assert.Equal(t, false, result.HasAttributeValue)
 	assert.Equal(t, 0, result.AttributeValue)
 }
@@ -191,7 +191,7 @@ func TestParseAstmStructAnnotation_SingleLineStruct(t *testing.T) {
 }
 
 type AnnotatedArrayStruct struct {
-	Lines []Line `astm:"L,require"`
+	Lines []Line `astm:"L,required"`
 }
 
 func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
@@ -202,12 +202,12 @@ func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	result, err := ParseAstmStructAnnotation(field)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "L,require", result.Raw)
+	assert.Equal(t, "L,required", result.Raw)
 	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, "L", result.StructName)
 	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, constants.ATTRIBUTE_REQUIRE, result.Attribute)
+	assert.Equal(t, constants.ATTRIBUTE_REQUIRED, result.Attribute)
 }
 
 type CompositeStruct struct {

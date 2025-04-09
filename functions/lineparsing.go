@@ -38,7 +38,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 	if inputFields[0] != lineTypeName {
 		return errmsg.LineParsing_ErrLineTypeNameMismatch
 	}
-	if inputFields[1] != strconv.Itoa(sequenceNumber) {
+	if inputFields[1] != strconv.Itoa(sequenceNumber) && inputLine[0] != 'H' {
 		return errmsg.LineParsing_ErrSequenceNumberMismatch
 	}
 
@@ -59,7 +59,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 
 		//Check if there is any data
 		if inputField == "" {
-			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRE {
+			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRED {
 				return errmsg.LineParsing_ErrRequiredFieldIsEmpty
 			} else {
 				// Non required field can be skipped
@@ -71,10 +71,15 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		// Field is an array
 		if targetFieldAnnotation.IsArray {
 			repeats := strings.Split(inputField, config.Delimiters.Repeat)
-			for repeat := range repeats {
-				//TODO: handle array setting
-				_ = repeat
+			arrayType := reflect.SliceOf(targetValues[i].Type().Elem())
+			arrayValue := reflect.MakeSlice(arrayType, len(repeats), len(repeats))
+			for j, repeat := range repeats {
+				err = setField(arrayValue.Index(j), repeat, config)
+				if err != nil {
+					return err
+				}
 			}
+			targetValues[i].Set(arrayValue)
 			// |comp1^comp2^comp3|
 			// Field is a component
 		} else if targetFieldAnnotation.IsComponent {
@@ -119,7 +124,7 @@ func setField(field reflect.Value, value string, config models.Configuration) (e
 	case reflect.String:
 		field.Set(reflect.ValueOf(value))
 	case reflect.Int:
-		num, err := strconv.ParseInt(value, 10, 64)
+		num, err := strconv.Atoi(value)
 		if err != nil {
 			return errmsg.LineParsing_ErrDataParsingError
 		}
@@ -129,7 +134,7 @@ func setField(field reflect.Value, value string, config models.Configuration) (e
 		if err != nil {
 			return errmsg.LineParsing_ErrDataParsingError
 		}
-		field.Set(reflect.ValueOf(num))
+		field.Set(reflect.ValueOf(float32(num)))
 	case reflect.Float64:
 		num, err := strconv.ParseFloat(value, 64)
 		if err != nil {
@@ -154,7 +159,7 @@ func setField(field reflect.Value, value string, config models.Configuration) (e
 			}
 			field.Set(reflect.ValueOf(timeInLocation))
 		} else {
-			// Option to handle other struct types here
+			// Note: option to handle other struct types here
 		}
 	default:
 		return errmsg.LineParsing_ErrUsupportedDataType

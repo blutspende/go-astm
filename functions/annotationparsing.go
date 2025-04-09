@@ -126,10 +126,10 @@ func ProcessStructReflection(targetStruct interface{}) (targetTypes []reflect.St
 
 	// Get the underlying struct
 	targetValue := targetPtrValue.Elem()
-	targetType := targetPtrValue.Type()
+	targetType := targetPtrValue.Type().Elem()
 
 	// Allocate the results
-	targetTypes = make([]reflect.StructField, targetType.NumField())
+	targetTypes = make([]reflect.StructField, targetValue.NumField())
 	targetValues = make([]reflect.Value, targetType.NumField())
 	length = targetType.NumField()
 
@@ -146,7 +146,7 @@ func ProcessStructReflection(targetStruct interface{}) (targetTypes []reflect.St
 func isValidAttribute(attribute string) bool {
 	validAttributes := []string{
 		constants.ATTRIBUTE_DELIMITER,
-		constants.ATTRIBUTE_REQUIRE,
+		constants.ATTRIBUTE_REQUIRED,
 		constants.ATTRIBUTE_OPTIONAL,
 		constants.ATTRIBUTE_SEQUENCE,
 		constants.ATTRIBUTE_LONGDATE,
