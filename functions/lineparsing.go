@@ -11,7 +11,7 @@ import (
 )
 
 // TODO: figue out how to better pass parent data
-func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, sequenceNumber int, config models.Configuration) (err error) {
+func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, sequenceNumber int, config *models.Configuration) (err error) {
 	// Check for input line length
 	if len(inputLine) == 0 {
 		return errmsg.LineParsing_ErrEmptyInput
@@ -22,6 +22,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		if len(inputLine) < 5 {
 			return errmsg.LineParsing_ErrHeaderTooShort
 		}
+		// Override delimiters
 		config.Delimiters.Field = string(inputLine[1])
 		config.Delimiters.Repeat = string(inputLine[2])
 		config.Delimiters.Component = string(inputLine[3])
@@ -112,7 +113,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 	return nil
 }
 
-func setField(field reflect.Value, value string, config models.Configuration) (err error) {
+func setField(field reflect.Value, value string, config *models.Configuration) (err error) {
 	// Ensure the field is settable
 	if !field.CanSet() {
 		// Field is not settable

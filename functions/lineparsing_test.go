@@ -137,7 +137,7 @@ func TestParseLine_HeaderDelimiterChange(t *testing.T) {
 	assert.Equal(t, "third1", target.Comp1)
 	assert.Equal(t, "third2", target.Comp2)
 	// Tear down
-	config.Delimiters = &models.DefaultDelimiters
+	config.Delimiters = models.DefaultDelimiters
 }
 
 func TestParseLine_MissingData(t *testing.T) {
@@ -200,14 +200,14 @@ func TestParseLine_MissingRequiredField(t *testing.T) {
 }
 
 // Setup mock data for every test
-var config models.Configuration
+var config *models.Configuration
 
 func TestMain(m *testing.M) {
 	Delimiters := models.DefaultDelimiters
 	TimeLocation, _ := time.LoadLocation(string(constants.TIMEZONE_EUROPE_BERLIN))
 
-	config = models.Configuration{
-		Delimiters:   &Delimiters,
+	config = &models.Configuration{
+		Delimiters:   Delimiters,
 		TimeLocation: TimeLocation,
 	}
 

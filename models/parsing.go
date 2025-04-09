@@ -38,6 +38,6 @@ var DefaultDelimiters = Delimiters{
 }
 
 type Configuration struct {
-	Delimiters   *Delimiters
+	Delimiters   Delimiters
 	TimeLocation *time.Location
 }
