@@ -10,18 +10,17 @@ import (
 	"time"
 )
 
-// TODO: Add error handling
 // TODO: figue out how to better pass parent data
 func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, sequenceNumber int, config models.Configuration) (err error) {
 	// Check for input line length
 	if len(inputLine) == 0 {
-		return
+		return errmsg.LineParsing_ErrEmptyInput
 	}
 	// Handle header special case
 	if inputLine[0] == 'H' {
 		// Check if the inputLine is long enough to contain delimiters
 		if len(inputLine) < 5 {
-			return
+			return errmsg.LineParsing_ErrHeaderTooShort
 		}
 		config.Delimiters.Field = string(inputLine[1])
 		config.Delimiters.Repeat = string(inputLine[2])
@@ -34,7 +33,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 
 	// Check for validity with parent data
 	if len(inputFields) < 2 {
-		return
+		return errmsg.LineParsing_ErrMandatoryInputFieldsMissing
 	}
 	if inputFields[0] != lineTypeName {
 		return errmsg.LineParsing_ErrLineTypeNameMismatch
@@ -53,7 +52,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 
 		// Not enough inputFields in the input inputLine
 		if len(inputFields) < targetFieldAnnotation.FieldPos {
-			return
+			return errmsg.LineParsing_ErrInputFieldsMissing
 		}
 		// Save the current inputField
 		inputField := inputFields[targetFieldAnnotation.FieldPos-1]
@@ -61,8 +60,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		//Check if there is any data
 		if inputField == "" {
 			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRE {
-				// Error: required field is empty
-				return
+				return errmsg.LineParsing_ErrRequiredFieldIsEmpty
 			} else {
 				// Non required field can be skipped
 				continue
@@ -83,12 +81,18 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 			components := strings.Split(inputField, config.Delimiters.Component)
 			// Not enough components in the inputField
 			if len(components) < targetFieldAnnotation.ComponentPos {
-				return
+				return errmsg.LineParsing_ErrInputComponentsMissing
 			}
-			setField(targetValues[i], components[targetFieldAnnotation.ComponentPos-1], config)
+			err = setField(targetValues[i], components[targetFieldAnnotation.ComponentPos-1], config)
+			if err != nil {
+				return err
+			}
 			// Field is not an array or component (normal singular field)
 		} else {
-			setField(targetValues[i], inputField, config)
+			err = setField(targetValues[i], inputField, config)
+			if err != nil {
+				return err
+			}
 		}
 		//TODO: handle componented array case
 		// |comp1^comp2^comp3\comp1^comp2^comp3\comp1^comp2^comp3|
@@ -103,11 +107,11 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 	return nil
 }
 
-func setField(field reflect.Value, value string, config models.Configuration) {
+func setField(field reflect.Value, value string, config models.Configuration) (err error) {
 	// Ensure the field is settable
 	if !field.CanSet() {
 		// Field is not settable
-		return
+		return errmsg.LineParsing_ErrNonSettableField
 	}
 
 	// Set the field value
@@ -117,22 +121,19 @@ func setField(field reflect.Value, value string, config models.Configuration) {
 	case reflect.Int:
 		num, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
-			//TODO: handle error
-			return
+			return errmsg.LineParsing_ErrDataParsingError
 		}
 		field.Set(reflect.ValueOf(num))
 	case reflect.Float32:
 		num, err := strconv.ParseFloat(value, 32)
 		if err != nil {
-			//TODO: handle error
-			return
+			return errmsg.LineParsing_ErrDataParsingError
 		}
 		field.Set(reflect.ValueOf(num))
 	case reflect.Float64:
 		num, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			//TODO: handle error
-			return
+			return errmsg.LineParsing_ErrDataParsingError
 		}
 		field.Set(reflect.ValueOf(num))
 	// Check for time.Time type (it reflects as a Struct)
@@ -145,19 +146,19 @@ func setField(field reflect.Value, value string, config models.Configuration) {
 			case 14:
 				timeFormat = "20060102150405" // YYYYMMDDHHMMSS
 			default:
-				//TODO: handle error
-				return
+				return errmsg.LineParsing_ErrInvalidDateFormat
 			}
 			timeInLocation, err := time.ParseInLocation(timeFormat, value, config.TimeLocation)
 			if err != nil {
-				// TODO: handle parsing error
-				return
+				return errmsg.LineParsing_ErrDataParsingError
 			}
 			field.Set(reflect.ValueOf(timeInLocation))
 		} else {
 			// Option to handle other struct types here
 		}
 	default:
-		//TODO: handle other types
+		return errmsg.LineParsing_ErrUsupportedDataType
 	}
+	// Return nil if everything went well
+	return nil
 }

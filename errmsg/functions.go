@@ -24,8 +24,19 @@ var (
 
 // LineParsing
 var (
-	LineParsing_ErrLineTypeNameMismatch   = errors.New("line type name mismatch")
-	LineParsing_ErrSequenceNumberMismatch = errors.New("sequence number mismatch")
+	LineParsing_ErrEmptyInput                  = errors.New("empty input")
+	LineParsing_ErrHeaderTooShort              = errors.New("header too short")
+	LineParsing_ErrMandatoryInputFieldsMissing = errors.New("mandatory input fields missing")
+	LineParsing_ErrLineTypeNameMismatch        = errors.New("line type name mismatch")
+	LineParsing_ErrSequenceNumberMismatch      = errors.New("sequence number mismatch")
+	LineParsing_ErrInputFieldsMissing          = errors.New("input fields missing")
+	LineParsing_ErrRequiredFieldIsEmpty        = errors.New("required field is empty")
+	LineParsing_ErrInputComponentsMissing      = errors.New("input components missing")
+
+	LineParsing_ErrNonSettableField   = errors.New("field is not settable")
+	LineParsing_ErrDataParsingError   = errors.New("data parsing error")
+	LineParsing_ErrInvalidDateFormat  = errors.New("invalid date format")
+	LineParsing_ErrUsupportedDataType = errors.New("unsupported data type")
 )
 
 // StructureParsing
