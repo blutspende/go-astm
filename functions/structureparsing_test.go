@@ -116,6 +116,77 @@ func TestParseStruct_CompositeArrayMessage(t *testing.T) {
 	assert.Equal(t, "a2 r2 second", target.CompositeRecordArray[1].Record2.Second)
 }
 
+type OptionalMessage struct {
+	First    RecordType1 `astm:"F"`
+	Optional RecordType2 `astm:"S,optional"`
+	Third    RecordType1 `astm:"T"`
+}
+
+func TestParseStruct_OptionalMessage(t *testing.T) {
+	// Arrange
+	input := []string{
+		"F|1|first|second",
+		"T|1|first|second",
+	}
+	target := OptionalMessage{}
+	lineIndex := 0
+	// Act
+	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "first", target.First.First)
+	assert.Equal(t, "second", target.First.Second)
+	assert.Equal(t, "", target.Optional.First)
+	assert.Equal(t, "", target.Optional.Second)
+	assert.Equal(t, "first", target.Third.First)
+	assert.Equal(t, "second", target.Third.Second)
+}
+
+type OptionalArrayMessage struct {
+	First    RecordType1   `astm:"F"`
+	Optional []RecordType2 `astm:"A,optional"`
+	Last     RecordType1   `astm:"L"`
+}
+
+func TestParseStruct_OptionalArrayMessage(t *testing.T) {
+	// Arrange
+	input := []string{
+		"F|1|first|second",
+		"L|1|first|second",
+	}
+	target := OptionalArrayMessage{}
+	lineIndex := 0
+	// Act
+	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "first", target.First.First)
+	assert.Equal(t, "second", target.First.Second)
+	assert.Len(t, target.Optional, 0)
+	assert.Equal(t, "first", target.Last.First)
+	assert.Equal(t, "second", target.Last.Second)
+}
+func TestParseStruct_OptionalArrayMessageWithData(t *testing.T) {
+	// Arrange
+	input := []string{
+		"F|1|first|second",
+		"A|1|first|second",
+		"A|2|first|second",
+		"L|1|first|second",
+	}
+	target := OptionalArrayMessage{}
+	lineIndex := 0
+	// Act
+	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "first", target.First.First)
+	assert.Equal(t, "second", target.First.Second)
+	assert.Len(t, target.Optional, 2)
+	assert.Equal(t, "first", target.Last.First)
+	assert.Equal(t, "second", target.Last.Second)
+}
+
 func TestParseStruct_UnexpectedLineTypeError(t *testing.T) {
 	// Arrange
 	input := []string{

@@ -1,23 +1,19 @@
 package constants
 
-type Encoding string
+const ENCODING_UTF8 string = "UTF8"
+const ENCODING_ASCII string = "ASCII"
+const ENCODING_WINDOWS1250 string = "Windows1250"
+const ENCODING_WINDOWS1251 string = "Windows1251"
+const ENCODING_WINDOWS1252 string = "Windows1252"
+const ENCODING_DOS852 string = "DOS852"
+const ENCODING_DOS855 string = "DOS855"
+const ENCODING_DOS866 string = "DOS866"
+const ENCODING_ISO8859_1 string = "ISO8859-1"
 
-const ENCODING_UTF8 Encoding = "UTF8"
-const ENCODING_ASCII Encoding = "ASCII"
-const ENCODING_WINDOWS1250 Encoding = "Windows1250"
-const ENCODING_WINDOWS1251 Encoding = "Windows1251"
-const ENCODING_WINDOWS1252 Encoding = "Windows1252"
-const ENCODING_DOS852 Encoding = "DOS852"
-const ENCODING_DOS855 Encoding = "DOS855"
-const ENCODING_DOS866 Encoding = "DOS866"
-const ENCODING_ISO8859_1 Encoding = "ISO8859-1"
-
-type Timezone string
-
-const TIMEZONE_UTC Timezone = "UTC"
-const TIMEZONE_EUROPE_BERLIN Timezone = "Europe/Berlin"
-const TIMEZONE_EUROPE_BUDAPEST Timezone = "Europe/Budapest"
-const TIMEZONE_EUROPE_LONDON Timezone = "Europe/London"
+const TIMEZONE_UTC string = "UTC"
+const TIMEZONE_EUROPE_BERLIN string = "Europe/Berlin"
+const TIMEZONE_EUROPE_BUDAPEST string = "Europe/Budapest"
+const TIMEZONE_EUROPE_LONDON string = "Europe/London"
 
 var LF string = string(byte(0x0A))
 var CR string = string(byte(0x0D))

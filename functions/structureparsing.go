@@ -29,8 +29,6 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 		// Save the target value pointer
 		targetValue := targetValues[i].Addr().Interface()
 
-		//TODO: handle optional elements
-
 		// Target is an array it is iterated with conditional break (unknown length)
 		if targetStructAnnotation.IsArray {
 			// Create the array structure
@@ -53,9 +51,9 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				}
 
 				if err != nil {
-					// TODO: handle structure change better than a specific error
+					// If the error is a line type name mismatch, it means the end of the array
 					if err == errmsg.LineParsing_ErrLineTypeNameMismatch {
-						// If the error is a line type name mismatch, it means the end of the array
+						*lineIndex--
 						break
 					} else {
 						// Other error
@@ -77,11 +75,18 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				// Non-composite target: there is a single line to parse
 				if *lineIndex >= len(inputLines) {
 					return errmsg.StructureParsing_ErrInputLinesDepleted
+					//TODO: handle optional element at the end of the input
 				}
 				err = ParseLine(inputLines[*lineIndex], targetValue, targetStructAnnotation.StructName, 1, config)
 				*lineIndex++
 				if err != nil {
-					return err
+					// If there is a type mismatch but the target is optional it can be skipped
+					if err == errmsg.LineParsing_ErrLineTypeNameMismatch && targetStructAnnotation.Attribute == constants.ATTRIBUTE_OPTIONAL {
+						*lineIndex--
+						continue
+					} else {
+						return err
+					}
 				}
 			}
 		}

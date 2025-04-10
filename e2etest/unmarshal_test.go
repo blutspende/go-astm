@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"bytes"
+	"github.com/blutspende/go-astm/v2/constants"
 	"testing"
 	"time"
 
@@ -18,20 +19,20 @@ type ComponentedTestMessage struct {
 	Componented Componented `astm:"C"`
 }
 type Componented struct {
-	Combined   string `astm:"2"`
-	Component1 string `astm:"3.1"`
-	Component2 string `astm:"3.2"`
+	Combined   string `astm:"3"`
+	Component1 string `astm:"4.1"`
+	Component2 string `astm:"4.2"`
 }
 
 func TestComponentMessage(t *testing.T) {
 	// Arrange
 	fileData := ""
-	fileData = fileData + "C|First^Second|First^Second\n"
+	fileData = fileData + "C|1|First^Second|First^Second\n"
 	var message ComponentedTestMessage
 
 	// Act
 	err := astm.Unmarshal([]byte(fileData), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	// Assert
 	assert.Nil(t, err)
@@ -52,7 +53,7 @@ func TestReadMinimalMessage(t *testing.T) {
 
 	var message MinimalMessage
 	err := astm.Unmarshal([]byte(fileData), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
@@ -86,14 +87,14 @@ func TestFullSingleASTMMessage(t *testing.T) {
 
 	var message FullSingleASTMMessage
 	err := astm.Unmarshal([]byte(fileData), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
 	assert.Equal(t, "Testus", message.Patient.LastName)
 	assert.Equal(t, "Test", message.Patient.FirstName)
 	assert.Equal(t, "19400607", message.Patient.DOB.Format("20060102")) // dates are read okay
-	assert.Equal(t, "specimen1^^^", message.Order.InstrumentSpecimenID)
+	assert.Equal(t, "specimen1^^^\\\\specimen2^^^", message.Order.InstrumentSpecimenID)
 	assert.Equal(t, "lalina", message.Result.OperatorIDPerformed)
 }
 
@@ -135,7 +136,7 @@ func TestNestedStructure(t *testing.T) {
 
 	var message MessagePORC
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
@@ -169,7 +170,7 @@ func TestCustomDelimiters(t *testing.T) {
 
 	var message MessageCustomDelimiterTest
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
@@ -209,7 +210,7 @@ func TestCustomRecord(t *testing.T) {
 
 	var message MessageWithOutOfStandardCustomRecord
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 	assert.Equal(t, float32(4.14159), message.CustomRecord.Float32Value)
@@ -249,7 +250,7 @@ func TestArrayMapping(t *testing.T) {
 
 	var message MessageWithSubArrayRecord
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
@@ -294,7 +295,7 @@ func TestEnumEncoding(t *testing.T) {
 
 	var message TestUnmarshalEnumMessage
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
@@ -341,11 +342,11 @@ func TestComponentAccessOnTime(t *testing.T) {
 
 	var message MessageTimeAccess
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
-	location, err := time.LoadLocation(string(astm.TimezoneEuropeBerlin))
+	location, err := time.LoadLocation(string(constants.TIMEZONE_EUROPE_BERLIN))
 	assert.Nil(t, err, "Can not parse timezone")
 
 	expDate, err := time.ParseInLocation("20060102", "20240131", location)
@@ -380,7 +381,7 @@ func TestCommentNoneBug(t *testing.T) {
 
 	var message TestCommentNoneBugMessage
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
@@ -390,7 +391,7 @@ func TestCommentNoneBug(t *testing.T) {
 
 	/* var crash TestCommentNoneBugMessageCrash
 	err := lis2a2.Unmarshal([]byte(data), &crash,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+		lis2a2.ENCODING_UTF8, lis2a2.TimezoneEuropeBerlin)
 	assert.NotNil(t, err) */
 }
 
@@ -413,13 +414,13 @@ func TestGermanLanguage(t *testing.T) {
 	var message MessageGermanLanguageTest
 
 	encdata := helperEncode(charmap.Windows1252, []byte(data))
-	err := astm.Unmarshal([]byte(encdata), &message, astm.EncodingWindows1252, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(encdata), &message, constants.ENCODING_WINDOWS1252, constants.TIMEZONE_EUROPE_BERLIN)
 	assert.Nil(t, err)
 	assert.Equal(t, "König", message.Patient.LastName)
 	assert.Equal(t, "#$§?/+öäüß", message.Patient.FirstName)
 
 	encdata = helperEncode(charmap.ISO8859_1, []byte(data))
-	err = astm.Unmarshal([]byte(encdata), &message, astm.EncodingISO8859_1, astm.TimezoneEuropeBerlin)
+	err = astm.Unmarshal([]byte(encdata), &message, constants.ENCODING_ISO8859_1, constants.TIMEZONE_EUROPE_BERLIN)
 	assert.Nil(t, err)
 	assert.Equal(t, "König", message.Patient.LastName)
 	assert.Equal(t, "#$§?/+öäüß", message.Patient.FirstName)
@@ -431,7 +432,7 @@ func TestTransmissionWithoutLTerminator(t *testing.T) {
 	data = data + "P|1||DIA-27-079-5-1\r"
 
 	var message standardlis2a2.DefaultMessage
-	err := astm.Unmarshal([]byte(data), &message, astm.EncodingWindows1252, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, constants.ENCODING_WINDOWS1252, constants.TIMEZONE_EUROPE_BERLIN)
 	assert.NotNil(t, err)
 }
 
@@ -487,8 +488,8 @@ func TestFullMultipleASTMMessage(t *testing.T) {
 	var message standardlis2a2.DefaultMultiMessage
 	err := astm.Unmarshal(
 		[]byte(data), &message,
-		astm.EncodingUTF8,
-		astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8,
+		constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, message)
@@ -548,8 +549,8 @@ func TestFullMultipleASTMMessageWithWrongInput(t *testing.T) {
 	err := astm.Unmarshal(
 		[]byte(data),
 		&message,
-		astm.EncodingUTF8,
-		astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8,
+		constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.NotNil(t, err)
 }
@@ -574,7 +575,7 @@ func TestFailOnUndisciplinedMultipleCRCRatEndOfLine(t *testing.T) {
 
 	var message standardlis2a2.DefaultMessage
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 }
@@ -594,7 +595,7 @@ func TestMultipleMessagesInOne(t *testing.T) {
 
 	var message standardlis2a2.DefaultMultiMessage
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(message.Messages))
@@ -608,7 +609,7 @@ func TestNullValuesShouldGiveQualifiedError(t *testing.T) {
 
 	var message standardlis2a2.DefaultMultiMessage
 	err := astm.Unmarshal(nil /*giving null as input*/, &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "message has nil value - aborting", err.Error())
@@ -629,7 +630,7 @@ func TestUnmarshalMultipleOrdersAndResultsForOnePatient(t *testing.T) {
 
 	var message standardlis2a2.DefaultMessage
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 }
@@ -667,7 +668,7 @@ func TestHoribaYumizenManufacturerRecordWithArray(t *testing.T) {
 
 	var message MessageMadeForTheNextTest
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 
@@ -705,7 +706,7 @@ func TestUnmarshalSliceOfOneRecordType(t *testing.T) {
 		} `astm:"M"`
 	}{}
 	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 3, len(message.ImageData))

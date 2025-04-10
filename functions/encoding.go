@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-func ConvertFromEncodingToUtf8(input []byte, encoding constants.Encoding) (output string, err error) {
+func ConvertFromEncodingToUtf8(input []byte, encoding string) (output string, err error) {
 	cmap, err := findCharmapForEncoding(encoding)
 	if err != nil {
 		return "", err
@@ -22,7 +22,7 @@ func ConvertFromEncodingToUtf8(input []byte, encoding constants.Encoding) (outpu
 	return string(encoded), err
 }
 
-func ConvertFromUtf8ToEncoding(input string, encoding constants.Encoding) (output []byte, err error) {
+func ConvertFromUtf8ToEncoding(input string, encoding string) (output []byte, err error) {
 	cmap, err := findCharmapForEncoding(encoding)
 	if err != nil {
 		return []byte{}, err
@@ -34,7 +34,7 @@ func ConvertFromUtf8ToEncoding(input string, encoding constants.Encoding) (outpu
 	return output, err
 }
 
-func findCharmapForEncoding(encoding constants.Encoding) (*charmap.Charmap, error) {
+func findCharmapForEncoding(encoding string) (*charmap.Charmap, error) {
 	switch encoding {
 	case constants.ENCODING_UTF8:
 		return nil, nil

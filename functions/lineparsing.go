@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-// TODO: figue out how to better pass parent data
 func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, sequenceNumber int, config *models.Configuration) (err error) {
 	// Check for input line length
 	if len(inputLine) == 0 {
@@ -53,7 +52,12 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 
 		// Not enough inputFields in the input inputLine
 		if len(inputFields) < targetFieldAnnotation.FieldPos {
-			return errmsg.LineParsing_ErrInputFieldsMissing
+			// If the field is required it's an error, otherwise skip it
+			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRED {
+				return errmsg.LineParsing_ErrInputFieldsMissing
+			} else {
+				continue
+			}
 		}
 		// Save the current inputField
 		inputField := inputFields[targetFieldAnnotation.FieldPos-1]
@@ -105,7 +109,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 
 		// Check if there are more inputFields in the input not mapped to the struct
 		if i == targetFieldCount-1 && len(inputFields) > targetFieldAnnotation.FieldPos {
-			// TODO: this could be a warning about lost data
+			// Note: this could be a warning about lost data
 			//return
 		}
 	}

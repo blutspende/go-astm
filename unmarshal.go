@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/blutspende/go-astm/v2/functions"
+	"github.com/blutspende/go-astm/v2/models"
 	"io/ioutil"
 	"reflect"
 	"strconv"
@@ -13,10 +15,44 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+func Unmarshal(messageData []byte, targetStruct interface{}, encoding string, timezone string) (err error) {
+	// Convert encoding to UTF8
+	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, encoding)
+	if err != nil {
+		return err
+	}
+
+	// Split the message data into lines
+	lines, err := functions.SliceLines(utf8Data)
+	if err != nil {
+		return err
+	}
+
+	// Create the configuration
+	location, err := time.LoadLocation(timezone)
+	if err != nil {
+		return err
+	}
+	config := &models.Configuration{
+		Delimiters:   models.DefaultDelimiters,
+		TimeLocation: location,
+	}
+
+	// Parse the lines into the target structure
+	lineIndex := 0
+	err = functions.ParseStruct(lines, targetStruct, &lineIndex, 0, config)
+	if err != nil {
+		return err
+	}
+
+	// Return nil if everything went well
+	return nil
+}
+
 const MAX_MESSAGE_COUNT = 44
 const MAX_DEPTH = 44
 
-func Unmarshal(messageData []byte, targetStruct interface{}, enc Encoding, tz Timezone) error {
+func Unmarshal_Old(messageData []byte, targetStruct interface{}, enc Encoding, tz Timezone) error {
 
 	if len(messageData) == 0 {
 		return fmt.Errorf("message has nil value - aborting")
