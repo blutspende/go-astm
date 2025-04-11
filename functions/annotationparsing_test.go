@@ -96,7 +96,15 @@ func TestParseAstmFieldAnnotationString_InvalidAttribute(t *testing.T) {
 	// Assert
 	assert.Error(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute)
 }
-func TestParseAstmFieldAnnotationString_InvalidAnnotation(t *testing.T) {
+func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyParts(t *testing.T) {
+	// Arrange
+	input := "2.1.2"
+	// Act
+	_, err := parseAstmFieldAnnotationString(input)
+	// Assert
+	assert.Error(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation)
+}
+func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyPartsWithAttribute(t *testing.T) {
 	// Arrange
 	input := "4.1.3,something"
 	// Act

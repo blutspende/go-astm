@@ -23,7 +23,7 @@ func TestParseStruct_SingleLineStruct(t *testing.T) {
 	target := SingleRecordStruct{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "first", target.FirstRecord.First)
@@ -43,7 +43,7 @@ func TestParseStruct_RecordArrayStruct(t *testing.T) {
 	target := RecordArrayStruct{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Len(t, target.RecordArray, 2)
@@ -78,7 +78,7 @@ func TestParseStruct_CompositeMessage(t *testing.T) {
 	target := CompositeMessage{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "r1 first", target.CompositeRecordStruct.Record1.First)
@@ -96,13 +96,13 @@ func TestParseStruct_CompositeArrayMessage(t *testing.T) {
 	input := []string{
 		"F|1|a1 r1 first|a1 r1 second",
 		"S|1|a1 r2 first|a1 r2 second",
-		"F|1|a2 r1 first|a2 r1 second",
+		"F|2|a2 r1 first|a2 r1 second",
 		"S|1|a2 r2 first|a2 r2 second",
 	}
 	target := CompositeArrayMessage{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Len(t, target.CompositeRecordArray, 2)
@@ -131,7 +131,7 @@ func TestParseStruct_OptionalMessage(t *testing.T) {
 	target := OptionalMessage{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "first", target.First.First)
@@ -157,7 +157,7 @@ func TestParseStruct_OptionalArrayMessage(t *testing.T) {
 	target := OptionalArrayMessage{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "first", target.First.First)
@@ -177,7 +177,7 @@ func TestParseStruct_OptionalArrayMessageWithData(t *testing.T) {
 	target := OptionalArrayMessage{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "first", target.First.First)
@@ -196,7 +196,7 @@ func TestParseStruct_UnexpectedLineTypeError(t *testing.T) {
 	target := CompositeMessage{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Error(t, err, errmsg.LineParsing_ErrLineTypeNameMismatch)
 }
@@ -209,7 +209,7 @@ func TestParseStruct_LinesDepletedError(t *testing.T) {
 	target := CompositeMessage{}
 	lineIndex := 0
 	// Act
-	err := ParseStruct(input, &target, &lineIndex, 0, config)
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
 	assert.Error(t, err, errmsg.StructureParsing_ErrInputLinesDepleted)
 }

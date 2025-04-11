@@ -7,7 +7,7 @@ import (
 	"reflect"
 )
 
-func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, depth int, config *models.Configuration) (err error) {
+func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, sequenceNumber int, depth int, config *models.Configuration) (err error) {
 	// Check for maximum depth
 	if depth >= constants.MAX_DEPTH {
 		return errmsg.StructureParsing_ErrMaxDepthReached
@@ -36,16 +36,16 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 			targetValues[i].Set(reflect.MakeSlice(sliceType, 0, 0))
 
 			// Iterate as long as we have matching input structure and still have input lines
-			for j := 1; *lineIndex < len(inputLines); j++ {
+			for seq := 1; *lineIndex < len(inputLines); seq++ {
 				// Create a new element for the slice to parse into
 				elem := reflect.New(targetValues[i].Type().Elem()).Elem()
 
 				if targetStructAnnotation.IsComposite {
 					// Composite target: recursively parse the composite structure
-					err = ParseStruct(inputLines, elem.Addr().Interface(), lineIndex, depth+1, config)
+					err = ParseStruct(inputLines, elem.Addr().Interface(), lineIndex, seq, depth+1, config)
 				} else {
 					// Non-composite target: parse the line into the new element
-					err = ParseLine(inputLines[*lineIndex], elem.Addr().Interface(), targetStructAnnotation.StructName, j, config)
+					err = ParseLine(inputLines[*lineIndex], elem.Addr().Interface(), targetStructAnnotation.StructName, seq, config)
 					// Increment the line index
 					*lineIndex++
 				}
@@ -53,6 +53,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				if err != nil {
 					// If the error is a line type name mismatch, it means the end of the array
 					if err == errmsg.LineParsing_ErrLineTypeNameMismatch {
+						err = nil
 						*lineIndex--
 						break
 					} else {
@@ -67,21 +68,29 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 			// Single element structure
 			if targetStructAnnotation.IsComposite {
 				// Composite target: go further down the rabbit hole
-				err = ParseStruct(inputLines, targetValue, lineIndex, depth+1, config)
+				err = ParseStruct(inputLines, targetValue, lineIndex, 1, depth+1, config)
 				if err != nil {
 					return err
 				}
 			} else {
 				// Non-composite target: there is a single line to parse
+				// Make sure there are enough input lines
 				if *lineIndex >= len(inputLines) {
 					return errmsg.StructureParsing_ErrInputLinesDepleted
 					//TODO: handle optional element at the end of the input
 				}
-				err = ParseLine(inputLines[*lineIndex], targetValue, targetStructAnnotation.StructName, 1, config)
+				// Determine sequence number: first element inherits from the parent call, the rest is 1
+				seq := 1
+				if i == 0 {
+					seq = sequenceNumber
+				}
+				// Parse the line and increment the line index
+				err = ParseLine(inputLines[*lineIndex], targetValue, targetStructAnnotation.StructName, seq, config)
 				*lineIndex++
 				if err != nil {
 					// If there is a type mismatch but the target is optional it can be skipped
 					if err == errmsg.LineParsing_ErrLineTypeNameMismatch && targetStructAnnotation.Attribute == constants.ATTRIBUTE_OPTIONAL {
+						err = nil
 						*lineIndex--
 						continue
 					} else {

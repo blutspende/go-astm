@@ -146,8 +146,8 @@ func TestNestedStructure(t *testing.T) {
 
 	// the array of comments was produced in two entries into the array
 	assert.Equal(t, 2, len(message.OrderResults[0].CommentedResult[0].Comment))
-	assert.Equal(t, "FirstComment^^05761.03.12^20240131", message.OrderResults[0].CommentedResult[0].Comment[0].CommentSource)
-	assert.Equal(t, "SecondComment^^05761.03.12^20240131", message.OrderResults[0].CommentedResult[0].Comment[1].CommentSource)
+	assert.Equal(t, "FirstComment^^05761.03.12^20240131\\\\^^^", message.OrderResults[0].CommentedResult[0].Comment[0].CommentSource)
+	assert.Equal(t, "SecondComment^^05761.03.12^20240131\\\\^^^", message.OrderResults[0].CommentedResult[0].Comment[1].CommentSource)
 }
 
 // -----------------------------------------------------------------------------------
@@ -224,12 +224,12 @@ func TestCustomRecord(t *testing.T) {
 // line ending 0a or 0d or 0d0a all okay ? ok
 
 type SubMessageRecord struct {
-	Field11 string `astm:"2.1.1"`
-	Field12 string `astm:"2.1.2"`
-	Field13 string `astm:"2.1.3"`
-	Field21 string `astm:"2.2.1"`
-	Field22 string `astm:"2.2.2"`
-	Field23 string `astm:"2.2.3"`
+	Field11 string `astm:"3.1.1"`
+	Field12 string `astm:"3.1.2"`
+	Field13 string `astm:"3.1.3"`
+	Field21 string `astm:"3.2.1"`
+	Field22 string `astm:"3.2.2"`
+	Field23 string `astm:"3.2.3"`
 }
 
 type MessageWithSubArrayRecord struct {
@@ -244,9 +244,9 @@ type MessageWithSubArrayRecord struct {
 
 func TestArrayMapping(t *testing.T) {
 
-	data := "?|a^^c\\d^e^f|\r"
-	data = data + "!|x^y\\z^^|\r"
-	data = data + "!|1^2^3\\4^5^6|\r"
+	data := "?|1|a^^c\\d^e^f|\r"
+	data = data + "!|1|x^y\\z^^|\r"
+	data = data + "!|1|1^2^3\\4^5^6|\r"
 
 	var message MessageWithSubArrayRecord
 	err := astm.Unmarshal([]byte(data), &message,

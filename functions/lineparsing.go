@@ -43,12 +43,18 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 	}
 
 	// Process the target structure
-	targetTypes, targetValues, targetFieldCount, _ := ProcessStructReflection(targetStruct)
+	targetTypes, targetValues, targetFieldCount, err := ProcessStructReflection(targetStruct)
+	if err != nil {
+		return err
+	}
 
 	// Iterate over the inputFields of the targetStruct struct
 	for i, targetType := range targetTypes {
 		// Parse the targetStruct field targetFieldAnnotation
-		targetFieldAnnotation, _ := ParseAstmFieldAnnotation(targetType)
+		targetFieldAnnotation, err := ParseAstmFieldAnnotation(targetType)
+		if err != nil {
+			return err
+		}
 
 		// Not enough inputFields in the input inputLine
 		if len(inputFields) < targetFieldAnnotation.FieldPos {

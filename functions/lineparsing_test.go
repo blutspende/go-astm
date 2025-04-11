@@ -153,6 +153,19 @@ func TestParseLine_MissingData(t *testing.T) {
 	assert.Equal(t, "third", target.Third)
 }
 
+func TestParseLine_MissingDataAtTheEnd(t *testing.T) {
+	// Arrange
+	input := "T|1|first"
+	target := SimpleRecord{}
+	// Act
+	err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "first", target.First)
+	assert.Equal(t, "", target.Second)
+	assert.Equal(t, "", target.Third)
+}
+
 func TestParseLine_EmptyInput(t *testing.T) {
 	// Arrange
 	input := ""
@@ -171,16 +184,6 @@ func TestParseLine_NotEnoughFields(t *testing.T) {
 	err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.Error(t, err, errmsg.LineParsing_ErrMandatoryInputFieldsMissing)
-}
-
-func TestParseLine_MissingFields(t *testing.T) {
-	// Arrange
-	input := "T|1"
-	target := SimpleRecord{}
-	// Act
-	err := ParseLine(input, &target, "T", 1, config)
-	// Assert
-	assert.Error(t, err, errmsg.LineParsing_ErrInputFieldsMissing)
 }
 
 type MissingRequiredField struct {

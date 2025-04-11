@@ -40,7 +40,7 @@ func Unmarshal(messageData []byte, targetStruct interface{}, encoding string, ti
 
 	// Parse the lines into the target structure
 	lineIndex := 0
-	err = functions.ParseStruct(lines, targetStruct, &lineIndex, 0, config)
+	err = functions.ParseStruct(lines, targetStruct, &lineIndex, 1, 0, config)
 	if err != nil {
 		return err
 	}
