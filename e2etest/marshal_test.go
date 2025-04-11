@@ -12,6 +12,33 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+type MissingComponentMessage struct {
+	MissingComponent MissingComponent `astm:"M"`
+}
+type MissingComponent struct {
+	Combined   string `astm:"2"`
+	Component1 string `astm:"3.1"`
+	Component2 string `astm:"3.2"`
+}
+
+func TestMissingComponent(t *testing.T) {
+	// Arrange
+	testMessage := MissingComponentMessage{
+		MissingComponent: MissingComponent{
+			Combined:   "First^Second",
+			Component2: "Second",
+		},
+	}
+
+	// Act
+	value, err := astm.Marshal(testMessage, astm.EncodingUTF8, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+
+	// Assert
+	assert.Nil(t, err)
+	expectedResult := "M|First^Second|^Second"
+	assert.Equal(t, expectedResult, string(value[0]))
+}
+
 type IllFormatedButLegal struct {
 	GeneratedSequence int    `astm:"1,sequence"`
 	ThirdfieldArray1  string `astm:"2.1.3"`
@@ -406,26 +433,26 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 			ReceiverID:     "NotExistantTestSystem",
 			DateAndTime:    time.Now(),
 		},
-		OrderResults: []standardlis2a2.PORC{
+		PatientOrderCommentedResults: []standardlis2a2.PORC{
 			{
 				Patient: standardlis2a2.Patient{},
-				OrderCommentedResult: []standardlis2a2.OrderCommentedResult{
+				OrderCommentedResults: []standardlis2a2.OrderCommentedResult{
 					{
 						Order: standardlis2a2.Order{
-							SpecimenID:         "VAL24981209",
-							UniversalTestID:    "Pool_Cell",
-							Priority:           "R",
-							ActionCode:         "N",
-							SpecimenDescriptor: "TestData",
+							SpecimenID:      "VAL24981209",
+							UniversalTestID: "Pool_Cell",
+							Priority:        "R",
+							ActionCode:      "N",
+							SpecimenType:    "TestData",
 						},
 					},
 					{
 						Order: standardlis2a2.Order{
-							SpecimenID:         "VAL24981210",
-							UniversalTestID:    "Pool_Cell",
-							Priority:           "R",
-							ActionCode:         "N",
-							SpecimenDescriptor: "TestData",
+							SpecimenID:      "VAL24981210",
+							UniversalTestID: "Pool_Cell",
+							Priority:        "R",
+							ActionCode:      "N",
+							SpecimenType:    "TestData",
 						},
 					},
 				},

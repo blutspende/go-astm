@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/blutspende/go-astm/v2/functions"
+	"github.com/blutspende/go-astm/v2/models"
 	"io/ioutil"
 	"reflect"
 	"strconv"
@@ -13,10 +15,44 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+func Unmarshal(messageData []byte, targetStruct interface{}, encoding string, timezone string) (err error) {
+	// Convert encoding to UTF8
+	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, encoding)
+	if err != nil {
+		return err
+	}
+
+	// Split the message data into lines
+	lines, err := functions.SliceLines(utf8Data)
+	if err != nil {
+		return err
+	}
+
+	// Create the configuration
+	location, err := time.LoadLocation(timezone)
+	if err != nil {
+		return err
+	}
+	config := &models.Configuration{
+		Delimiters:   models.DefaultDelimiters,
+		TimeLocation: location,
+	}
+
+	// Parse the lines into the target structure
+	lineIndex := 0
+	err = functions.ParseStruct(lines, targetStruct, &lineIndex, 1, 0, config)
+	if err != nil {
+		return err
+	}
+
+	// Return nil if everything went well
+	return nil
+}
+
 const MAX_MESSAGE_COUNT = 44
 const MAX_DEPTH = 44
 
-func Unmarshal(messageData []byte, targetStruct interface{}, enc Encoding, tz Timezone) error {
+func Unmarshal_Old(messageData []byte, targetStruct interface{}, enc Encoding, tz Timezone) error {
 
 	if len(messageData) == 0 {
 		return fmt.Errorf("message has nil value - aborting")
@@ -121,7 +157,7 @@ type RETV int
 
 const (
 	OK         RETV = 1
-	UNEXPECTED RETV = 2 // an exit that wont abort processing. used for skipping optional records
+	UNEXPECTED RETV = 2 // an exit that won't abort processing. used for skipping optional records
 	ERROR      RETV = 3 // a definite error that stops the process
 )
 
@@ -259,7 +295,7 @@ func reflectInputToStruct(bufferedInputLines []string, depth int, currentInputLi
 
 		if expectInputRecordType == bufferedInputLines[currentInputLine][0] {
 
-			//Special case: its not an anotated record, it is an array of annotated records here :
+			//Special case: it's not an annotated record, it is an array of annotated records here :
 			if currentRecord.Kind() == reflect.Slice {
 				innerStructureType := targetStructType.Field(i).Type.Elem()
 				sliceForNestedStructure := reflect.MakeSlice(targetStructType.Field(i).Type, 0, 0)
@@ -342,19 +378,19 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 		if sliceContainsString(astmTagsList, ANNOTATION_REQUIRED) {
 			inputIsRequired = true
 		}
-		currentInputFieldNo, repeat, component, err := readFieldAddressAnnotation(astmTagsList[0])
+		currentInputFieldNo, repeat, component, hasComponents, err := readFieldAddressAnnotation(astmTagsList[0])
 		if err != nil {
 			return errors.New(fmt.Sprintf("Invalid annotation for field %s. (%s)", record.Type().Field(j).Name, err))
 		}
 		if currentInputFieldNo >= len(inputFields) || currentInputFieldNo < 0 {
-			//TODO: user should be able to toggle wether he wants an exact match = error or bestfit = skip silent
+			//TODO: user should be able to toggle whether he wants an exact match = error or bestfit = skip silent
 			continue // mapped field is beyond the data
 		}
 
 		switch reflect.TypeOf(recordfield.Interface()).Kind() {
 		case reflect.String:
 			if value, err := extractAstmFieldByRepeatAndComponent(inputFields[currentInputFieldNo],
-				repeat, component, *repeatDelimiter, *componentDelimiter, sliceContainsString(astmTagsList, ANNOTATION_REQUIRED)); err == nil {
+				repeat, component, *repeatDelimiter, *componentDelimiter, sliceContainsString(astmTagsList, ANNOTATION_REQUIRED), hasComponents); err == nil {
 
 				// in headers there can be special characters, that is why the value needs to disregard the delimiters:
 				if isHeader {
@@ -386,7 +422,7 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 			}
 
 			if value, err := extractAstmFieldByRepeatAndComponent(inputFields[currentInputFieldNo], repeat, component,
-				*repeatDelimiter, *componentDelimiter, sliceContainsString(astmTagsList, ANNOTATION_REQUIRED)); err == nil {
+				*repeatDelimiter, *componentDelimiter, sliceContainsString(astmTagsList, ANNOTATION_REQUIRED), hasComponents); err == nil {
 
 				if num, err := strconv.Atoi(value); err == nil {
 					reflect.ValueOf(recordFieldInterface).Elem().Set(reflect.ValueOf(num))
@@ -406,7 +442,7 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 
 			if value, err := extractAstmFieldByRepeatAndComponent(inputFields[currentInputFieldNo],
 				repeat, component, *repeatDelimiter, *componentDelimiter,
-				sliceContainsString(astmTagsList, ANNOTATION_REQUIRED)); err == nil {
+				sliceContainsString(astmTagsList, ANNOTATION_REQUIRED), hasComponents); err == nil {
 
 				if num, err := strconv.ParseFloat(value, 32); err == nil {
 					reflect.ValueOf(recordFieldInterface).Elem().Set(reflect.ValueOf(float32(num)))
@@ -426,7 +462,7 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 
 			if value, err := extractAstmFieldByRepeatAndComponent(inputFields[currentInputFieldNo],
 				repeat, component, *repeatDelimiter, *componentDelimiter,
-				sliceContainsString(astmTagsList, ANNOTATION_REQUIRED)); err == nil {
+				sliceContainsString(astmTagsList, ANNOTATION_REQUIRED), hasComponents); err == nil {
 
 				if num, err := strconv.ParseFloat(value, 64); err == nil {
 					reflect.ValueOf(recordFieldInterface).Elem().Set(reflect.ValueOf(float64(num)))
@@ -501,7 +537,7 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 				var inputFieldValue string
 				if value, err := extractAstmFieldByRepeatAndComponent(inputFields[currentInputFieldNo],
 					repeat, component, *repeatDelimiter, *componentDelimiter,
-					sliceContainsString(astmTagsList, ANNOTATION_REQUIRED)); err == nil {
+					sliceContainsString(astmTagsList, ANNOTATION_REQUIRED), hasComponents); err == nil {
 					inputFieldValue = value
 				} else {
 					return errors.New(fmt.Sprintf("Error extracting field '%s' tagged: '%s' : %s ", recordfield.Type().Name(), astmTag, err))
@@ -540,44 +576,47 @@ func reflectAnnotatedFields(inputStr string, record reflect.Value, timezone *tim
 
 // Translating the annotation of a field to field, index/repeat, component
 // Input of one value : e.g."4" -> field -> 4
-// Input of two values :"4.2" -> field, compoennt -> 4,1,2
+// Input of two values :"4.2" -> field, component -> 4,1,2
 // Input of three values "4.1.1" -> field, repeat, component -> 4,1,1
 // "whereas field indexes should be 1-99 (check plz)
-func readFieldAddressAnnotation(annotation string) (field int, repeat int, component int, err error) {
+func readFieldAddressAnnotation(annotation string) (field int, repeat int, component int, hasComponents bool, err error) {
 
 	if annotation == "" { // no annotation will always return the first of everything
-		return 0, 0, 0, nil
+		return 0, 0, 0, false, nil
 	}
 	field = 1
 	repeat = 1
 	component = 1
+	hasComponents = false
 	fieldSplitted := strings.Split(annotation, ".")
 
 	if len(fieldSplitted) >= 1 {
 		if field, err = strconv.Atoi(fieldSplitted[0]); err != nil {
-			return 0, 0, 0, err
+			return 0, 0, 0, false, err
 		}
 	}
 	if len(fieldSplitted) >= 2 {
 		if component, err = strconv.Atoi(fieldSplitted[1]); err != nil {
-			return 0, 0, 0, err
+			return 0, 0, 0, false, err
 		}
+		// Workaround: for multi component inputs with single field struct definitions to default to the whole field instead of only the first component
+		hasComponents = true
 	}
 	if len(fieldSplitted) >= 3 {
 		if repeat, err = strconv.Atoi(fieldSplitted[1]); err != nil {
-			return 0, 0, 0, err
+			return 0, 0, 0, false, err
 		}
 		if component, err = strconv.Atoi(fieldSplitted[2]); err != nil {
-			return 0, 0, 0, err
+			return 0, 0, 0, false, err
 		}
 	}
 
-	return field - 1, repeat - 1, component - 1, nil
+	return field - 1, repeat - 1, component - 1, hasComponents, nil
 }
 
 // input is an unpacked field from an astm-file free of the field delimiter ("|")
-// this function ettracts the field by repeat and component-delimiter
-func extractAstmFieldByRepeatAndComponent(text string, repeat int, component int, repeatDelimiter, componentDelimiter string, isRequired bool) (string, error) {
+// this function extracts the field by repeat and component-delimiter
+func extractAstmFieldByRepeatAndComponent(text string, repeat int, component int, repeatDelimiter, componentDelimiter string, isRequired bool, hasComponents bool) (string, error) {
 
 	subfield := strings.Split(text, repeatDelimiter)
 	if repeat >= len(subfield) {
@@ -585,6 +624,11 @@ func extractAstmFieldByRepeatAndComponent(text string, repeat int, component int
 			return "", errors.New(fmt.Sprintf("Index (%d, %d) out of bounds '%s', delimiter '%s'", repeat, component, text, repeatDelimiter))
 		}
 		return "", nil
+	}
+
+	// Workaround: single component value takes the whole subfield instead of just the first component
+	if !hasComponents {
+		return subfield[repeat], nil
 	}
 
 	subsubfield := strings.Split(subfield[repeat], componentDelimiter)
