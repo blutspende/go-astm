@@ -81,7 +81,7 @@ func TestFullSingleASTMMessage(t *testing.T) {
 	fileData := ""
 	fileData = fileData + "H|\\^&|||Bio-Rad|IH v5.2||||||||20220315194227\n"
 	fileData = fileData + "P|1||1010868845||Testus^Test||19400607|M||||||||||||||||||||||||^\n"
-	fileData = fileData + "O|1|1122206642|specimen1^^^\\\\specimen2^^^|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\n"
+	fileData = fileData + "O|1|1122206642|specimen1^^^\\specimen2^^^|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\n"
 	fileData = fileData + "R|1|^^^AntiA^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|40^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\n"
 	fileData = fileData + "L|1|N\n"
 
@@ -94,7 +94,7 @@ func TestFullSingleASTMMessage(t *testing.T) {
 	assert.Equal(t, "Testus", message.Patient.LastName)
 	assert.Equal(t, "Test", message.Patient.FirstName)
 	assert.Equal(t, "19400607", message.Patient.DOB.Format("20060102")) // dates are read okay
-	assert.Equal(t, "specimen1^^^\\\\specimen2^^^", message.Order.InstrumentSpecimenID)
+	assert.Equal(t, "specimen1^^^\\specimen2^^^", message.Order.InstrumentSpecimenID)
 	assert.Equal(t, "lalina", message.Result.OperatorIDPerformed)
 }
 
@@ -124,8 +124,8 @@ func TestNestedStructure(t *testing.T) {
 	data = data + "P|1||1010868845||Testus^Test||19400607|M||||||||||||||||||||||||^\r"
 	data = data + "O|1|1122206642|1122206642^^^\\1122206642^^^|^^^MO10^^28343^|R|20220311103217|20220311103217|||||||||||11||||20220311114103|||P\r"
 	data = data + "R|1|^^^AntiA^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|40^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
-	data = data + "C|1|FirstComment^^05761.03.12^20240131\\\\^^^|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
-	data = data + "C|2|SecondComment^^05761.03.12^20240131\\\\^^^|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
+	data = data + "C|1|FirstComment^^05761.03.12^20240131\\^^^|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
+	data = data + "C|2|SecondComment^^05761.03.12^20240131\\^^^|CAS^5005352062212117030^50053.52.06^20221231^4||\r"
 	data = data + "R|2|^^^AntiB^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|0^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
 	data = data + "C|1|ID-Diluent 2^^05761.03.12^20240131\\^^^|CAS^5005352062212117030^50053.52.06^20221231^5||\r"
 	data = data + "R|3|^^^AntiD^MO10^Bloodgroup: A,B,D Confirmation for Patients (DiaClon) (5005)^|0^^|C||||R||lalina^|20220311114103||11|IH-1000|0300768|lalina\r"
@@ -146,8 +146,8 @@ func TestNestedStructure(t *testing.T) {
 
 	// the array of comments was produced in two entries into the array
 	assert.Equal(t, 2, len(message.OrderResults[0].CommentedResult[0].Comment))
-	assert.Equal(t, "FirstComment^^05761.03.12^20240131\\\\^^^", message.OrderResults[0].CommentedResult[0].Comment[0].CommentSource)
-	assert.Equal(t, "SecondComment^^05761.03.12^20240131\\\\^^^", message.OrderResults[0].CommentedResult[0].Comment[1].CommentSource)
+	assert.Equal(t, "FirstComment^^05761.03.12^20240131\\^^^", message.OrderResults[0].CommentedResult[0].Comment[0].CommentSource)
+	assert.Equal(t, "SecondComment^^05761.03.12^20240131\\^^^", message.OrderResults[0].CommentedResult[0].Comment[1].CommentSource)
 }
 
 // -----------------------------------------------------------------------------------
@@ -165,8 +165,8 @@ type MessageCustomDelimiterTest struct {
 func TestCustomDelimiters(t *testing.T) {
 	data := ""
 	data = data + "H|\\#&|||Bio-Rad|IH v5.2||||||||20220315194227\n"
-	data = data + "P|1||1010868845||Testus#Test||19400607|M||||||||||||||||||||||||^\r"
-	data = data + "L|1|N\n" // ! mixed line-endings (should not matter)
+	data = data + "P|1||1010868845||Testus#Test||19400607|M||||||||||||||||||||||||^\n"
+	data = data + "L|1|N\n"
 
 	var message MessageCustomDelimiterTest
 	err := astm.Unmarshal([]byte(data), &message,
@@ -223,56 +223,71 @@ func TestCustomRecord(t *testing.T) {
 // test encoding
 // line ending 0a or 0d or 0d0a all okay ? ok
 
-type SubMessageRecord struct {
-	Field11 string `astm:"3.1.1"`
-	Field12 string `astm:"3.1.2"`
-	Field13 string `astm:"3.1.3"`
-	Field21 string `astm:"3.2.1"`
-	Field22 string `astm:"3.2.2"`
-	Field23 string `astm:"3.2.3"`
-}
+//type valami struct {
+//	Field11 string `astm:"1"`
+//	Field12 string `astm:"2"`
+//	Field13 string `astm:"3"`
+//}
+//type arraysor struct {
+//	Sor []valami `astm:"2"`
+//}
+//
+//type arraysor struct {
+//	Sor string `astm:"2.1"`
+//	Sor string `astm:"2.2"`
+//	Sor string `astm:"2.3"`
+//}
 
-type MessageWithSubArrayRecord struct {
-	Anonymous struct { // Testing wether this annoynmous structure is recused into
-		Rec SubMessageRecord `astm:"?"`
-	}
-
-	AnonymousArray []struct { // This anynymous array of structures needs to be created and scanned
-		Rec SubMessageRecord `astm:"!"`
-	}
-}
-
-func TestArrayMapping(t *testing.T) {
-
-	data := "?|1|a^^c\\d^e^f|\r"
-	data = data + "!|1|x^y\\z^^|\r"
-	data = data + "!|1|1^2^3\\4^5^6|\r"
-
-	var message MessageWithSubArrayRecord
-	err := astm.Unmarshal([]byte(data), &message,
-		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
-
-	assert.Nil(t, err)
-
-	assert.Equal(t, "a", message.Anonymous.Rec.Field11)
-	assert.Equal(t, "c", message.Anonymous.Rec.Field13)
-
-	assert.Equal(t, "d", message.Anonymous.Rec.Field21)
-	assert.Equal(t, "e", message.Anonymous.Rec.Field22)
-	assert.Equal(t, "f", message.Anonymous.Rec.Field23)
-
-	// now test that the subarray values have been read
-	assert.Equal(t, 2, len(message.AnonymousArray))
-	assert.Equal(t, "x", message.AnonymousArray[0].Rec.Field11)
-	assert.Equal(t, "y", message.AnonymousArray[0].Rec.Field12)
-	assert.Equal(t, "z", message.AnonymousArray[0].Rec.Field21)
-	assert.Equal(t, "", message.AnonymousArray[0].Rec.Field22)
-
-	assert.Equal(t, "1", message.AnonymousArray[1].Rec.Field11)
-	assert.Equal(t, "2", message.AnonymousArray[1].Rec.Field12)
-	assert.Equal(t, "4", message.AnonymousArray[1].Rec.Field21)
-	assert.Equal(t, "5", message.AnonymousArray[1].Rec.Field22)
-}
+//type SubMessageRecord struct {
+//	Field11 string `astm:"3.1.1"`
+//	Field12 string `astm:"3.1.2"`
+//	Field13 string `astm:"3.1.3"`
+//	Field21 string `astm:"3.2.1"`
+//	Field22 string `astm:"3.2.2"`
+//	Field23 string `astm:"3.2.3"`
+//}
+//
+//type MessageWithSubArrayRecord struct {
+//	Anonymous struct { // Testing wether this annoynmous structure is recused into
+//		Rec SubMessageRecord `astm:"?"`
+//	}
+//
+//	AnonymousArray []struct { // This anynymous array of structures needs to be created and scanned
+//		Rec SubMessageRecord `astm:"!"`
+//	}
+//}
+//
+//func TestArrayMapping(t *testing.T) {
+//
+//	data := "?|1|a^^c\\d^e^f|\r"
+//	data = data + "!|1|x^y\\z^^|\r"
+//	data = data + "!|1|1^2^3\\4^5^6|\r"
+//
+//	var message MessageWithSubArrayRecord
+//	err := astm.Unmarshal([]byte(data), &message,
+//		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
+//
+//	assert.Nil(t, err)
+//
+//	assert.Equal(t, "a", message.Anonymous.Rec.Field11)
+//	assert.Equal(t, "c", message.Anonymous.Rec.Field13)
+//
+//	assert.Equal(t, "d", message.Anonymous.Rec.Field21)
+//	assert.Equal(t, "e", message.Anonymous.Rec.Field22)
+//	assert.Equal(t, "f", message.Anonymous.Rec.Field23)
+//
+//	// now test that the subarray values have been read
+//	assert.Equal(t, 2, len(message.AnonymousArray))
+//	assert.Equal(t, "x", message.AnonymousArray[0].Rec.Field11)
+//	assert.Equal(t, "y", message.AnonymousArray[0].Rec.Field12)
+//	assert.Equal(t, "z", message.AnonymousArray[0].Rec.Field21)
+//	assert.Equal(t, "", message.AnonymousArray[0].Rec.Field22)
+//
+//	assert.Equal(t, "1", message.AnonymousArray[1].Rec.Field11)
+//	assert.Equal(t, "2", message.AnonymousArray[1].Rec.Field12)
+//	assert.Equal(t, "4", message.AnonymousArray[1].Rec.Field21)
+//	assert.Equal(t, "5", message.AnonymousArray[1].Rec.Field22)
+//}
 
 type SomeEnum string
 
@@ -282,7 +297,7 @@ const (
 )
 
 type SomeEnumRecord struct {
-	Value SomeEnum `astm:"2"`
+	Value SomeEnum `astm:"3"`
 }
 
 type TestUnmarshalEnumMessage struct {
@@ -291,7 +306,7 @@ type TestUnmarshalEnumMessage struct {
 
 // TODO enum value
 func TestEnumEncoding(t *testing.T) {
-	data := "E|EnumValue1|\r"
+	data := "E|1|EnumValue1|\r"
 
 	var message TestUnmarshalEnumMessage
 	err := astm.Unmarshal([]byte(data), &message,

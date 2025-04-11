@@ -18,14 +18,18 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 	}
 
 	// Process the target structure
-	targetTypes, targetValues, _, _ := ProcessStructReflection(targetStruct)
+	targetTypes, targetValues, _, err := ProcessStructReflection(targetStruct)
+	if err != nil {
+		return err
+	}
 
 	// Iterate over the inputFields of the targetStruct struct
 	for i, targetType := range targetTypes {
-
 		// Parse the targetStruct field targetFieldAnnotation
-		targetStructAnnotation, _ := ParseAstmStructAnnotation(targetType)
-
+		targetStructAnnotation, err := ParseAstmStructAnnotation(targetType)
+		if err != nil {
+			return err
+		}
 		// Save the target value pointer
 		targetValue := targetValues[i].Addr().Interface()
 
@@ -40,26 +44,24 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				// Create a new element for the slice to parse into
 				elem := reflect.New(targetValues[i].Type().Elem()).Elem()
 
+				nameOk := true
 				if targetStructAnnotation.IsComposite {
 					// Composite target: recursively parse the composite structure
 					err = ParseStruct(inputLines, elem.Addr().Interface(), lineIndex, seq, depth+1, config)
 				} else {
 					// Non-composite target: parse the line into the new element
-					err = ParseLine(inputLines[*lineIndex], elem.Addr().Interface(), targetStructAnnotation.StructName, seq, config)
+					nameOk, err = ParseLine(inputLines[*lineIndex], elem.Addr().Interface(), targetStructAnnotation.StructName, seq, config)
 					// Increment the line index
 					*lineIndex++
 				}
-
 				if err != nil {
-					// If the error is a line type name mismatch, it means the end of the array
-					if err == errmsg.LineParsing_ErrLineTypeNameMismatch {
-						err = nil
-						*lineIndex--
-						break
-					} else {
-						// Other error
-						return err
-					}
+					return err
+				}
+				// If the type name is a mismatch, it means the end of the array
+				if !nameOk {
+					err = nil
+					*lineIndex--
+					break
 				}
 				// If no error, add the new element to the slice
 				targetValues[i].Set(reflect.Append(targetValues[i], elem))
@@ -85,16 +87,19 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 					seq = sequenceNumber
 				}
 				// Parse the line and increment the line index
-				err = ParseLine(inputLines[*lineIndex], targetValue, targetStructAnnotation.StructName, seq, config)
+				nameOk, err := ParseLine(inputLines[*lineIndex], targetValue, targetStructAnnotation.StructName, seq, config)
 				*lineIndex++
 				if err != nil {
-					// If there is a type mismatch but the target is optional it can be skipped
-					if err == errmsg.LineParsing_ErrLineTypeNameMismatch && targetStructAnnotation.Attribute == constants.ATTRIBUTE_OPTIONAL {
+					return err
+				}
+				// If there is a type name mismatch but the target is optional it can be skipped, otherwise it's an error
+				if !nameOk {
+					if targetStructAnnotation.Attribute == constants.ATTRIBUTE_OPTIONAL {
 						err = nil
 						*lineIndex--
 						continue
 					} else {
-						return err
+						return errmsg.StructureParsing_ErrLineTypeNameMismatch
 					}
 				}
 			}

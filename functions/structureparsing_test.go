@@ -213,6 +213,3 @@ func TestParseStruct_LinesDepletedError(t *testing.T) {
 	// Assert
 	assert.Error(t, err, errmsg.StructureParsing_ErrInputLinesDepleted)
 }
-
-// Note: config is setup in line parser test
-// TODO: separate test packages better

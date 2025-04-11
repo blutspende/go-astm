@@ -41,6 +41,7 @@ var (
 
 // StructureParsing
 var (
-	StructureParsing_ErrMaxDepthReached    = errors.New("max depth reached")
-	StructureParsing_ErrInputLinesDepleted = errors.New("input lines depleted")
+	StructureParsing_ErrMaxDepthReached      = errors.New("max depth reached")
+	StructureParsing_ErrInputLinesDepleted   = errors.New("input lines depleted")
+	StructureParsing_ErrLineTypeNameMismatch = errors.New("line type name mismatch")
 )

@@ -3,38 +3,47 @@ package functions
 import (
 	"github.com/blutspende/go-astm/v2/constants"
 	"github.com/blutspende/go-astm/v2/errmsg"
+	"github.com/blutspende/go-astm/v2/models"
 	"strings"
 )
 
-func SliceLines(input string) (output []string, err error) {
+func SliceLines(input string, config *models.Configuration) (output []string, err error) {
+	// Check for empty input
 	if input == "" {
 		return nil, errmsg.Lining_ErrNotEnoughLines
 	}
 
-	lfCnt := 0
-	crCnt := 0
-	for _, c := range input {
-		if c == rune(constants.LF[0]) {
-			lfCnt++
-		} else if c == rune(constants.CR[0]) {
-			crCnt++
-		}
-	}
-	if lfCnt == 0 && crCnt == 0 {
-		return nil, errmsg.Lining_ErrInvalidLinebreak
-	}
-	if lfCnt > 0 && crCnt > 0 && lfCnt != crCnt {
-		return nil, errmsg.Lining_ErrInvalidLinebreak
-	}
-
-	if lfCnt == 0 {
-		input = strings.ReplaceAll(input, constants.CR, constants.LF)
-
+	var lines []string
+	if config.LineSeparator != "" {
+		// Line separator provided in config, split by it
+		lines = strings.Split(input, config.LineSeparator)
 	} else {
-		input = strings.ReplaceAll(input, constants.CR, "")
-	}
+		// No line separator provided: default behavior
+		lfCnt := 0
+		crCnt := 0
+		for _, c := range input {
+			if c == rune(constants.LF[0]) {
+				lfCnt++
+			} else if c == rune(constants.CR[0]) {
+				crCnt++
+			}
+		}
+		if lfCnt == 0 && crCnt == 0 {
+			return nil, errmsg.Lining_ErrInvalidLinebreak
+		}
+		if lfCnt > 0 && crCnt > 0 && lfCnt != crCnt {
+			return nil, errmsg.Lining_ErrInvalidLinebreak
+		}
 
-	lines := strings.Split(input, constants.LF)
+		if lfCnt == 0 {
+			input = strings.ReplaceAll(input, constants.CR, constants.LF)
+
+		} else {
+			input = strings.ReplaceAll(input, constants.CR, "")
+		}
+
+		lines = strings.Split(input, constants.LF)
+	}
 
 	for i := range lines {
 		lines[i] = strings.Trim(lines[i], " ")
@@ -46,12 +55,20 @@ func SliceLines(input string) (output []string, err error) {
 	return output, nil
 }
 
-func BuildLines(input []string, linebreak string) (output string) {
+func BuildLines(input []string, config *models.Configuration) (output string) {
+	linebreak := ""
+	if config.LineSeparator != "" {
+		linebreak = config.LineSeparator
+	} else {
+		linebreak = constants.LF
+	}
+
 	for i, line := range input {
 		output += line
 		if i < len(input)-1 {
 			output += linebreak
 		}
 	}
+
 	return output
 }

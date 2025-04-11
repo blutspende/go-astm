@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"github.com/blutspende/go-astm/v2/constants"
 	"github.com/blutspende/go-astm/v2/errmsg"
+	"github.com/blutspende/go-astm/v2/models"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 	"io"
 )
 
-func ConvertFromEncodingToUtf8(input []byte, encoding string) (output string, err error) {
-	cmap, err := findCharmapForEncoding(encoding)
+func ConvertFromEncodingToUtf8(input []byte, config *models.Configuration) (output string, err error) {
+	cmap, err := findCharmapForEncoding(config.Encoding)
 	if err != nil {
 		return "", err
 	}
@@ -22,8 +23,8 @@ func ConvertFromEncodingToUtf8(input []byte, encoding string) (output string, er
 	return string(encoded), err
 }
 
-func ConvertFromUtf8ToEncoding(input string, encoding string) (output []byte, err error) {
-	cmap, err := findCharmapForEncoding(encoding)
+func ConvertFromUtf8ToEncoding(input string, config *models.Configuration) (output []byte, err error) {
+	cmap, err := findCharmapForEncoding(config.Encoding)
 	if err != nil {
 		return []byte{}, err
 	}

@@ -145,7 +145,6 @@ func ProcessStructReflection(targetStruct interface{}) (targetTypes []reflect.St
 
 func isValidAttribute(attribute string) bool {
 	validAttributes := []string{
-		constants.ATTRIBUTE_DELIMITER,
 		constants.ATTRIBUTE_REQUIRED,
 		constants.ATTRIBUTE_OPTIONAL,
 		constants.ATTRIBUTE_SEQUENCE,

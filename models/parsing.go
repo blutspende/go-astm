@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// Annotation types for ASTM fields and structures
 type AstmFieldAnnotation struct {
 	Raw               string
 	IsArray           bool
@@ -13,7 +14,6 @@ type AstmFieldAnnotation struct {
 	HasAttributeValue bool
 	AttributeValue    int
 }
-
 type AstmStructAnnotation struct {
 	Raw          string
 	IsComposite  bool
@@ -23,6 +23,7 @@ type AstmStructAnnotation struct {
 	Attribute    string
 }
 
+// Delimiters used in ASTM parsing
 type Delimiters struct {
 	Field     string
 	Repeat    string
@@ -37,7 +38,8 @@ var DefaultDelimiters = Delimiters{
 	Escape:    `&`,
 }
 
-type Configuration struct {
-	Delimiters   Delimiters
+// Internal configuration for parsing (part of the Configuration struct)
+type InternalConfiguration struct {
 	TimeLocation *time.Location
+	Delimiters   Delimiters
 }

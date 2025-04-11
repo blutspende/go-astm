@@ -15,36 +15,35 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
-func Unmarshal(messageData []byte, targetStruct interface{}, encoding string, timezone string) (err error) {
+func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...*models.Configuration) (err error) {
+	// Set up the configuration
+	var config *models.Configuration
+	if len(configuration) > 0 {
+		config = configuration[0]
+	} else {
+		config = &models.DefaultConfiguration
+	}
+	config.Internal.Delimiters = models.DefaultDelimiters
+	config.Internal.TimeLocation, err = time.LoadLocation(config.TimeZone)
+	if err != nil {
+		return err
+	}
 	// Convert encoding to UTF8
-	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, encoding)
+	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, config)
 	if err != nil {
 		return err
 	}
-
 	// Split the message data into lines
-	lines, err := functions.SliceLines(utf8Data)
+	lines, err := functions.SliceLines(utf8Data, config)
 	if err != nil {
 		return err
 	}
-
-	// Create the configuration
-	location, err := time.LoadLocation(timezone)
-	if err != nil {
-		return err
-	}
-	config := &models.Configuration{
-		Delimiters:   models.DefaultDelimiters,
-		TimeLocation: location,
-	}
-
 	// Parse the lines into the target structure
 	lineIndex := 0
 	err = functions.ParseStruct(lines, targetStruct, &lineIndex, 1, 0, config)
 	if err != nil {
 		return err
 	}
-
 	// Return nil if everything went well
 	return nil
 }
