@@ -21,9 +21,7 @@ var LFCR string = string([]byte{byte(0x0A), byte(0x0D)})
 var CRLF string = string([]byte{byte(0x0D), byte(0x0A)})
 
 // Notation defines how the output format is build
-// StandardNotation will always produce as many delimiters as there are values in the export-format
-// ShortNotation will skip all delimiters to the right of the last value
-type Notation int
-
-const StandardNotation = 1
-const ShortNotation = 2
+// NOTATION_STANDARD will always produce as many delimiters as there are values in the export-format
+// NOTATION_SHORT will skip all delimiters to the right of the last value
+const NOTATION_STANDARD string = "STANDARD"
+const NOTATION_SHORT string = "SHORT"

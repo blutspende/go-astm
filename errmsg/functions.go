@@ -45,3 +45,9 @@ var (
 	StructureParsing_ErrInputLinesDepleted   = errors.New("input lines depleted")
 	StructureParsing_ErrLineTypeNameMismatch = errors.New("line type name mismatch")
 )
+
+// LineBuilding
+var (
+	LineBuilding_ErrInvalidDateFormat  = errors.New("invalid date format")
+	LineBuilding_ErrUsupportedDataType = errors.New("unsupported data type")
+)

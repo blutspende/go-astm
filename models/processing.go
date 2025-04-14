@@ -1,5 +1,7 @@
 package models
 
+import "github.com/blutspende/go-astm/v2/constants"
+
 // Configuration struct for the whole process
 type Configuration struct {
 	Encoding                   string
@@ -7,6 +9,7 @@ type Configuration struct {
 	TimeZone                   string
 	EnforceSequenceNumberCheck bool
 	Internal                   InternalConfiguration
+	Notation                   string
 }
 
 var DefaultConfiguration = Configuration{
@@ -14,4 +17,5 @@ var DefaultConfiguration = Configuration{
 	LineSeparator:              "",
 	TimeZone:                   "Europe/Berlin",
 	EnforceSequenceNumberCheck: true,
+	Notation:                   constants.NOTATION_STANDARD,
 }

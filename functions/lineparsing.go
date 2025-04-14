@@ -93,9 +93,9 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 				}
 			}
 			targetValues[i].Set(arrayValue)
+		} else if targetFieldAnnotation.IsComponent {
 			// |comp1^comp2^comp3|
 			// Field is a component
-		} else if targetFieldAnnotation.IsComponent {
 			components := strings.Split(inputField, config.Internal.Delimiters.Component)
 			// Not enough components in the inputField
 			if len(components) < targetFieldAnnotation.ComponentPos {

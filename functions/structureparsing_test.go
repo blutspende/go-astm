@@ -6,19 +6,10 @@ import (
 	"testing"
 )
 
-type Record struct {
-	First  string `astm:"3"`
-	Second string `astm:"4"`
-}
-
-type SingleRecordStruct struct {
-	FirstRecord Record `astm:"R"`
-}
-
 func TestParseStruct_SingleLineStruct(t *testing.T) {
 	// Arrange
 	input := []string{
-		"R|1|first|second",
+		"R|1|first|second|third",
 	}
 	target := SingleRecordStruct{}
 	lineIndex := 0
@@ -28,17 +19,14 @@ func TestParseStruct_SingleLineStruct(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "first", target.FirstRecord.First)
 	assert.Equal(t, "second", target.FirstRecord.Second)
-}
-
-type RecordArrayStruct struct {
-	RecordArray []Record `astm:"R"`
+	assert.Equal(t, "third", target.FirstRecord.Third)
 }
 
 func TestParseStruct_RecordArrayStruct(t *testing.T) {
 	// Arrange
 	input := []string{
-		"R|1|first1|second1",
-		"R|2|first2|second2",
+		"R|1|first1|second1|third1",
+		"R|2|first2|second2|third2",
 	}
 	target := RecordArrayStruct{}
 	lineIndex := 0
@@ -49,24 +37,10 @@ func TestParseStruct_RecordArrayStruct(t *testing.T) {
 	assert.Len(t, target.RecordArray, 2)
 	assert.Equal(t, "first1", target.RecordArray[0].First)
 	assert.Equal(t, "second1", target.RecordArray[0].Second)
+	assert.Equal(t, "third1", target.RecordArray[0].Third)
 	assert.Equal(t, "first2", target.RecordArray[1].First)
 	assert.Equal(t, "second2", target.RecordArray[1].Second)
-}
-
-type RecordType1 struct {
-	First  string `astm:"3"`
-	Second string `astm:"4"`
-}
-type RecordType2 struct {
-	First  string `astm:"3"`
-	Second string `astm:"4"`
-}
-type CompositeRecordStruct struct {
-	Record1 RecordType1 `astm:"F"`
-	Record2 RecordType2 `astm:"S"`
-}
-type CompositeMessage struct {
-	CompositeRecordStruct CompositeRecordStruct
+	assert.Equal(t, "third2", target.RecordArray[1].Third)
 }
 
 func TestParseStruct_CompositeMessage(t *testing.T) {
@@ -85,10 +59,6 @@ func TestParseStruct_CompositeMessage(t *testing.T) {
 	assert.Equal(t, "r1 second", target.CompositeRecordStruct.Record1.Second)
 	assert.Equal(t, "r2 first", target.CompositeRecordStruct.Record2.First)
 	assert.Equal(t, "r2 second", target.CompositeRecordStruct.Record2.Second)
-}
-
-type CompositeArrayMessage struct {
-	CompositeRecordArray []CompositeRecordStruct
 }
 
 func TestParseStruct_CompositeArrayMessage(t *testing.T) {
@@ -116,12 +86,6 @@ func TestParseStruct_CompositeArrayMessage(t *testing.T) {
 	assert.Equal(t, "a2 r2 second", target.CompositeRecordArray[1].Record2.Second)
 }
 
-type OptionalMessage struct {
-	First    RecordType1 `astm:"F"`
-	Optional RecordType2 `astm:"S,optional"`
-	Third    RecordType1 `astm:"T"`
-}
-
 func TestParseStruct_OptionalMessage(t *testing.T) {
 	// Arrange
 	input := []string{
@@ -140,12 +104,6 @@ func TestParseStruct_OptionalMessage(t *testing.T) {
 	assert.Equal(t, "", target.Optional.Second)
 	assert.Equal(t, "first", target.Third.First)
 	assert.Equal(t, "second", target.Third.Second)
-}
-
-type OptionalArrayMessage struct {
-	First    RecordType1   `astm:"F"`
-	Optional []RecordType2 `astm:"A,optional"`
-	Last     RecordType1   `astm:"L"`
 }
 
 func TestParseStruct_OptionalArrayMessage(t *testing.T) {

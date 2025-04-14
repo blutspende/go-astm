@@ -1,5 +1,182 @@
 package functions
 
-func BuildLine(sourceStruct interface{}) (result string, err error) {
-	return "", nil
+import (
+	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/errmsg"
+	"github.com/blutspende/go-astm/v2/models"
+	"reflect"
+	"sort"
+	"strconv"
+	"time"
+)
+
+func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int, config *models.Configuration) (result string, err error) {
+	// Process the target structure
+	sourceTypes, sourceValues, _, err := ProcessStructReflection(sourceStruct)
+	if err != nil {
+		return "", err
+	}
+
+	// Create a map to store field values indexed by FieldPos
+	fieldMap := make(map[int]string)
+
+	// TODO: question is, should we hard code the first two fields?
+	// Add line name
+	fieldMap[1] = lineTypeName
+	// If it's a header, add the other delimiters
+	if lineTypeName == "H" {
+		fieldMap[2] = config.Internal.Delimiters.Repeat +
+			config.Internal.Delimiters.Component +
+			config.Internal.Delimiters.Escape
+	} else {
+		// If it's not a header add the sequence number
+		fieldMap[2] = strconv.Itoa(sequenceNumber)
+	}
+
+	// Iterate over the inputFields of the targetStruct struct
+	for i := 0; i < len(sourceTypes); i++ {
+		// Parse the sourceStruct field sourceFieldAnnotation
+		sourceFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
+		if err != nil {
+			return "", err
+		}
+
+		// TODO: question: should the sequence number be hard coded 2nd place?
+		// Set the sequence number if the field is a sequence number
+		//if sourceFieldAnnotation.Attribute == constants.ATTRIBUTE_SEQUENCE {
+		//	sourceValues[i].Set(reflect.ValueOf(sequenceNumber))
+		//}
+
+		fieldValueString := ""
+		// If the field is an array, iterate over its elements and use the Repeat delimiter
+		if sourceFieldAnnotation.IsArray {
+			for j := 0; j < sourceValues[i].Len(); j++ {
+				elementValue := sourceValues[i].Index(j)
+				convertedValue, err := convertField(elementValue, sourceFieldAnnotation, config)
+				if err != nil {
+					return "", err
+				}
+				fieldValueString += convertedValue
+				if j < sourceValues[i].Len()-1 {
+					fieldValueString += config.Internal.Delimiters.Repeat
+				}
+			}
+		} else if sourceFieldAnnotation.IsComponent {
+			// If the field is a component, iterate over sourceTypes until a field is not a component
+			// Note: components for the same field have to come sequentially, or it will break
+			componentFieldString := ""
+			for ; i < len(sourceTypes); i++ {
+				// Parse the targetStruct field targetFieldAnnotation
+				currentFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
+				if err != nil {
+					return "", err
+				}
+				// If the field is not the same field anymore, break the loop
+				if currentFieldAnnotation.FieldPos != sourceFieldAnnotation.FieldPos {
+					i--
+					break
+				}
+
+				// Convert current component
+				componentValue, err := convertField(sourceValues[i], currentFieldAnnotation, config)
+				if err != nil {
+					return "", err
+				}
+
+				// Add the component value and a component delimiter to the field string
+				componentFieldString += componentValue + config.Internal.Delimiters.Component
+			}
+			// Remove the last component delimiter
+			if len(componentFieldString) > 0 {
+				componentFieldString = componentFieldString[:len(componentFieldString)-1]
+			}
+			// Set the field value string to the component field string
+			fieldValueString = componentFieldString
+		} else {
+			// If the field is not an array, convert it directly
+			fieldValueString, err = convertField(sourceValues[i], sourceFieldAnnotation, config)
+			if err != nil {
+				return "", err
+			}
+		}
+
+		// Store the field value in the map using FieldPos as the key
+		fieldMap[sourceFieldAnnotation.FieldPos] = fieldValueString
+	}
+
+	// Construct the result string based on the field map
+	result = constructResult(fieldMap, config)
+
+	return result, nil
+}
+
+func constructResult(fieldMap map[int]string, config *models.Configuration) (result string) {
+	// Sort the keys of the map
+	keys := make([]int, 0, len(fieldMap))
+	for k := range fieldMap {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	// Determine how many fields to include based on the notation
+	lastElementIndex := len(fieldMap) - 1
+	// In short notation the empty fields in the end are skipped
+	if config.Notation == constants.NOTATION_SHORT {
+		for i, key := range keys {
+			if fieldMap[key] != "" {
+				lastElementIndex = i
+			}
+		}
+	}
+
+	// Construct the result string
+	for i, key := range keys {
+		result += fieldMap[key]
+		// Add the field delimiter if not the last field
+		if i < lastElementIndex {
+			result += config.Internal.Delimiters.Field
+		}
+		// Break when we reach the targeted last element
+		if i == lastElementIndex {
+			break
+		}
+	}
+
+	return result
+}
+
+func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, config *models.Configuration) (result string, err error) {
+	// Format the result as a string based on the field type
+	switch field.Kind() {
+	case reflect.String:
+		result = field.String()
+	case reflect.Int:
+		result = strconv.Itoa(int(field.Int()))
+	case reflect.Float32, reflect.Float64:
+		precision := -1
+		if annotation.Attribute == constants.ATTRIBUTE_LENGTH {
+			precision = annotation.AttributeValue
+		}
+		result = strconv.FormatFloat(field.Float(), 'f', precision, int(field.Type().Bits()))
+	case reflect.Struct:
+		// Check for time.Time type (it reflects as a Struct)
+		if field.Type() == reflect.TypeOf(time.Time{}) {
+			timeFormat := "20060102"
+			if annotation.Attribute == constants.ATTRIBUTE_LONGDATE {
+				timeFormat = "20060102150405"
+			}
+			timeValue, ok := field.Interface().(time.Time)
+			if !ok {
+				return "", errmsg.LineBuilding_ErrInvalidDateFormat
+			}
+			result = timeValue.In(config.Internal.TimeLocation).Format(timeFormat) // Format the date as a string
+		} else {
+			// Note: option to handle other struct types here
+		}
+	default:
+		return "", errmsg.LineBuilding_ErrUsupportedDataType
+	}
+
+	// Return the result and no error if everything went well
+	return result, nil
 }
