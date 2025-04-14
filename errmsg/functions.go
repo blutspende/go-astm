@@ -11,6 +11,7 @@ const (
 var (
 	Lining_ErrNotEnoughLines   = errors.New("not enough lines")
 	Lining_ErrInvalidLinebreak = errors.New("invalid line breaking")
+	Lining_ErrNoLineSeparator  = errors.New("separator has to be provided if auto-detect is disabled")
 )
 
 // AnnotationParsing

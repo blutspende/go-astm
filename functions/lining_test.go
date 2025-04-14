@@ -117,6 +117,7 @@ func TestSliceLines_ExplicitCr(t *testing.T) {
 	// Arrange
 	input := "first\r\nsecond"
 	config.LineSeparator = constants.CR
+	config.AutoDetectLineSeparator = false
 	// Act
 	lines, err := SliceLines(input, config)
 	// Assert
@@ -141,6 +142,7 @@ func TestBuildLines_ExplicitLFCR(t *testing.T) {
 	// Arrange
 	input := []string{"first", "second"}
 	config.LineSeparator = constants.LFCR
+	config.AutoDetectLineSeparator = false
 	// Act
 	output := BuildLines(input, config)
 	// Assert

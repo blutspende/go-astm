@@ -11,13 +11,13 @@ import (
 
 func TestBuildLine_SimpleRecord(t *testing.T) {
 	// Arrange
-	target := SimpleRecord{
+	source := SimpleRecord{
 		First:  "first",
 		Second: "second",
 		Third:  "third",
 	}
 	// Act
-	result, err := BuildLine(&target, "T", 1, config)
+	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second|third", result)
@@ -25,7 +25,7 @@ func TestBuildLine_SimpleRecord(t *testing.T) {
 
 func TestBuildLine_MultitypeRecord(t *testing.T) {
 	// Arrange
-	target := MultitypeRecord{
+	source := MultitypeRecord{
 		String:     "string",
 		Int:        4,
 		Float32:    3.14,
@@ -35,7 +35,7 @@ func TestBuildLine_MultitypeRecord(t *testing.T) {
 		LongTime:   time.Date(2006, 1, 2, 15, 04, 05, 0, config.Internal.TimeLocation),
 	}
 	// Act
-	result, err := BuildLine(&target, "T", 1, config)
+	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	//TODO: question should the digit cutting round or truncate?
@@ -44,13 +44,13 @@ func TestBuildLine_MultitypeRecord(t *testing.T) {
 
 func TestBuildLine_UnorderedRecord(t *testing.T) {
 	// Arrange
-	target := UnorderedRecord{
+	source := UnorderedRecord{
 		First:  "first",
 		Second: "second",
 		Third:  "third",
 	}
 	// Act
-	result, err := BuildLine(&target, "T", 1, config)
+	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second|third", result)
@@ -58,13 +58,13 @@ func TestBuildLine_UnorderedRecord(t *testing.T) {
 
 func TestBuildLine_MissingData(t *testing.T) {
 	// Arrange
-	target := SimpleRecord{
+	source := SimpleRecord{
 		First:  "first",
 		Second: "",
 		Third:  "third",
 	}
 	// Act
-	result, err := BuildLine(&target, "T", 1, config)
+	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first||third", result)
@@ -72,13 +72,13 @@ func TestBuildLine_MissingData(t *testing.T) {
 
 func TestBuildLine_MissingDataAtEndLongNotation(t *testing.T) {
 	// Arrange
-	target := SimpleRecord{
+	source := SimpleRecord{
 		First:  "first",
 		Second: "",
 		Third:  "",
 	}
 	// Act
-	result, err := BuildLine(&target, "T", 1, config)
+	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first||", result)
@@ -86,14 +86,14 @@ func TestBuildLine_MissingDataAtEndLongNotation(t *testing.T) {
 
 func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 	// Arrange
-	target := SimpleRecord{
+	source := SimpleRecord{
 		First:  "first",
 		Second: "",
 		Third:  "",
 	}
 	config.Notation = constants.NOTATION_SHORT
 	// Act
-	result, err := BuildLine(&target, "T", 1, config)
+	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first", result)
@@ -103,14 +103,14 @@ func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 
 func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 	// Arrange
-	target := SimpleRecord{
+	source := SimpleRecord{
 		First:  "first",
 		Second: "second",
 		Third:  "third",
 	}
 	config.Notation = constants.NOTATION_SHORT
 	// Act
-	result, err := BuildLine(&target, "D", 3, config)
+	result, err := BuildLine(&source, "D", 3, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "D|3|first|second|third", result)
@@ -120,11 +120,11 @@ func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 
 func TestBuildLine_HeaderRecord(t *testing.T) {
 	// Arrange
-	target := HeaderRecord{
+	source := HeaderRecord{
 		First: "first",
 	}
 	// Act
-	result, err := BuildLine(&target, "H", 0, config)
+	result, err := BuildLine(&source, "H", 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "H|\\^&|first", result)
@@ -132,7 +132,7 @@ func TestBuildLine_HeaderRecord(t *testing.T) {
 
 func TestBuildLine_HeaderRecordCustomDelimiters(t *testing.T) {
 	// Arrange
-	target := HeaderRecord{
+	source := HeaderRecord{
 		First: "first",
 	}
 	config.Internal.Delimiters.Field = "/"
@@ -140,7 +140,7 @@ func TestBuildLine_HeaderRecordCustomDelimiters(t *testing.T) {
 	config.Internal.Delimiters.Component = "*"
 	config.Internal.Delimiters.Escape = "%"
 	// Act
-	result, err := BuildLine(&target, "H", 0, config)
+	result, err := BuildLine(&source, "H", 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "H/!*%/first", result)
@@ -150,7 +150,7 @@ func TestBuildLine_HeaderRecordCustomDelimiters(t *testing.T) {
 
 func TestBuildLine_HeaderDelimiterChange(t *testing.T) {
 	// Arrange
-	target := HeaderDelimiterChange{
+	source := HeaderDelimiterChange{
 		First: "first",
 		Array: []string{"second1", "second2"},
 		Comp1: "third1",
@@ -161,7 +161,7 @@ func TestBuildLine_HeaderDelimiterChange(t *testing.T) {
 	config.Internal.Delimiters.Component = "*"
 	config.Internal.Delimiters.Escape = "%"
 	// Act
-	result, err := BuildLine(&target, "H", 0, config)
+	result, err := BuildLine(&source, "H", 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "H/!*%/first/second1!second2/third1*third2", result)
@@ -171,12 +171,12 @@ func TestBuildLine_HeaderDelimiterChange(t *testing.T) {
 
 func TestBuildLine_ArrayRecord(t *testing.T) {
 	// Arrange
-	target := ArrayRecord{
+	source := ArrayRecord{
 		First: "first",
 		Array: []string{"second1", "second2", "second3"},
 	}
 	// Act
-	result, err := BuildLine(&target, "T", 1, config)
+	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second1\\second2\\second3", result)
@@ -184,7 +184,7 @@ func TestBuildLine_ArrayRecord(t *testing.T) {
 
 func TestBuildLine_ComponentedRecord(t *testing.T) {
 	// Arrange
-	target := ComponentedRecord{
+	source := ComponentedRecord{
 		First:       "first",
 		SecondComp1: "second1",
 		SecondComp2: "second2",
@@ -193,7 +193,7 @@ func TestBuildLine_ComponentedRecord(t *testing.T) {
 		ThirdComp3:  "third3",
 	}
 	// Act
-	result, err := BuildLine(&target, "T", 1, config)
+	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second1^second2|third1^third2^third3", result)

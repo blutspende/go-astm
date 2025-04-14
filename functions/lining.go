@@ -13,12 +13,17 @@ func SliceLines(input string, config *models.Configuration) (output []string, er
 		return nil, errmsg.Lining_ErrNotEnoughLines
 	}
 
+	// A line separator has to be provided if auto-detect is disabled
+	if !config.AutoDetectLineSeparator && config.LineSeparator == "" {
+		return nil, errmsg.Lining_ErrNoLineSeparator
+	}
+
 	var lines []string
-	if config.LineSeparator != "" {
-		// Line separator provided in config, split by it
+	if !config.AutoDetectLineSeparator {
+		// Line separator provided in config, no auto-detect
 		lines = strings.Split(input, config.LineSeparator)
 	} else {
-		// No line separator provided: default behavior
+		// Auto-detect line separator
 		lfCnt := 0
 		crCnt := 0
 		for _, c := range input {

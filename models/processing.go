@@ -6,6 +6,7 @@ import "github.com/blutspende/go-astm/v2/constants"
 type Configuration struct {
 	Encoding                   string
 	LineSeparator              string
+	AutoDetectLineSeparator    bool
 	TimeZone                   string
 	EnforceSequenceNumberCheck bool
 	Internal                   InternalConfiguration
@@ -14,7 +15,8 @@ type Configuration struct {
 
 var DefaultConfiguration = Configuration{
 	Encoding:                   "ISO8859-1",
-	LineSeparator:              "",
+	LineSeparator:              constants.LF,
+	AutoDetectLineSeparator:    true,
 	TimeZone:                   "Europe/Berlin",
 	EnforceSequenceNumberCheck: true,
 	Notation:                   constants.NOTATION_STANDARD,
