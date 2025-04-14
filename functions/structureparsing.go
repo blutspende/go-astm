@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"errors"
 	"github.com/blutspende/go-astm/v2/constants"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
@@ -48,20 +49,25 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				if targetStructAnnotation.IsComposite {
 					// Composite target: recursively parse the composite structure
 					err = ParseStruct(inputLines, elem.Addr().Interface(), lineIndex, seq, depth+1, config)
+					// If the error is a line type name mismatch, it means the end of the array
+					// TODO: maybe this should be handled some other way
+					if errors.Is(err, errmsg.StructureParsing_ErrLineTypeNameMismatch) {
+						nameOk = false
+					}
 				} else {
 					// Non-composite target: parse the line into the new element
 					nameOk, err = ParseLine(inputLines[*lineIndex], elem.Addr().Interface(), targetStructAnnotation.StructName, seq, config)
 					// Increment the line index
 					*lineIndex++
 				}
-				if err != nil {
-					return err
-				}
 				// If the type name is a mismatch, it means the end of the array
 				if !nameOk {
 					err = nil
 					*lineIndex--
 					break
+				}
+				if err != nil {
+					return err
 				}
 				// If no error, add the new element to the slice
 				targetValues[i].Set(reflect.Append(targetValues[i], elem))

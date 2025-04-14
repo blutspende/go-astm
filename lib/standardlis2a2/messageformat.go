@@ -6,7 +6,7 @@ import "time"
 
 // (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
 type Header struct {
-	Delimiters              string    `astm:"2,delimiter"` // 6.2
+	Delimiters              string    `astm:"2"`           // 6.2
 	MessageControlID        string    `astm:"3"`           // 6.3
 	AccessPassword          string    `astm:"4"`           // 6.4
 	SenderNameOrID          string    `astm:"5"`           // 6.5

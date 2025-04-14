@@ -36,10 +36,10 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		return false, errmsg.LineParsing_ErrMandatoryInputFieldsMissing
 	}
 	nameOk = inputFields[0] == lineTypeName
-	// Name checking is never enforced
-	//if !nameOk && config.EnforceRecordNameCheck {
-	//	return nameOk, errmsg.LineParsing_ErrLineTypeNameMismatch
-	//}
+	// Name checking is always enforced, but instead of error it is returned in the nameOk variable
+	if !nameOk { //&& config.EnforceRecordNameCheck {
+		return nameOk, nil //errmsg.LineParsing_ErrLineTypeNameMismatch
+	}
 	if inputFields[1] != strconv.Itoa(sequenceNumber) && inputLine[0] != 'H' && config.EnforceSequenceNumberCheck {
 		return nameOk, errmsg.LineParsing_ErrSequenceNumberMismatch
 	}
@@ -112,7 +112,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 				return nameOk, err
 			}
 		}
-		//TODO: handle componented array case
+		// TODO: handle componented array case
 		// |comp1^comp2^comp3\comp1^comp2^comp3\comp1^comp2^comp3|
 
 		// Check if there are more inputFields in the input not mapped to the struct
