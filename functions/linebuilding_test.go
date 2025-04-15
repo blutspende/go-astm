@@ -26,30 +26,118 @@ func TestBuildLine_SimpleRecord(t *testing.T) {
 func TestBuildLine_MultitypeRecord(t *testing.T) {
 	// Arrange
 	source := MultitypeRecord{
-		String:     "string",
-		Int:        4,
-		Float32:    3.14,
-		Float64:    3.1415926,
-		Float64Cut: 3.1415926,
-		ShortTime:  time.Date(2006, 1, 2, 0, 0, 0, 0, config.Internal.TimeLocation),
-		LongTime:   time.Date(2006, 1, 2, 15, 04, 05, 0, config.Internal.TimeLocation),
+		String:  "string",
+		Int:     3,
+		Float32: 3.14,
+		Float64: 3.14159265,
+		Date:    time.Date(2006, 1, 2, 0, 0, 0, 0, config.Internal.TimeLocation),
 	}
 	// Act
 	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	//TODO: question should the digit cutting round or truncate?
-	assert.Equal(t, "T|1|string|4|3.14|3.1415926|3.142|20060102|20060102150405", result)
+	assert.Equal(t, "T|1|string|3|3.14|3.14159265|20060102", result)
 }
 
-func TestBuildLine_MultitypeEmptyRecord(t *testing.T) {
+func TestBuildLine_MultitypeLengthRecord(t *testing.T) {
+	// Arrange
+	source := MultitypeLengthRecord{
+		FloatFull: 3.14159265,
+		FloatFix3: 3.14159265,
+		FloatFix0: 3.14159265,
+		LongDate:  time.Date(2006, 1, 2, 15, 04, 05, 0, config.Internal.TimeLocation),
+		ShortDate: time.Date(2006, 1, 2, 15, 04, 05, 0, config.Internal.TimeLocation),
+	}
+	// Act
+	result, err := BuildLine(&source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|3.14159265|3.142|3|20060102150405|20060102", result)
+}
+
+func TestBuildLine_MultitypeLengthRecordRound(t *testing.T) {
+	// Arrange
+	source := MultitypeLengthRecord{
+		FloatFull: 3.77777,
+		FloatFix3: 3.77777,
+		FloatFix0: 3.77777,
+	}
+	config.RoundFixedNumbers = true
+	// Act
+	result, err := BuildLine(&source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|3.77777|3.778|4||", result)
+	// Tear down
+	teardown()
+}
+
+func TestBuildLine_MultitypeLengthRecordTruncate(t *testing.T) {
+	// Arrange
+	source := MultitypeLengthRecord{
+		FloatFull: 3.77777,
+		FloatFix3: 3.77777,
+		FloatFix0: 3.77777,
+	}
+	config.RoundFixedNumbers = false
+	// Act
+	result, err := BuildLine(&source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|3.77777|3.777|3||", result)
+	// Tear down
+	teardown()
+}
+
+func TestBuildLine_MultitypeRecordEmpty(t *testing.T) {
 	// Arrange
 	source := MultitypeRecord{}
 	// Act
 	result, err := BuildLine(&source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "T|1||0|0|0|0.000||", result)
+	assert.Equal(t, "T|1||0|0|0|", result)
+}
+
+func TestBuildLine_MultitypeLengthRecordEmpty(t *testing.T) {
+	// Arrange
+	source := MultitypeLengthRecord{}
+	// Act
+	result, err := BuildLine(&source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|0|0.000|0||", result)
+}
+
+func TestBuildLine_MultitypePointerRecord(t *testing.T) {
+	// Arrange
+	String := "string"
+	Int := 3
+	Float32 := float32(3.14)
+	Float64 := float64(3.14159265)
+	Date := time.Date(2006, 1, 2, 0, 0, 0, 0, config.Internal.TimeLocation)
+	source := MultitypePointerRecord{
+		String:  &String,
+		Int:     &Int,
+		Float32: &Float32,
+		Float64: &Float64,
+		Date:    &Date,
+	}
+	// Act
+	result, err := BuildLine(&source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|string|3|3.14|3.14159265|20060102", result)
+}
+
+func TestBuildLine_MultitypePointerRecordEmpty(t *testing.T) {
+	// Arrange
+	source := MultitypePointerRecord{}
+	// Act
+	result, err := BuildLine(&source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|||||", result)
 }
 
 func TestBuildLine_UnorderedRecord(t *testing.T) {
@@ -80,7 +168,7 @@ func TestBuildLine_MissingData(t *testing.T) {
 	assert.Equal(t, "T|1|first||third", result)
 }
 
-func TestBuildLine_MissingDataAtEndLongNotation(t *testing.T) {
+func TestBuildLine_MissingDataAtEndStandardNotation(t *testing.T) {
 	// Arrange
 	source := SimpleRecord{
 		First:  "first",

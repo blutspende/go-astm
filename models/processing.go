@@ -10,6 +10,7 @@ type Configuration struct {
 	TimeZone                   string
 	EnforceSequenceNumberCheck bool
 	Notation                   string
+	RoundFixedNumbers          bool
 	Internal                   InternalConfiguration
 }
 
@@ -20,4 +21,5 @@ var DefaultConfiguration = Configuration{
 	TimeZone:                   constants.TIMEZONE_EUROPE_BERLIN,
 	EnforceSequenceNumberCheck: true,
 	Notation:                   constants.NOTATION_STANDARD,
+	RoundFixedNumbers:          true,
 }

@@ -33,7 +33,7 @@ func TestMissingComponent(t *testing.T) {
 	config.Encoding = constants.ENCODING_UTF8
 
 	// Act
-	value, err := astm.Marshal(&testMessage, config)
+	value, err := astm.Marshal(testMessage, config)
 
 	// Assert
 	assert.Nil(t, err)
@@ -74,7 +74,7 @@ func TestSimpleMarshal(t *testing.T) {
 	msg.Ill.SecondfieldArray2 = "second-arr2"
 	config.Encoding = constants.ENCODING_ASCII
 
-	lines, err := astm.Marshal(&msg, config)
+	lines, err := astm.Marshal(msg, config)
 
 	for _, line := range lines {
 		linestr := string(line)
@@ -108,7 +108,7 @@ func TestGenerateSequence(t *testing.T) {
 	msg.Patient[1].FirstName = "Secundie"
 	config.Encoding = constants.ENCODING_ASCII
 
-	lines, err := astm.Marshal(&msg, config)
+	lines, err := astm.Marshal(msg, config)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -159,7 +159,7 @@ func TestNestedStruct(t *testing.T) {
 	msg.PatientResult[1].Result[0].Units = "none"
 	config.Encoding = constants.ENCODING_ASCII
 
-	lines, err := astm.Marshal(&msg, config)
+	lines, err := astm.Marshal(msg, config)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -199,7 +199,7 @@ func TestTimeLocalization(t *testing.T) {
 	msg.Header.DateAndTime = testTime.UTC()
 	config.Encoding = constants.ENCODING_ASCII
 
-	lines, err := astm.Marshal(&msg, config)
+	lines, err := astm.Marshal(msg, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, fmt.Sprintf("H|\\^&||||||||||||%s", timeInBerlin.Format("20060102150405")), string(lines[0]))
@@ -232,7 +232,7 @@ func TestEnumMarshal(t *testing.T) {
 	config.Encoding = constants.ENCODING_ASCII
 	config.Notation = constants.NOTATION_SHORT
 
-	lines, err := astm.Marshal(&msg, config)
+	lines, err := astm.Marshal(msg, config)
 
 	assert.Nil(t, err)
 	//TODO: what??
@@ -296,7 +296,7 @@ func TestFieldEnumeration(t *testing.T) {
 
 	config.Encoding = constants.ENCODING_ASCII
 
-	record, err := astm.Marshal(&orq, config)
+	record, err := astm.Marshal(orq, config)
 
 	assert.Nil(t, err)
 
@@ -319,7 +319,7 @@ func TestOneDlimiterTooMuch(t *testing.T) {
 	record.Terminator.TerminatorCode = "N"
 	config.Encoding = constants.ENCODING_ASCII
 
-	filedata, err := astm.Marshal(&record, config)
+	filedata, err := astm.Marshal(record, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
@@ -344,7 +344,7 @@ func TestGermanLanguageDecoder(t *testing.T) {
 	record.Patient.LastName = "Nügendiß"
 	config.Encoding = constants.ENCODING_WINDOWS1252
 
-	filedata, err := astm.Marshal(&record, config)
+	filedata, err := astm.Marshal(record, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
@@ -357,7 +357,7 @@ func TestGermanLanguageDecoder(t *testing.T) {
 
 	config.Encoding = constants.ENCODING_ISO8859_1
 	// test for iso8859_1
-	filedata, err = astm.Marshal(&record, config)
+	filedata, err = astm.Marshal(record, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
@@ -376,7 +376,7 @@ func TestFailMarshalOnlyHeader(t *testing.T) {
 	config.Encoding = constants.ENCODING_ASCII
 	config.Notation = constants.NOTATION_SHORT
 
-	message, err := astm.Marshal(&header, config)
+	message, err := astm.Marshal(header, config)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, message)
@@ -406,7 +406,7 @@ func TestQueryMessage(t *testing.T) {
 	config.Encoding = constants.ENCODING_ASCII
 
 	// Test with no Querydata provided
-	filedata, err := astm.Marshal(&query, config)
+	filedata, err := astm.Marshal(query, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
@@ -420,7 +420,7 @@ func TestQueryMessage(t *testing.T) {
 	})
 	config.Encoding = constants.ENCODING_ASCII
 
-	filedata, err = astm.Marshal(&query, config)
+	filedata, err = astm.Marshal(query, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
@@ -472,7 +472,7 @@ func TestMarshalMultipleOrder(t *testing.T) {
 	config.Encoding = constants.ENCODING_ASCII
 	config.Notation = constants.NOTATION_SHORT
 
-	filedata, err := astm.Marshal(&msg, config)
+	filedata, err := astm.Marshal(msg, config)
 	assert.Nil(t, err)
 
 	for _, row := range filedata {
@@ -521,7 +521,7 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 	config.Encoding = constants.ENCODING_ASCII
 	config.Notation = constants.NOTATION_SHORT
 
-	filedata, err := astm.Marshal(&msg, config)
+	filedata, err := astm.Marshal(msg, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 6, len(filedata))
@@ -579,7 +579,7 @@ func TestEmbeddedStructsAndArrays(t *testing.T) {
 	config.Encoding = constants.ENCODING_UTF8
 	config.TimeZone = constants.TIMEZONE_UTC
 
-	data, err := astm.Marshal(&message, config)
+	data, err := astm.Marshal(message, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "M|1|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\240423H1(^20240905000000^20250305\\240411M11^20240828000000^20241028", string(data[0]))
@@ -611,7 +611,7 @@ func TestEmbeddedStructsAndArraysShortNotation(t *testing.T) {
 	config.TimeZone = constants.TIMEZONE_UTC
 	config.Notation = constants.NOTATION_SHORT
 
-	data, err := astm.Marshal(&message, config)
+	data, err := astm.Marshal(message, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "M|1|REAGENT|DILUENT\\LYSE", string(data[0]))
@@ -664,7 +664,7 @@ func TestCustomDecimalLengthAnnotation(t *testing.T) {
 	config.TimeZone = constants.TIMEZONE_UTC
 	config.Notation = constants.NOTATION_SHORT
 
-	data, err := astm.Marshal(&message, config)
+	data, err := astm.Marshal(message, config)
 	assert.Nil(t, err)
 	assert.Equal(t, "D|0.3457|0.4|0.1234567^0.98^0.234^0.345\\0.9900000^0.11^0.223^0.334", string(data[0]))
 

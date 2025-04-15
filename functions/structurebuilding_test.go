@@ -15,7 +15,7 @@ func TestBuildStruct_SingleLineStruct(t *testing.T) {
 		},
 	}
 	// Act
-	result, err := BuildStruct(&source, 1, 0, config)
+	result, err := BuildStruct(source, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Len(t, result, 1)
@@ -39,7 +39,7 @@ func TestBuildStruct_RecordArrayStruct(t *testing.T) {
 		},
 	}
 	// Act
-	result, err := BuildStruct(&source, 1, 0, config)
+	result, err := BuildStruct(source, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Len(t, result, 2)
@@ -62,7 +62,7 @@ func TestBuildStruct_CompositeMessage(t *testing.T) {
 		},
 	}
 	// Act
-	result, err := BuildStruct(&source, 1, 0, config)
+	result, err := BuildStruct(source, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Len(t, result, 2)
@@ -97,7 +97,7 @@ func TestBuildStruct_CompositeArrayMessage(t *testing.T) {
 		},
 	}
 	// Act
-	result, err := BuildStruct(&source, 1, 0, config)
+	result, err := BuildStruct(source, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Len(t, result, 4)

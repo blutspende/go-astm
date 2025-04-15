@@ -116,13 +116,16 @@ func ParseAstmStructAnnotation(input reflect.StructField) (result models.AstmStr
 }
 
 // TODO: find a better place for this
-// Write unit tests for this function
-// Maybe remove length return as it is not used
-func ProcessStructReflection(targetStruct interface{}) (targetTypes []reflect.StructField, targetValues []reflect.Value, length int, err error) {
-	// Ensure the targetStruct is a pointer to a struct
-	targetPtrValue := reflect.ValueOf(targetStruct)
-	if targetPtrValue.Kind() != reflect.Ptr || targetPtrValue.Elem().Kind() != reflect.Struct {
-		// targetStruct must be a pointer to a struct
+func ProcessStructReflection(inputStruct interface{}) (outputTypes []reflect.StructField, outputValues []reflect.Value, length int, err error) {
+	// Ensure the inputStruct is a pointer to a struct
+	targetPtrValue := reflect.ValueOf(inputStruct)
+	if targetPtrValue.Kind() != reflect.Ptr {
+		// If inputStruct is not a pointer, take its address
+		targetPtrValue = reflect.New(reflect.TypeOf(inputStruct))
+		targetPtrValue.Elem().Set(reflect.ValueOf(inputStruct))
+	}
+	if targetPtrValue.Elem().Kind() != reflect.Struct {
+		// inputStruct must be a pointer to a struct
 		return nil, nil, 0, errmsg.AnnotationParsing_ErrInvalidTargetStruct
 	}
 
@@ -131,18 +134,18 @@ func ProcessStructReflection(targetStruct interface{}) (targetTypes []reflect.St
 	targetType := targetPtrValue.Type().Elem()
 
 	// Allocate the results
-	targetTypes = make([]reflect.StructField, targetValue.NumField())
-	targetValues = make([]reflect.Value, targetType.NumField())
+	outputTypes = make([]reflect.StructField, targetValue.NumField())
+	outputValues = make([]reflect.Value, targetType.NumField())
 	length = targetType.NumField()
 
-	// Iterate and save targetTypes and targetValues
+	// Iterate and save outputTypes and outputValues
 	for i := 0; i < targetType.NumField(); i++ {
-		targetTypes[i] = targetType.Field(i)
-		targetValues[i] = targetValue.Field(i)
+		outputTypes[i] = targetType.Field(i)
+		outputValues[i] = targetValue.Field(i)
 	}
 
 	// Return the results
-	return targetTypes, targetValues, length, nil
+	return outputTypes, outputValues, length, nil
 }
 
 func isValidAttribute(attribute string) bool {

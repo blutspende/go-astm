@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+// Field annotation tests
+
 func TestParseAstmFieldAnnotationString_SingleValue(t *testing.T) {
 	// Arrange
 	input := "4"
@@ -129,10 +131,6 @@ func TestParseAstmFieldAnnotationString_TooManyAttributes(t *testing.T) {
 	assert.Error(t, err, errmsg.AnnotationParsing_ErrTooManyAttributes)
 }
 
-type AnnotatedLine struct {
-	Field string `astm:"3.2,length:4"`
-}
-
 func TestParseAstmFieldAnnotation_AnnotatedStruct(t *testing.T) {
 	// Arrange
 	var input AnnotatedLine
@@ -150,10 +148,6 @@ func TestParseAstmFieldAnnotation_AnnotatedStruct(t *testing.T) {
 	assert.Equal(t, constants.ATTRIBUTE_LENGTH, result.Attribute)
 	assert.Equal(t, true, result.HasAttributeValue)
 	assert.Equal(t, 4, result.AttributeValue)
-}
-
-type AnnotatedArrayLine struct {
-	Field []string `astm:"3.2,length:4"`
 }
 
 func TestParseAstmFieldAnnotation_AnnotatedArrayStruct(t *testing.T) {
@@ -175,12 +169,7 @@ func TestParseAstmFieldAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	assert.Equal(t, 4, result.AttributeValue)
 }
 
-type Line struct {
-	Field string `astm:"2"`
-}
-type SingleLineStruct struct {
-	Lines Line `astm:"L"`
-}
+// Struct annotation tests
 
 func TestParseAstmStructAnnotation_SingleLineStruct(t *testing.T) {
 	// Arrange
@@ -196,10 +185,6 @@ func TestParseAstmStructAnnotation_SingleLineStruct(t *testing.T) {
 	assert.Equal(t, "L", result.StructName)
 	assert.Equal(t, false, result.HasAttribute)
 	assert.Equal(t, "", result.Attribute)
-}
-
-type AnnotatedArrayStruct struct {
-	Lines []Line `astm:"L,required"`
 }
 
 func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
@@ -218,10 +203,6 @@ func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	assert.Equal(t, constants.ATTRIBUTE_REQUIRED, result.Attribute)
 }
 
-type CompositeStruct struct {
-	Composite AnnotatedArrayStruct
-}
-
 func TestParseAstmStructAnnotation_CompositeStruct(t *testing.T) {
 	// Arrange
 	var input CompositeStruct
@@ -238,10 +219,6 @@ func TestParseAstmStructAnnotation_CompositeStruct(t *testing.T) {
 	assert.Equal(t, "", result.Attribute)
 }
 
-type CompositeArrayStruct struct {
-	Composite []AnnotatedArrayStruct
-}
-
 func TestParseAstmStructAnnotation_CompositeArrayStruct(t *testing.T) {
 	// Arrange
 	var input CompositeArrayStruct
@@ -256,4 +233,42 @@ func TestParseAstmStructAnnotation_CompositeArrayStruct(t *testing.T) {
 	assert.Equal(t, "", result.StructName)
 	assert.Equal(t, false, result.HasAttribute)
 	assert.Equal(t, "", result.Attribute)
+}
+
+// ProcessStructReflection tests
+
+func TestProcessStructReflection_SimpleRecord(t *testing.T) {
+	// Arrange
+	input := SimpleRecord{}
+	// Act
+	types, values, length, err := ProcessStructReflection(input)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, 3, length)
+	assert.Len(t, types, 3)
+	assert.Len(t, values, 3)
+	assert.Equal(t, "First", types[0].Name)
+}
+
+func TestProcessStructReflection_CompositeRecordStruct(t *testing.T) {
+	// Arrange
+	input := CompositeRecordStruct{}
+	// Act
+	types, values, length, err := ProcessStructReflection(input)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, 2, length)
+	assert.Len(t, types, 2)
+	assert.Len(t, values, 2)
+	assert.Equal(t, "Record1", types[0].Name)
+}
+
+func TestProcessStructReflection_SimpleRecordPointer(t *testing.T) {
+	// Arrange
+	input := SimpleRecord{}
+	// Act
+	_, _, length, err := ProcessStructReflection(&input)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, 3, length)
 }

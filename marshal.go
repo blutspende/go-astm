@@ -22,8 +22,8 @@ func Marshal(sourceStruct interface{}, configuration ...*models.Configuration) (
 		config = configuration[0]
 	} else {
 		config = &models.DefaultConfiguration
+		config.Internal.Delimiters = models.DefaultDelimiters
 	}
-	config.Internal.Delimiters = models.DefaultDelimiters
 	config.Internal.TimeLocation, err = time.LoadLocation(config.TimeZone)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func Marshal_old(message interface{}, enc Encoding, tz Timezone, notation Notati
 		return [][]byte{}, err
 	}
 
-	// default delmiters. These will be overwritten by the first occurence of "delimter"-annotation
+	// default delimiters. These will be overwritten by the first occurrence of "delimiter"-annotation
 	repeatDelimiter := "\\"
 	componentDelimiter := "^"
 	escapeDelimiter := "&"

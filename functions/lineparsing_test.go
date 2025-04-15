@@ -39,22 +39,19 @@ func TestParseLine_UnorderedRecord(t *testing.T) {
 
 func TestParseLine_MultitypeRecord(t *testing.T) {
 	// Arrange
-	input := "T|1|string|4|3.14|3.1415926|3.1415926|20060102|20060102150405"
+	input := "T|1|string|3|3.14|3.14159265|20060102"
 	target := MultitypeRecord{}
 	// Act
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
-	assert.Equal(t, string("string"), target.String)
-	assert.Equal(t, int(4), target.Int)
+	assert.Equal(t, "string", target.String)
+	assert.Equal(t, 3, target.Int)
 	assert.Equal(t, float32(3.14), target.Float32)
-	assert.Equal(t, float64(3.1415926), target.Float64)
-	assert.Equal(t, float64(3.1415926), target.Float64Cut)
+	assert.Equal(t, float64(3.14159265), target.Float64)
 	expectedShortTime := time.Date(2006, 1, 2, 0, 0, 0, 0, config.Internal.TimeLocation)
-	assert.Equal(t, expectedShortTime, target.ShortTime)
-	expectedLongTime := time.Date(2006, 1, 2, 15, 04, 05, 0, config.Internal.TimeLocation)
-	assert.Equal(t, expectedLongTime, target.LongTime)
+	assert.Equal(t, expectedShortTime, target.Date)
 }
 
 func TestParseLine_ComponentedRecord(t *testing.T) {

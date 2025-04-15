@@ -4,6 +4,7 @@ import (
 	"github.com/blutspende/go-astm/v2/constants"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
+	"math"
 	"reflect"
 	"sort"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 
 func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int, config *models.Configuration) (result string, err error) {
 	// Process the target structure
-	sourceTypes, sourceValues, _, err := ProcessStructReflection(sourceStruct)
+	sourceTypes, sourceValues, sourceTypesLength, err := ProcessStructReflection(sourceStruct)
 	if err != nil {
 		return "", err
 	}
@@ -34,7 +35,7 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 	}
 
 	// Iterate over the inputFields of the targetStruct struct
-	for i := 0; i < len(sourceTypes); i++ {
+	for i := 0; i < sourceTypesLength; i++ {
 		// Parse the sourceStruct field sourceFieldAnnotation
 		sourceFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
 		if err != nil {
@@ -46,6 +47,7 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 		//if sourceFieldAnnotation.Attribute == constants.ATTRIBUTE_SEQUENCE {
 		//	sourceValues[i].Set(reflect.ValueOf(sequenceNumber))
 		//}
+		// TODO: this should be an error, and also in line parsing a similar error
 		// Note: temporary solution
 		if sourceFieldAnnotation.FieldPos < 3 {
 			continue
@@ -150,6 +152,13 @@ func constructResult(fieldMap map[int]string, config *models.Configuration) (res
 }
 
 func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, config *models.Configuration) (result string, err error) {
+	// Check if the field is a pointer, nil returns empty, otherwise dereference it
+	if field.Kind() == reflect.Ptr {
+		if field.IsNil() {
+			return "", nil
+		}
+		field = field.Elem()
+	}
 	// Format the result as a string based on the field type
 	switch field.Kind() {
 	case reflect.String:
@@ -161,7 +170,12 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		if annotation.Attribute == constants.ATTRIBUTE_LENGTH {
 			precision = annotation.AttributeValue
 		}
-		result = strconv.FormatFloat(field.Float(), 'f', precision, int(field.Type().Bits()))
+		result = strconv.FormatFloat(field.Float(), 'f', precision, field.Type().Bits())
+		if !config.RoundFixedNumbers && precision >= 0 {
+			factor := math.Pow(10, float64(precision))
+			truncated := math.Trunc(field.Float()*factor) / factor
+			result = strconv.FormatFloat(truncated, 'f', precision, field.Type().Bits())
+		}
 	case reflect.Struct:
 		// Check for time.Time type (it reflects as a Struct)
 		if field.Type() == reflect.TypeOf(time.Time{}) {
