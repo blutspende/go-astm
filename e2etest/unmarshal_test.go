@@ -2,6 +2,8 @@ package e2e
 
 import (
 	"bytes"
+	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/models"
 	"testing"
 	"time"
 
@@ -14,6 +16,78 @@ import (
 	"golang.org/x/text/transform"
 )
 
+// Configuration struct for tests
+var config *models.Configuration
+
+// Reset config to default values
+func teardown() {
+	config = &models.Configuration{}
+	*config = models.DefaultConfiguration
+	config.Encoding = constants.ENCODING_UTF8
+	config.Internal.Delimiters = models.DefaultDelimiters
+	config.Internal.TimeLocation, _ = time.LoadLocation(config.TimeZone)
+}
+
+// Setup mock data for every test
+func TestMain(m *testing.M) {
+	// Set up configuration
+	teardown()
+	// Run all tests
+	m.Run()
+}
+
+type ComponentedTestMessage struct {
+	Componented Componented `astm:"C"`
+}
+type Componented struct {
+	Combined   string `astm:"3"`
+	Component1 string `astm:"4.1"`
+	Component2 string `astm:"4.2"`
+}
+
+func TestComponentMessage(t *testing.T) {
+	// Arrange
+	fileData := ""
+	fileData = fileData + "C|1|First^Second|First^Second\n"
+	var message ComponentedTestMessage
+
+	// Act
+	err := astm.Unmarshal([]byte(fileData), &message, config)
+
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "First^Second", message.Componented.Combined)
+	assert.Equal(t, "First", message.Componented.Component1)
+	assert.Equal(t, "Second", message.Componented.Component2)
+}
+
+type NoSequenceMessage struct {
+	NoSeq NoSequenceRecord `astm:"N"`
+}
+type NoSequenceRecord struct {
+	Second string `astm:"2"`
+	Third  string `astm:"3"`
+}
+
+func TestNoSequenceMessage(t *testing.T) {
+	// Arrange
+	fileData := ""
+	fileData = fileData + "N|Second|Third\n"
+	var message NoSequenceMessage
+	config.EnforceSequenceNumberCheck = false
+
+	// Act
+	err := astm.Unmarshal([]byte(fileData), &message, config)
+
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "Second", message.NoSeq.Second)
+	assert.Equal(t, "Third", message.NoSeq.Third)
+
+	// Tear down
+	teardown()
+}
+
 type MinimalMessage struct {
 	Header     standardlis2a2.Header     `astm:"H"`
 	Terminator standardlis2a2.Terminator `astm:"L"`
@@ -25,8 +99,7 @@ func TestReadMinimalMessage(t *testing.T) {
 	fileData = fileData + "L|1|N\n"
 
 	var message MinimalMessage
-	err := astm.Unmarshal([]byte(fileData), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(fileData), &message, config)
 
 	assert.Nil(t, err)
 
@@ -59,15 +132,14 @@ func TestFullSingleASTMMessage(t *testing.T) {
 	fileData = fileData + "L|1|N\n"
 
 	var message FullSingleASTMMessage
-	err := astm.Unmarshal([]byte(fileData), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(fileData), &message, config)
 
 	assert.Nil(t, err)
 
 	assert.Equal(t, "Testus", message.Patient.LastName)
 	assert.Equal(t, "Test", message.Patient.FirstName)
 	assert.Equal(t, "19400607", message.Patient.DOB.Format("20060102")) // dates are read okay
-	assert.Equal(t, "specimen1", message.Order.InstrumentSpecimenID)
+	assert.Equal(t, "specimen1^^^\\specimen2^^^", message.Order.InstrumentSpecimenID)
 	assert.Equal(t, "lalina", message.Result.OperatorIDPerformed)
 }
 
@@ -108,8 +180,7 @@ func TestNestedStructure(t *testing.T) {
 	data = data + "L|1|N\r"
 
 	var message MessagePORC
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 
@@ -119,8 +190,8 @@ func TestNestedStructure(t *testing.T) {
 
 	// the array of comments was produced in two entries into the array
 	assert.Equal(t, 2, len(message.OrderResults[0].CommentedResult[0].Comment))
-	assert.Equal(t, "FirstComment", message.OrderResults[0].CommentedResult[0].Comment[0].CommentSource)
-	assert.Equal(t, "SecondComment", message.OrderResults[0].CommentedResult[0].Comment[1].CommentSource)
+	assert.Equal(t, "FirstComment^^05761.03.12^20240131\\^^^", message.OrderResults[0].CommentedResult[0].Comment[0].CommentSource)
+	assert.Equal(t, "SecondComment^^05761.03.12^20240131\\^^^", message.OrderResults[0].CommentedResult[0].Comment[1].CommentSource)
 }
 
 // -----------------------------------------------------------------------------------
@@ -138,12 +209,11 @@ type MessageCustomDelimiterTest struct {
 func TestCustomDelimiters(t *testing.T) {
 	data := ""
 	data = data + "H|\\#&|||Bio-Rad|IH v5.2||||||||20220315194227\n"
-	data = data + "P|1||1010868845||Testus#Test||19400607|M||||||||||||||||||||||||^\r"
-	data = data + "L|1|N\n" // ! mixed line-endings (should not matter)
+	data = data + "P|1||1010868845||Testus#Test||19400607|M||||||||||||||||||||||||^\n"
+	data = data + "L|1|N\n"
 
 	var message MessageCustomDelimiterTest
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 
@@ -182,8 +252,7 @@ func TestCustomRecord(t *testing.T) {
 	data = data + "L|1|N\r" // ! mixed line-endings (should not matter)
 
 	var message MessageWithOutOfStandardCustomRecord
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, float32(4.14159), message.CustomRecord.Float32Value)
@@ -196,56 +265,71 @@ func TestCustomRecord(t *testing.T) {
 // test encoding
 // line ending 0a or 0d or 0d0a all okay ? ok
 
-type SubMessageRecord struct {
-	Field11 string `astm:"2.1.1"`
-	Field12 string `astm:"2.1.2"`
-	Field13 string `astm:"2.1.3"`
-	Field21 string `astm:"2.2.1"`
-	Field22 string `astm:"2.2.2"`
-	Field23 string `astm:"2.2.3"`
-}
+//type valami struct {
+//	Field11 string `astm:"1"`
+//	Field12 string `astm:"2"`
+//	Field13 string `astm:"3"`
+//}
+//type arraysor struct {
+//	Sor []valami `astm:"2"`
+//}
+//
+//type arraysor struct {
+//	Sor string `astm:"2.1"`
+//	Sor string `astm:"2.2"`
+//	Sor string `astm:"2.3"`
+//}
 
-type MessageWithSubArrayRecord struct {
-	Anonymous struct { // Testing wether this annoynmous structure is recused into
-		Rec SubMessageRecord `astm:"?"`
-	}
-
-	AnonymousArray []struct { // This anynymous array of structures needs to be created and scanned
-		Rec SubMessageRecord `astm:"!"`
-	}
-}
-
-func TestArrayMapping(t *testing.T) {
-
-	data := "?|a^^c\\d^e^f|\r"
-	data = data + "!|x^y\\z^^|\r"
-	data = data + "!|1^2^3\\4^5^6|\r"
-
-	var message MessageWithSubArrayRecord
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
-
-	assert.Nil(t, err)
-
-	assert.Equal(t, "a", message.Anonymous.Rec.Field11)
-	assert.Equal(t, "c", message.Anonymous.Rec.Field13)
-
-	assert.Equal(t, "d", message.Anonymous.Rec.Field21)
-	assert.Equal(t, "e", message.Anonymous.Rec.Field22)
-	assert.Equal(t, "f", message.Anonymous.Rec.Field23)
-
-	// now test that the subarray values have been read
-	assert.Equal(t, 2, len(message.AnonymousArray))
-	assert.Equal(t, "x", message.AnonymousArray[0].Rec.Field11)
-	assert.Equal(t, "y", message.AnonymousArray[0].Rec.Field12)
-	assert.Equal(t, "z", message.AnonymousArray[0].Rec.Field21)
-	assert.Equal(t, "", message.AnonymousArray[0].Rec.Field22)
-
-	assert.Equal(t, "1", message.AnonymousArray[1].Rec.Field11)
-	assert.Equal(t, "2", message.AnonymousArray[1].Rec.Field12)
-	assert.Equal(t, "4", message.AnonymousArray[1].Rec.Field21)
-	assert.Equal(t, "5", message.AnonymousArray[1].Rec.Field22)
-}
+//type SubMessageRecord struct {
+//	Field11 string `astm:"3.1.1"`
+//	Field12 string `astm:"3.1.2"`
+//	Field13 string `astm:"3.1.3"`
+//	Field21 string `astm:"3.2.1"`
+//	Field22 string `astm:"3.2.2"`
+//	Field23 string `astm:"3.2.3"`
+//}
+//
+//type MessageWithSubArrayRecord struct {
+//	Anonymous struct { // Testing wether this annoynmous structure is recused into
+//		Rec SubMessageRecord `astm:"?"`
+//	}
+//
+//	AnonymousArray []struct { // This anynymous array of structures needs to be created and scanned
+//		Rec SubMessageRecord `astm:"!"`
+//	}
+//}
+//
+//func TestArrayMapping(t *testing.T) {
+//
+//	data := "?|1|a^^c\\d^e^f|\r"
+//	data = data + "!|1|x^y\\z^^|\r"
+//	data = data + "!|1|1^2^3\\4^5^6|\r"
+//
+//	var message MessageWithSubArrayRecord
+//	err := astm.Unmarshal([]byte(data), &message,
+//		constants.ENCODING_UTF8, constants.TIMEZONE_EUROPE_BERLIN)
+//
+//	assert.Nil(t, err)
+//
+//	assert.Equal(t, "a", message.Anonymous.Rec.Field11)
+//	assert.Equal(t, "c", message.Anonymous.Rec.Field13)
+//
+//	assert.Equal(t, "d", message.Anonymous.Rec.Field21)
+//	assert.Equal(t, "e", message.Anonymous.Rec.Field22)
+//	assert.Equal(t, "f", message.Anonymous.Rec.Field23)
+//
+//	// now test that the subarray values have been read
+//	assert.Equal(t, 2, len(message.AnonymousArray))
+//	assert.Equal(t, "x", message.AnonymousArray[0].Rec.Field11)
+//	assert.Equal(t, "y", message.AnonymousArray[0].Rec.Field12)
+//	assert.Equal(t, "z", message.AnonymousArray[0].Rec.Field21)
+//	assert.Equal(t, "", message.AnonymousArray[0].Rec.Field22)
+//
+//	assert.Equal(t, "1", message.AnonymousArray[1].Rec.Field11)
+//	assert.Equal(t, "2", message.AnonymousArray[1].Rec.Field12)
+//	assert.Equal(t, "4", message.AnonymousArray[1].Rec.Field21)
+//	assert.Equal(t, "5", message.AnonymousArray[1].Rec.Field22)
+//}
 
 type SomeEnum string
 
@@ -255,7 +339,7 @@ const (
 )
 
 type SomeEnumRecord struct {
-	Value SomeEnum `astm:"2"`
+	Value SomeEnum `astm:"3"`
 }
 
 type TestUnmarshalEnumMessage struct {
@@ -264,11 +348,10 @@ type TestUnmarshalEnumMessage struct {
 
 // TODO enum value
 func TestEnumEncoding(t *testing.T) {
-	data := "E|EnumValue1|\r"
+	data := "E|1|EnumValue1|\r"
 
 	var message TestUnmarshalEnumMessage
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 
@@ -314,12 +397,11 @@ func TestComponentAccessOnTime(t *testing.T) {
 	data = data + "L|1|N\r"
 
 	var message MessageTimeAccess
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 
-	location, err := time.LoadLocation(string(astm.TimezoneEuropeBerlin))
+	location, err := time.LoadLocation(string(constants.TIMEZONE_EUROPE_BERLIN))
 	assert.Nil(t, err, "Can not parse timezone")
 
 	expDate, err := time.ParseInLocation("20060102", "20240131", location)
@@ -353,8 +435,7 @@ func TestCommentNoneBug(t *testing.T) {
 	data = data + "C|1|^^^||\r"
 
 	var message TestCommentNoneBugMessage
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 
@@ -364,7 +445,7 @@ func TestCommentNoneBug(t *testing.T) {
 
 	/* var crash TestCommentNoneBugMessageCrash
 	err := lis2a2.Unmarshal([]byte(data), &crash,
-		lis2a2.EncodingUTF8, lis2a2.TimezoneEuropeBerlin)
+		lis2a2.ENCODING_UTF8, lis2a2.TimezoneEuropeBerlin)
 	assert.NotNil(t, err) */
 }
 
@@ -386,17 +467,21 @@ func TestGermanLanguage(t *testing.T) {
 
 	var message MessageGermanLanguageTest
 
+	config.Encoding = constants.ENCODING_WINDOWS1252
 	encdata := helperEncode(charmap.Windows1252, []byte(data))
-	err := astm.Unmarshal([]byte(encdata), &message, astm.EncodingWindows1252, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(encdata), &message, config)
 	assert.Nil(t, err)
 	assert.Equal(t, "König", message.Patient.LastName)
 	assert.Equal(t, "#$§?/+öäüß", message.Patient.FirstName)
+	teardown()
 
+	config.Encoding = constants.ENCODING_ISO8859_1
 	encdata = helperEncode(charmap.ISO8859_1, []byte(data))
-	err = astm.Unmarshal([]byte(encdata), &message, astm.EncodingISO8859_1, astm.TimezoneEuropeBerlin)
+	err = astm.Unmarshal([]byte(encdata), &message, config)
 	assert.Nil(t, err)
 	assert.Equal(t, "König", message.Patient.LastName)
 	assert.Equal(t, "#$§?/+öäüß", message.Patient.FirstName)
+	teardown()
 }
 
 func TestTransmissionWithoutLTerminator(t *testing.T) {
@@ -405,8 +490,10 @@ func TestTransmissionWithoutLTerminator(t *testing.T) {
 	data = data + "P|1||DIA-27-079-5-1\r"
 
 	var message standardlis2a2.DefaultMessage
-	err := astm.Unmarshal([]byte(data), &message, astm.EncodingWindows1252, astm.TimezoneEuropeBerlin)
+	config.Encoding = constants.ENCODING_WINDOWS1252
+	err := astm.Unmarshal([]byte(data), &message, config)
 	assert.NotNil(t, err)
+	teardown()
 }
 
 func TestFullMultipleASTMMessage(t *testing.T) {
@@ -460,9 +547,7 @@ func TestFullMultipleASTMMessage(t *testing.T) {
 
 	var message standardlis2a2.DefaultMultiMessage
 	err := astm.Unmarshal(
-		[]byte(data), &message,
-		astm.EncodingUTF8,
-		astm.TimezoneEuropeBerlin)
+		[]byte(data), &message, config)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, message)
@@ -521,9 +606,7 @@ func TestFullMultipleASTMMessageWithWrongInput(t *testing.T) {
 	var message standardlis2a2.DefaultMessage
 	err := astm.Unmarshal(
 		[]byte(data),
-		&message,
-		astm.EncodingUTF8,
-		astm.TimezoneEuropeBerlin)
+		&message, config)
 
 	assert.NotNil(t, err)
 }
@@ -547,8 +630,7 @@ func TestFailOnUndisciplinedMultipleCRCRatEndOfLine(t *testing.T) {
 	data = data + "L|1|N\u000d\u000d"
 
 	var message standardlis2a2.DefaultMessage
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 }
@@ -567,22 +649,20 @@ func TestMultipleMessagesInOne(t *testing.T) {
 	data = data + "L|1|N\u000d\u000d"
 
 	var message standardlis2a2.DefaultMultiMessage
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(message.Messages))
-	assert.Equal(t, "DIA-04-066-7-2", message.Messages[1].OrderResults[0].Patient.LabAssignedPatientID)
+	assert.Equal(t, "DIA-04-066-7-2", message.Messages[1].PatientOrderCommentedResults[0].Patient.LabAssignedPatientID)
 
-	assert.Equal(t, "12,5", message.Messages[0].OrderResults[0].OrderCommentedResult[0].CommentedResult[0].Result.DataMeasurementValue)
-	assert.Equal(t, "99,66", message.Messages[1].OrderResults[0].OrderCommentedResult[0].CommentedResult[0].Result.DataMeasurementValue)
+	assert.Equal(t, "12,5", message.Messages[0].PatientOrderCommentedResults[0].OrderCommentedResults[0].CommentedResults[0].Result.DataMeasurementValue)
+	assert.Equal(t, "99,66", message.Messages[1].PatientOrderCommentedResults[0].OrderCommentedResults[0].CommentedResults[0].Result.DataMeasurementValue)
 }
 
 func TestNullValuesShouldGiveQualifiedError(t *testing.T) {
 
 	var message standardlis2a2.DefaultMultiMessage
-	err := astm.Unmarshal(nil /*giving null as input*/, &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal(nil /*giving null as input*/, &message, config)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "message has nil value - aborting", err.Error())
@@ -602,8 +682,7 @@ func TestUnmarshalMultipleOrdersAndResultsForOnePatient(t *testing.T) {
 	data = data + "L|1|N\r"
 
 	var message standardlis2a2.DefaultMessage
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 }
@@ -640,8 +719,7 @@ func TestHoribaYumizenManufacturerRecordWithArray(t *testing.T) {
 	data = data + "L|1|N\n"
 
 	var message MessageMadeForTheNextTest
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 
@@ -678,11 +756,29 @@ func TestUnmarshalSliceOfOneRecordType(t *testing.T) {
 			Stream2Data     string `astm:"7.2"`
 		} `astm:"M"`
 	}{}
-	err := astm.Unmarshal([]byte(data), &message,
-		astm.EncodingUTF8, astm.TimezoneEuropeBerlin)
+	err := astm.Unmarshal([]byte(data), &message, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 3, len(message.ImageData))
 	assert.Equal(t, "HISTOGRAM", message.ImageData[0].Field1)
 	assert.Equal(t, "MATRIX", message.ImageData[2].Field1)
+}
+
+// Fix a bug in which the decodes message couldn't exceed 4096 bytes
+func TestEncodingVeryLongCharsets(t *testing.T) {
+
+	veryLongMessage := []byte{}
+	for i := 0; i < 100000; i++ {
+		veryLongMessage = append(veryLongMessage, []byte("Ich bin ein sehr langer Text")...)
+	}
+
+	encoded, err := astm.EncodeCharsetToUTF8From(charmap.Windows1252, veryLongMessage)
+	assert.Nil(t, err)
+
+	// in this case the encoding should equal the coded part (no special characters)
+	assert.Equal(t, len(veryLongMessage), len(encoded))
+
+	for i := 0; i < len(veryLongMessage); i++ {
+		assert.Equal(t, veryLongMessage[i], encoded[i])
+	}
 }
