@@ -35,6 +35,17 @@ func ConvertFromUtf8ToEncoding(input string, config *models.Configuration) (outp
 	return output, err
 }
 
+func ConvertArrayFromUtf8ToEncoding(input []string, config *models.Configuration) (output [][]byte, err error) {
+	output = make([][]byte, len(input))
+	for i, line := range input {
+		output[i], err = ConvertFromUtf8ToEncoding(line, config)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return output, nil
+}
+
 func findCharmapForEncoding(encoding string) (*charmap.Charmap, error) {
 	switch encoding {
 	case constants.ENCODING_UTF8:

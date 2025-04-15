@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"fmt"
+	"github.com/blutspende/go-astm/v2/constants"
 	"testing"
 	"time"
 
@@ -16,9 +17,9 @@ type MissingComponentMessage struct {
 	MissingComponent MissingComponent `astm:"M"`
 }
 type MissingComponent struct {
-	Combined   string `astm:"2"`
-	Component1 string `astm:"3.1"`
-	Component2 string `astm:"3.2"`
+	Combined   string `astm:"3"`
+	Component1 string `astm:"4.1"`
+	Component2 string `astm:"4.2"`
 }
 
 func TestMissingComponent(t *testing.T) {
@@ -29,16 +30,22 @@ func TestMissingComponent(t *testing.T) {
 			Component2: "Second",
 		},
 	}
+	config.Encoding = constants.ENCODING_UTF8
 
 	// Act
-	value, err := astm.Marshal(testMessage, astm.EncodingUTF8, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	value, err := astm.Marshal(&testMessage, config)
 
 	// Assert
 	assert.Nil(t, err)
-	expectedResult := "M|First^Second|^Second"
+	expectedResult := "M|1|First^Second|^Second"
 	assert.Equal(t, expectedResult, string(value[0]))
+
+	// Tear down
+	teardown()
 }
 
+/*
+// TODO: replace this with nested structure array
 type IllFormatedButLegal struct {
 	GeneratedSequence int    `astm:"1,sequence"`
 	ThirdfieldArray1  string `astm:"2.1.3"`
@@ -65,8 +72,9 @@ func TestSimpleMarshal(t *testing.T) {
 	msg.Ill.FirstFieldArray1 = "first-arr1"
 	msg.Ill.FirstFieldArray2 = "first-arr2"
 	msg.Ill.SecondfieldArray2 = "second-arr2"
+	config.Encoding = constants.ENCODING_ASCII
 
-	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	lines, err := astm.Marshal(&msg, config)
 
 	for _, line := range lines {
 		linestr := string(line)
@@ -78,7 +86,10 @@ func TestSimpleMarshal(t *testing.T) {
 	assert.Equal(t, "H|\\^&||password|test||||||||0.1.0|", string(lines[0]))
 	assert.Equal(t, "?|1|first-arr1^^third-arr1\\first-arr2^second-arr2|", string(lines[1]))
 	assert.Equal(t, "L|1|", string(lines[2]))
+
+	teardown()
 }
+*/
 
 type ArrayMessageMarshal struct {
 	Header     standardlis2a2.Header     `astm:"H"`
@@ -86,7 +97,7 @@ type ArrayMessageMarshal struct {
 	Terminator standardlis2a2.Terminator `astm:"L"`
 }
 
-func TestGenverateSequence(t *testing.T) {
+func TestGenerateSequence(t *testing.T) {
 
 	var msg ArrayMessageMarshal
 
@@ -95,8 +106,9 @@ func TestGenverateSequence(t *testing.T) {
 	msg.Patient[0].FirstName = "Firstie"
 	msg.Patient[1].LastName = "Secundus'"
 	msg.Patient[1].FirstName = "Secundie"
+	config.Encoding = constants.ENCODING_ASCII
 
-	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	lines, err := astm.Marshal(&msg, config)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -109,6 +121,8 @@ func TestGenverateSequence(t *testing.T) {
 	assert.Equal(t, "P|1||||Firstus'^Firstie|||||||||||||||||||||||||||||", string(lines[1]))
 	assert.Equal(t, "P|2||||Secundus'^Secundie|||||||||||||||||||||||||||||", string(lines[2]))
 	assert.Equal(t, "L|1|", string(lines[3]))
+
+	teardown()
 }
 
 type PatientResult struct {
@@ -143,8 +157,9 @@ func TestNestedStruct(t *testing.T) {
 	msg.PatientResult[1].Result[0].ManufacturersTestName = "Fungenes"
 	msg.PatientResult[1].Result[0].MeasurementValueOfDevice = "present"
 	msg.PatientResult[1].Result[0].Units = "none"
+	config.Encoding = constants.ENCODING_ASCII
 
-	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	lines, err := astm.Marshal(&msg, config)
 
 	assert.Nil(t, err)
 	// output on screen
@@ -160,6 +175,8 @@ func TestNestedStruct(t *testing.T) {
 	assert.Equal(t, "P|2||||Cartman^Eric|||||||||||||||||||||||None||||||", string(lines[4]))
 	assert.Equal(t, "R|1|^^^^Fungenes^^|^^present|none||||||^|||", string(lines[5]))
 	assert.Equal(t, "L|1|", string(lines[6]))
+
+	teardown()
 }
 
 type TimeTestMessageMarshal struct {
@@ -180,11 +197,14 @@ func TestTimeLocalization(t *testing.T) {
 	timeInBerlin := time.Now().In(europeBerlin)
 
 	msg.Header.DateAndTime = testTime.UTC()
+	config.Encoding = constants.ENCODING_ASCII
 
-	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	lines, err := astm.Marshal(&msg, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, fmt.Sprintf("H|\\^&||||||||||||%s", timeInBerlin.Format("20060102150405")), string(lines[0]))
+
+	teardown()
 }
 
 type TestMarshalEnum string
@@ -209,16 +229,20 @@ func TestEnumMarshal(t *testing.T) {
 	var msg TestMarshalEnumMessage
 
 	msg.Record.Field = SomeTestMarshalEnum2
+	config.Encoding = constants.ENCODING_ASCII
+	config.Notation = constants.NOTATION_SHORT
 
-	lines, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	lines, err := astm.Marshal(&msg, config)
 
 	assert.Nil(t, err)
+	//TODO: what??
 	// output on screen
 	for _, line := range lines {
 		linestr := string(line)
 		fmt.Println(linestr)
 	}
 
+	teardown()
 }
 
 type TestCorrectFieldEnumeration struct {
@@ -269,12 +293,16 @@ func TestFieldEnumeration(t *testing.T) {
 	var orq TestCorrectFieldEnumeration
 
 	orq.Request.ActionCode = "N"
-	record, err := astm.Marshal(orq, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+
+	config.Encoding = constants.ENCODING_ASCII
+
+	record, err := astm.Marshal(&orq, config)
 
 	assert.Nil(t, err)
 
 	assert.Equal(t, "R|1||^^^\\^^^|^^^|||||||N||||||||||", string(record[0]))
 
+	teardown()
 }
 
 /*
@@ -289,12 +317,16 @@ func TestOneDlimiterTooMuch(t *testing.T) {
 	var record TestOneDlimiterTooMuchStruct
 
 	record.Terminator.TerminatorCode = "N"
-	filedata, err := astm.Marshal(record, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	config.Encoding = constants.ENCODING_ASCII
+
+	filedata, err := astm.Marshal(&record, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
 
 	assert.Equal(t, "L|1|N", string(filedata[0]))
+
+	teardown()
 }
 
 // --------------------------------------------------------------
@@ -310,7 +342,9 @@ func TestGermanLanguageDecoder(t *testing.T) {
 
 	record.Patient.FirstName = "Högendäg"
 	record.Patient.LastName = "Nügendiß"
-	filedata, err := astm.Marshal(record, astm.EncodingWindows1252, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	config.Encoding = constants.ENCODING_WINDOWS1252
+
+	filedata, err := astm.Marshal(&record, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
@@ -319,8 +353,11 @@ func TestGermanLanguageDecoder(t *testing.T) {
 
 	assert.Equal(t, expectedWindows1252, filedata[0])
 
+	teardown()
+
+	config.Encoding = constants.ENCODING_ISO8859_1
 	// test for iso8859_1
-	filedata, err = astm.Marshal(record, astm.EncodingISO8859_1, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	filedata, err = astm.Marshal(&record, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(filedata))
@@ -328,27 +365,37 @@ func TestGermanLanguageDecoder(t *testing.T) {
 	expectedWindowsISO8859_1 := helperEncode(charmap.ISO8859_1, []byte("P|1||||Nügendiß^Högendäg|||||||||||||||||||||||||||||"))
 
 	assert.Equal(t, expectedWindowsISO8859_1, filedata[0])
+
+	teardown()
 }
 
 // Due to a bug that panics
 func TestFailMarshalOnlyHeader(t *testing.T) {
 
 	var header standardlis2a2.Header
+	config.Encoding = constants.ENCODING_ASCII
+	config.Notation = constants.NOTATION_SHORT
 
-	message, err := astm.Marshal(header, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	message, err := astm.Marshal(&header, config)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, message)
+
+	teardown()
 }
 
-// Pointers to structures dont work for marshalling
+// By value to structures don't work for marshalling
 func TestFailOnHeaderIsA_Reference(t *testing.T) {
 
 	var header standardlis2a2.Header
+	config.Encoding = constants.ENCODING_ASCII
+	config.Notation = constants.NOTATION_SHORT
 
-	_, err := astm.Marshal(&header, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	_, err := astm.Marshal(header, config)
 
 	assert.NotNil(t, err)
+
+	teardown()
 }
 
 func TestQueryMessage(t *testing.T) {
@@ -356,24 +403,31 @@ func TestQueryMessage(t *testing.T) {
 	var query standardlis2a2.QueryMessage
 
 	query.Terminator.TerminatorCode = "N"
+	config.Encoding = constants.ENCODING_ASCII
 
 	// Test with no Querydata provided
-	filedata, err := astm.Marshal(query, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	filedata, err := astm.Marshal(&query, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
 	assert.Equal(t, "L|1|N", string(filedata[1]))
 
+	teardown()
+
 	query.RequestInformations = append(query.RequestInformations, standardlis2a2.RequestInformation{
 		StartingRangeIDNumber: "SampleCode1",
 		UniversalTestID:       "ALL",
 	})
-	filedata, err = astm.Marshal(query, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.StandardNotation)
+	config.Encoding = constants.ENCODING_ASCII
+
+	filedata, err = astm.Marshal(&query, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
 	assert.Equal(t, "Q|1|SampleCode1||ALL||||||||", string(filedata[1]))
 	assert.Equal(t, "L|1|N", string(filedata[2]))
+
+	teardown()
 }
 
 func TestMarshalMultipleOrder(t *testing.T) {
@@ -415,14 +469,16 @@ func TestMarshalMultipleOrder(t *testing.T) {
 			TerminatorCode: "N",
 		},
 	}
+	config.Encoding = constants.ENCODING_ASCII
+	config.Notation = constants.NOTATION_SHORT
 
-	filedata, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	filedata, err := astm.Marshal(&msg, config)
 	assert.Nil(t, err)
 
 	for _, row := range filedata {
 		fmt.Println(string(row))
 	}
-
+	teardown()
 }
 
 func TestShorthandOnStandardMessage(t *testing.T) {
@@ -462,8 +518,10 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 			TerminatorCode: "N",
 		},
 	}
+	config.Encoding = constants.ENCODING_ASCII
+	config.Notation = constants.NOTATION_SHORT
 
-	filedata, err := astm.Marshal(msg, astm.EncodingASCII, astm.TimezoneEuropeBerlin, astm.ShortNotation)
+	filedata, err := astm.Marshal(&msg, config)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 6, len(filedata))
@@ -472,6 +530,8 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 	assert.Equal(t, []byte("O|1|VAL24981209||Pool_Cell|R||||||N||||TestData"), filedata[3])
 	assert.Equal(t, []byte("O|2|VAL24981210||Pool_Cell|R||||||N||||TestData"), filedata[4])
 	assert.Equal(t, []byte("L|1|N"), filedata[5])
+
+	teardown()
 }
 
 func TestEmbeddedStructsAndArrays(t *testing.T) {
@@ -516,12 +576,17 @@ func TestEmbeddedStructsAndArrays(t *testing.T) {
 			TerminatorCode: "N",
 		},
 	}
-	data, err := astm.Marshal(message, astm.EncodingUTF8, astm.TimezoneUTC, astm.StandardNotation)
+	config.Encoding = constants.ENCODING_UTF8
+	config.TimeZone = constants.TIMEZONE_UTC
+
+	data, err := astm.Marshal(&message, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "M|1|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\240423H1(^20240905000000^20250305\\240411M11^20240828000000^20241028", string(data[0]))
 	assert.Equal(t, "E|1|1\\2\\3|4.100\\4.200\\4.300|5.111\\5.222", string(data[1]))
 	assert.Equal(t, "L|1|N", string(data[2]))
+
+	teardown()
 }
 
 func TestEmbeddedStructsAndArraysShortNotation(t *testing.T) {
@@ -542,12 +607,18 @@ func TestEmbeddedStructsAndArraysShortNotation(t *testing.T) {
 			TerminatorCode: "N",
 		},
 	}
-	data, err := astm.Marshal(message, astm.EncodingUTF8, astm.TimezoneUTC, astm.ShortNotation)
+	config.Encoding = constants.ENCODING_UTF8
+	config.TimeZone = constants.TIMEZONE_UTC
+	config.Notation = constants.NOTATION_SHORT
+
+	data, err := astm.Marshal(&message, config)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "M|1|REAGENT|DILUENT\\LYSE", string(data[0]))
 	assert.Equal(t, "E|1|1\\2\\3", string(data[1]))
 	assert.Equal(t, "L|1|N", string(data[2]))
+
+	teardown()
 }
 
 type CustomDecimalLength struct {
@@ -589,7 +660,13 @@ func TestCustomDecimalLengthAnnotation(t *testing.T) {
 			},
 		},
 	}
-	data, err := astm.Marshal(message, astm.EncodingUTF8, astm.TimezoneUTC, astm.ShortNotation)
+	config.Encoding = constants.ENCODING_UTF8
+	config.TimeZone = constants.TIMEZONE_UTC
+	config.Notation = constants.NOTATION_SHORT
+
+	data, err := astm.Marshal(&message, config)
 	assert.Nil(t, err)
 	assert.Equal(t, "D|0.3457|0.4|0.1234567^0.98^0.234^0.345\\0.9900000^0.11^0.223^0.334", string(data[0]))
+
+	teardown()
 }

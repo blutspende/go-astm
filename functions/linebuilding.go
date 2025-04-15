@@ -46,6 +46,10 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 		//if sourceFieldAnnotation.Attribute == constants.ATTRIBUTE_SEQUENCE {
 		//	sourceValues[i].Set(reflect.ValueOf(sequenceNumber))
 		//}
+		// Note: temporary solution
+		if sourceFieldAnnotation.FieldPos < 3 {
+			continue
+		}
 
 		fieldValueString := ""
 		// If the field is an array, iterate over its elements and use the Repeat delimiter
@@ -169,7 +173,11 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 			if !ok {
 				return "", errmsg.LineBuilding_ErrInvalidDateFormat
 			}
-			result = timeValue.In(config.Internal.TimeLocation).Format(timeFormat) // Format the date as a string
+			if timeValue.IsZero() {
+				result = ""
+			} else {
+				result = timeValue.In(config.Internal.TimeLocation).Format(timeFormat) // Format the date as a string
+			}
 		} else {
 			// Note: option to handle other struct types here
 		}

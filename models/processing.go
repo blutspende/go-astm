@@ -9,15 +9,15 @@ type Configuration struct {
 	AutoDetectLineSeparator    bool
 	TimeZone                   string
 	EnforceSequenceNumberCheck bool
-	Internal                   InternalConfiguration
 	Notation                   string
+	Internal                   InternalConfiguration
 }
 
 var DefaultConfiguration = Configuration{
-	Encoding:                   "ISO8859-1",
+	Encoding:                   constants.ENCODING_ISO8859_1,
 	LineSeparator:              constants.LF,
 	AutoDetectLineSeparator:    true,
-	TimeZone:                   "Europe/Berlin",
+	TimeZone:                   constants.TIMEZONE_EUROPE_BERLIN,
 	EnforceSequenceNumberCheck: true,
 	Notation:                   constants.NOTATION_STANDARD,
 }

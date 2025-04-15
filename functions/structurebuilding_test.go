@@ -18,8 +18,8 @@ func TestBuildStruct_SingleLineStruct(t *testing.T) {
 	result, err := BuildStruct(&source, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
-	expected := "R|1|first|second|third"
-	assert.Equal(t, expected, result)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "R|1|first|second|third", result[0])
 }
 
 func TestBuildStruct_RecordArrayStruct(t *testing.T) {
@@ -42,9 +42,9 @@ func TestBuildStruct_RecordArrayStruct(t *testing.T) {
 	result, err := BuildStruct(&source, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
-	expected := "R|1|first1|second1|third1\n"
-	expected += "R|2|first2|second2|third2"
-	assert.Equal(t, expected, result)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "R|1|first1|second1|third1", result[0])
+	assert.Equal(t, "R|2|first2|second2|third2", result[1])
 }
 
 func TestBuildStruct_CompositeMessage(t *testing.T) {
@@ -65,9 +65,9 @@ func TestBuildStruct_CompositeMessage(t *testing.T) {
 	result, err := BuildStruct(&source, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
-	expected := "F|1|r1 first|r1 second\n"
-	expected += "S|1|r2 first|r2 second"
-	assert.Equal(t, expected, result)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "F|1|r1 first|r1 second", result[0])
+	assert.Equal(t, "S|1|r2 first|r2 second", result[1])
 }
 
 func TestBuildStruct_CompositeArrayMessage(t *testing.T) {
@@ -100,9 +100,9 @@ func TestBuildStruct_CompositeArrayMessage(t *testing.T) {
 	result, err := BuildStruct(&source, 1, 0, config)
 	// Assert
 	assert.Nil(t, err)
-	expected := "F|1|a1 r1 first|a1 r1 second\n"
-	expected += "S|1|a1 r2 first|a1 r2 second\n"
-	expected += "F|2|a2 r1 first|a2 r1 second\n"
-	expected += "S|1|a2 r2 first|a2 r2 second"
-	assert.Equal(t, expected, result)
+	assert.Len(t, result, 4)
+	assert.Equal(t, "F|1|a1 r1 first|a1 r1 second", result[0])
+	assert.Equal(t, "S|1|a1 r2 first|a1 r2 second", result[1])
+	assert.Equal(t, "F|2|a2 r1 first|a2 r1 second", result[2])
+	assert.Equal(t, "S|1|a2 r2 first|a2 r2 second", result[3])
 }

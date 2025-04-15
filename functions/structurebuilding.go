@@ -6,16 +6,16 @@ import (
 	"github.com/blutspende/go-astm/v2/models"
 )
 
-func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config *models.Configuration) (result string, err error) {
+func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config *models.Configuration) (result []string, err error) {
 	// Check for maximum depth
 	if depth >= constants.MAX_DEPTH {
-		return "", errmsg.StructureParsing_ErrMaxDepthReached
+		return nil, errmsg.StructureParsing_ErrMaxDepthReached
 	}
 
 	// Process the source structure
 	sourceTypes, sourceValues, _, err := ProcessStructReflection(sourceStruct)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// Iterate over the inputFields of the sourceStruct struct
@@ -23,7 +23,7 @@ func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config
 		// Parse the sourceStruct field sourceFieldAnnotation
 		sourceStructAnnotation, err := ParseAstmStructAnnotation(sourceType)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		// Save the source value pointer
 		sourceValue := sourceValues[i].Addr().Interface()
@@ -35,16 +35,16 @@ func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config
 					// Composite source: recursively build the composite structure
 					subResult, err := BuildStruct(sourceValues[i].Index(j).Addr().Interface(), j+1, depth+1, config)
 					if err != nil {
-						return "", err
+						return nil, err
 					}
-					result += subResult
+					result = append(result, subResult...)
 				} else {
 					// Non-composite source: build the single line
 					lineResult, err := BuildLine(sourceValues[i].Index(j).Addr().Interface(), sourceStructAnnotation.StructName, j+1, config)
 					if err != nil {
-						return "", err
+						return nil, err
 					}
-					result += lineResult + config.LineSeparator
+					result = append(result, lineResult)
 				}
 			}
 		} else {
@@ -53,9 +53,9 @@ func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config
 				// Composite source: recursively build the composite structure
 				subResult, err := BuildStruct(sourceValue, sequenceNumber, depth+1, config)
 				if err != nil {
-					return "", err
+					return nil, err
 				}
-				result += subResult
+				result = append(result, subResult...)
 			} else {
 				// Only the first element is inheriting the sequence number
 				seqNum := 1
@@ -65,15 +65,11 @@ func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config
 				// Non-composite source: build the single line
 				lineResult, err := BuildLine(sourceValue, sourceStructAnnotation.StructName, seqNum, config)
 				if err != nil {
-					return "", err
+					return nil, err
 				}
-				result += lineResult + config.LineSeparator
+				result = append(result, lineResult)
 			}
 		}
-	}
-	// Remove the very last line separator
-	if depth == 0 {
-		result = result[:len(result)-len(config.LineSeparator)]
 	}
 
 	// Return the result and no error if everything went well

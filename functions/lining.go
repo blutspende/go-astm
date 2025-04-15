@@ -61,11 +61,9 @@ func SliceLines(input string, config *models.Configuration) (output []string, er
 }
 
 func BuildLines(input []string, config *models.Configuration) (output string) {
-	linebreak := ""
-	if config.LineSeparator != "" {
+	linebreak := constants.LF
+	if config.LineSeparator != "" && !config.AutoDetectLineSeparator {
 		linebreak = config.LineSeparator
-	} else {
-		linebreak = constants.LF
 	}
 
 	for i, line := range input {

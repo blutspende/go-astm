@@ -42,6 +42,16 @@ func TestBuildLine_MultitypeRecord(t *testing.T) {
 	assert.Equal(t, "T|1|string|4|3.14|3.1415926|3.142|20060102|20060102150405", result)
 }
 
+func TestBuildLine_MultitypeEmptyRecord(t *testing.T) {
+	// Arrange
+	source := MultitypeRecord{}
+	// Act
+	result, err := BuildLine(&source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1||0|0|0|0.000||", result)
+}
+
 func TestBuildLine_UnorderedRecord(t *testing.T) {
 	// Arrange
 	source := UnorderedRecord{
