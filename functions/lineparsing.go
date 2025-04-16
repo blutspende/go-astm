@@ -136,7 +136,6 @@ func setField(field reflect.Value, value string, config *models.Configuration) (
 		// Field is not settable
 		return errmsg.LineParsing_ErrNonSettableField
 	}
-
 	// Set the field value
 	switch field.Kind() {
 	case reflect.String:
@@ -145,24 +144,28 @@ func setField(field reflect.Value, value string, config *models.Configuration) (
 		} else {
 			field.Set(reflect.ValueOf(value))
 		}
+		return nil
 	case reflect.Int:
 		num, err := strconv.Atoi(value)
 		if err != nil {
 			return errmsg.LineParsing_ErrDataParsingError
 		}
 		field.Set(reflect.ValueOf(num))
+		return nil
 	case reflect.Float32:
 		num, err := strconv.ParseFloat(value, 32)
 		if err != nil {
 			return errmsg.LineParsing_ErrDataParsingError
 		}
 		field.Set(reflect.ValueOf(float32(num)))
+		return nil
 	case reflect.Float64:
 		num, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return errmsg.LineParsing_ErrDataParsingError
 		}
 		field.Set(reflect.ValueOf(num))
+		return nil
 	// Check for time.Time type (it reflects as a Struct)
 	case reflect.Struct:
 		if field.Type() == reflect.TypeOf(time.Time{}) {
@@ -180,12 +183,11 @@ func setField(field reflect.Value, value string, config *models.Configuration) (
 				return errmsg.LineParsing_ErrDataParsingError
 			}
 			field.Set(reflect.ValueOf(timeInLocation))
+			return nil
 		} else {
 			// Note: option to handle other struct types here
 		}
-	default:
-		return errmsg.LineParsing_ErrUsupportedDataType
 	}
-	// Return nil if everything went well
-	return nil
+	// Return error if no type match was found (each successful parsing returns nil)
+	return errmsg.LineParsing_ErrUsupportedDataType
 }

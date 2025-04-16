@@ -32,10 +32,10 @@ type AnnotatedLine struct {
 	Field string `astm:"3.2,length:4"`
 }
 type AnnotatedArrayLine struct {
-	Field []string `astm:"3.2,length:4"`
+	Field []string `astm:"3,length:4"`
 }
 type Line struct {
-	Field string `astm:"2"`
+	Field string `astm:"3"`
 }
 type SingleLineStruct struct {
 	Lines Line `astm:"L"`
@@ -48,6 +48,23 @@ type CompositeStruct struct {
 }
 type CompositeArrayStruct struct {
 	Composite []AnnotatedArrayStruct
+}
+type Substructure struct {
+	FirstComponent  string `astm:"1"`
+	SecondComponent string `astm:"2"`
+}
+type IllegalComponentArray struct {
+	ComponentArray []string `astm:"3.1"`
+}
+type IllegalComponentSubstructure struct {
+	ComponentSubstructure Substructure `astm:"3.1"`
+}
+type SubstructuredLine struct {
+	Field Substructure   `astm:"3"`
+	Array []Substructure `astm:"4"`
+}
+type TimeLine struct {
+	Time time.Time `astm:"3"`
 }
 
 // Single line records
@@ -123,6 +140,21 @@ type EnumRecord struct {
 type ReservedFieldRecord struct {
 	TypeName  string `astm:"1"`
 	SeqNumber string `astm:"2"`
+}
+type SubstructureField struct {
+	FirstComponent  string `astm:"1"`
+	SecondComponent string `astm:"2"`
+	ThirdComponent  string `astm:"3"`
+}
+type SubstructureRecord struct {
+	First  string            `astm:"3"`
+	Second SubstructureField `astm:"4"`
+	Third  string            `astm:"5"`
+}
+type SubstructureArrayRecord struct {
+	First  string              `astm:"3"`
+	Second []SubstructureField `astm:"4"`
+	Third  string              `astm:"5"`
 }
 
 // Structures

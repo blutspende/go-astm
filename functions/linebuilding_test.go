@@ -319,3 +319,46 @@ func TestBuildLine_ReservedFieldRecord(t *testing.T) {
 	assert.Error(t, err, errmsg.LineBuilding_ErrReservedFieldPosReference)
 	assert.Equal(t, "", result)
 }
+
+func TestBuildLine_SubstructureRecord(t *testing.T) {
+	// Arrange
+	source := SubstructureRecord{
+		First: "first",
+		Second: SubstructureField{
+			FirstComponent:  "firstComponent",
+			SecondComponent: "secondComponent",
+			ThirdComponent:  "thirdComponent",
+		},
+		Third: "third",
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|first|firstComponent^secondComponent^thirdComponent|third", result)
+}
+
+func TestBuildLine_SubstructureArrayRecord(t *testing.T) {
+	// Arrange
+	source := SubstructureArrayRecord{
+		First: "first",
+		Second: []SubstructureField{
+			SubstructureField{
+				FirstComponent:  "r1c1",
+				SecondComponent: "r1c2",
+				ThirdComponent:  "r1c3",
+			},
+			SubstructureField{
+				FirstComponent:  "r2c1",
+				SecondComponent: "r2c2",
+				ThirdComponent:  "r2c3",
+			},
+		},
+		Third: "third",
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|first|r1c1^r1c2^r1c3\\r2c1^r2c2^r2c3|third", result)
+}

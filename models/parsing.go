@@ -5,10 +5,11 @@ import "time"
 // Annotation types for ASTM fields and structures
 type AstmFieldAnnotation struct {
 	Raw               string
-	IsArray           bool
 	FieldPos          int
+	IsArray           bool
 	IsComponent       bool
 	ComponentPos      int
+	IsSubstructure    bool
 	HasAttribute      bool
 	Attribute         string
 	HasAttributeValue bool
@@ -16,9 +17,9 @@ type AstmFieldAnnotation struct {
 }
 type AstmStructAnnotation struct {
 	Raw          string
+	StructName   string
 	IsComposite  bool
 	IsArray      bool
-	StructName   string
 	HasAttribute bool
 	Attribute    string
 }

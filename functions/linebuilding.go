@@ -51,9 +51,19 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 		if sourceFieldAnnotation.IsArray {
 			for j := 0; j < sourceValues[i].Len(); j++ {
 				elementValue := sourceValues[i].Index(j)
-				convertedValue, err := convertField(elementValue, sourceFieldAnnotation, config)
-				if err != nil {
-					return "", err
+				convertedValue := ""
+				if sourceFieldAnnotation.IsSubstructure {
+					// If the field is a substructure use buildSubstructure to process it
+					convertedValue, err = buildSubstructure(elementValue.Interface(), config)
+					if err != nil {
+						return "", err
+					}
+				} else {
+					// Simple field, convert it directly
+					convertedValue, err = convertField(elementValue, sourceFieldAnnotation, config)
+					if err != nil {
+						return "", err
+					}
 				}
 				fieldValueString += convertedValue
 				if j < sourceValues[i].Len()-1 {
@@ -91,6 +101,12 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 			}
 			// Set the field value string to the component field string
 			fieldValueString = componentFieldString
+		} else if sourceFieldAnnotation.IsSubstructure {
+			// If the field is a substructure use buildSubstructure to process it
+			fieldValueString, err = buildSubstructure(sourceValues[i].Interface(), config)
+			if err != nil {
+				return "", err
+			}
 		} else {
 			// If the field is not an array, convert it directly
 			fieldValueString, err = convertField(sourceValues[i], sourceFieldAnnotation, config)
@@ -104,12 +120,45 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 	}
 
 	// Construct the result string based on the field map
-	result = constructResult(fieldMap, config)
+	result = constructResult(fieldMap, config.Internal.Delimiters.Field, config.Notation)
 
 	return result, nil
 }
 
-func constructResult(fieldMap map[int]string, config *models.Configuration) (result string) {
+func buildSubstructure(sourceStruct interface{}, config *models.Configuration) (result string, err error) {
+	// Process the target structure
+	sourceTypes, sourceValues, sourceTypesLength, err := ProcessStructReflection(sourceStruct)
+	if err != nil {
+		return "", err
+	}
+
+	// Create a map to store component values indexed by FieldPos
+	componentMap := make(map[int]string)
+
+	// Iterate over the inputFields of the targetStruct struct
+	for i := 0; i < sourceTypesLength; i++ {
+		// Parse the sourceStruct field sourceFieldAnnotation
+		sourceFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
+		if err != nil {
+			return "", err
+		}
+		// Convert the component directly
+		componentValueString, err := convertField(sourceValues[i], sourceFieldAnnotation, config)
+		if err != nil {
+			return "", err
+		}
+		// Store the component value in the map using FieldPos as the key
+		componentMap[sourceFieldAnnotation.FieldPos] = componentValueString
+	}
+
+	// Construct the result string
+	result = constructResult(componentMap, config.Internal.Delimiters.Component, constants.NOTATION_STANDARD)
+
+	// Return result with no error
+	return result, nil
+}
+
+func constructResult(fieldMap map[int]string, delimiter string, notation string) (result string) {
 	// Sort the keys of the map
 	keys := make([]int, 0, len(fieldMap))
 	for k := range fieldMap {
@@ -120,7 +169,7 @@ func constructResult(fieldMap map[int]string, config *models.Configuration) (res
 	// Determine how many fields to include based on the notation
 	lastElementIndex := len(fieldMap) - 1
 	// In short notation the empty fields in the end are skipped
-	if config.Notation == constants.NOTATION_SHORT {
+	if notation == constants.NOTATION_SHORT {
 		for i, key := range keys {
 			if fieldMap[key] != "" {
 				lastElementIndex = i
@@ -133,7 +182,7 @@ func constructResult(fieldMap map[int]string, config *models.Configuration) (res
 		result += fieldMap[key]
 		// Add the field delimiter if not the last field
 		if i < lastElementIndex {
-			result += config.Internal.Delimiters.Field
+			result += delimiter
 		}
 		// Break when we reach the targeted last element
 		if i == lastElementIndex {
@@ -160,8 +209,10 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		} else {
 			return "", errmsg.LineBuilding_ErrUsupportedDataType
 		}
+		return result, nil
 	case reflect.Int:
 		result = strconv.Itoa(int(field.Int()))
+		return result, nil
 	case reflect.Float32, reflect.Float64:
 		precision := -1
 		if annotation.Attribute == constants.ATTRIBUTE_LENGTH {
@@ -173,6 +224,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 			truncated := math.Trunc(field.Float()*factor) / factor
 			result = strconv.FormatFloat(truncated, 'f', precision, field.Type().Bits())
 		}
+		return result, nil
 	case reflect.Struct:
 		// Check for time.Time type (it reflects as a Struct)
 		if field.Type() == reflect.TypeOf(time.Time{}) {
@@ -189,13 +241,11 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 			} else {
 				result = timeValue.In(config.Internal.TimeLocation).Format(timeFormat) // Format the date as a string
 			}
+			return result, nil
 		} else {
 			// Note: option to handle other struct types here
 		}
-	default:
-		return "", errmsg.LineBuilding_ErrUsupportedDataType
 	}
-
-	// Return the result and no error if everything went well
-	return result, nil
+	// Return error if no type match was found (each successful conversion returns with nil)
+	return "", errmsg.LineBuilding_ErrUsupportedDataType
 }

@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func ParseAstmFieldAnnotation(input reflect.StructField) (result models.AstmFieldAnnotation, err error) {
@@ -18,11 +19,32 @@ func ParseAstmFieldAnnotation(input reflect.StructField) (result models.AstmFiel
 
 	// Parse the annotation string
 	result, err = parseAstmFieldAnnotationString(raw)
+	if err != nil {
+		return models.AstmFieldAnnotation{}, err
+	}
 
 	// Determine if the field is an array or not
 	result.IsArray = input.Type.Kind() == reflect.Slice || input.Type.Kind() == reflect.Array
 
-	return result, err
+	// Determine if the field is a substructure or not (excluding the time.Time type)
+	var checkType reflect.Type
+	if result.IsArray {
+		checkType = input.Type.Elem()
+	} else {
+		checkType = input.Type
+	}
+	result.IsSubstructure = checkType.Kind() == reflect.Struct && checkType != reflect.TypeOf(time.Time{})
+
+	// Check illegal combinations
+	if result.IsComponent && result.IsArray {
+		return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrIllegalComponentArray
+	}
+	if result.IsComponent && result.IsSubstructure {
+		return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrIllegalComponentSubstructure
+	}
+
+	// All okay, return the result and no error
+	return result, nil
 }
 
 func parseAstmFieldAnnotationString(input string) (result models.AstmFieldAnnotation, err error) {
