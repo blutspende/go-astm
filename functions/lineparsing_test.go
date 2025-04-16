@@ -180,7 +180,7 @@ func TestParseLine_EmptyInput(t *testing.T) {
 	assert.Error(t, err, errmsg.LineParsing_ErrEmptyInput)
 }
 
-func TestParseLine_NotEnoughFields(t *testing.T) {
+func TestParseLine_MandatoryFieldsMissing(t *testing.T) {
 	// Arrange
 	input := "T"
 	target := SimpleRecord{}
@@ -199,7 +199,18 @@ func TestParseLine_MissingRequiredField(t *testing.T) {
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.True(t, nameOk)
-	assert.Error(t, err, errmsg.LineParsing_ErrRequiredFieldIsEmpty)
+	assert.Error(t, err, errmsg.LineParsing_ErrRequiredInputFieldMissing)
+}
+
+func TestParseLine_NotEnoughInputFields(t *testing.T) {
+	// Arrange
+	input := "T|1|first"
+	target := MissingRequiredField{}
+	// Act
+	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.True(t, nameOk)
+	assert.Error(t, err, errmsg.LineParsing_ErrRequiredInputFieldMissing)
 }
 
 func TestParseLine_SequenceNumberMismatch(t *testing.T) {
@@ -235,4 +246,40 @@ func TestParseLine_ReservedFieldRecord(t *testing.T) {
 	// Assert
 	assert.True(t, nameOk)
 	assert.Error(t, err, errmsg.LineParsing_ErrReservedFieldPosReference)
+}
+
+func TestParseLine_SubstructureRecord(t *testing.T) {
+	// Arrange
+	input := "T|1|first|firstComponent^secondComponent^thirdComponent|third"
+	target := SubstructureRecord{}
+	// Act
+	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.True(t, nameOk)
+	assert.Equal(t, "first", target.First)
+	assert.Equal(t, "firstComponent", target.Second.FirstComponent)
+	assert.Equal(t, "secondComponent", target.Second.SecondComponent)
+	assert.Equal(t, "thirdComponent", target.Second.ThirdComponent)
+	assert.Equal(t, "third", target.Third)
+}
+
+func TestParseLine_SubstructureArrayRecord(t *testing.T) {
+	// Arrange
+	input := "T|1|first|r1c1^r1c2^r1c3\\r2c1^r2c2^r2c3|third"
+	target := SubstructureArrayRecord{}
+	// Act
+	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.True(t, nameOk)
+	assert.Equal(t, "first", target.First)
+	assert.Len(t, target.Second, 2)
+	assert.Equal(t, "r1c1", target.Second[0].FirstComponent)
+	assert.Equal(t, "r1c2", target.Second[0].SecondComponent)
+	assert.Equal(t, "r1c3", target.Second[0].ThirdComponent)
+	assert.Equal(t, "r2c1", target.Second[1].FirstComponent)
+	assert.Equal(t, "r2c2", target.Second[1].SecondComponent)
+	assert.Equal(t, "r2c3", target.Second[1].ThirdComponent)
+	assert.Equal(t, "third", target.Third)
 }

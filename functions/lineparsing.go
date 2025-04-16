@@ -64,11 +64,11 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 			return nameOk, errmsg.LineParsing_ErrReservedFieldPosReference
 		}
 
-		// Not enough inputFields in the input inputLine
-		if len(inputFields) < targetFieldAnnotation.FieldPos {
+		// Not enough inputFields or empty inputField
+		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
 			// If the field is required it's an error, otherwise skip it
 			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRED {
-				return nameOk, errmsg.LineParsing_ErrInputFieldsMissing
+				return nameOk, errmsg.LineParsing_ErrRequiredInputFieldMissing
 			} else {
 				continue
 			}
@@ -76,27 +76,29 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		// Save the current inputField
 		inputField := inputFields[targetFieldAnnotation.FieldPos-1]
 
-		//Check if there is any data
-		if inputField == "" {
-			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRED {
-				return nameOk, errmsg.LineParsing_ErrRequiredFieldIsEmpty
-			} else {
-				// Non required field can be skipped
-				continue
-			}
-		}
-
-		// |rep1\rep2\rep3|
-		// Field is an array
 		if targetFieldAnnotation.IsArray {
+			// |rep1\rep2\rep3|
+			// Field is an array
 			repeats := strings.Split(inputField, config.Internal.Delimiters.Repeat)
 			arrayType := reflect.SliceOf(targetValues[i].Type().Elem())
 			arrayValue := reflect.MakeSlice(arrayType, len(repeats), len(repeats))
 			for j, repeat := range repeats {
-				err = setField(arrayValue.Index(j), repeat, config)
-				if err != nil {
-					return nameOk, err
+				if targetFieldAnnotation.IsSubstructure {
+					// |comp1^comp2^comp3\comp1^comp2^comp3\comp1^comp2^comp3|
+					// Substructures (with components) in the array: use parseSubstructure
+					err = parseSubstructure(repeat, arrayValue.Index(j).Addr().Interface(), config)
+					if err != nil {
+						return nameOk, err
+					}
+				} else {
+					// |value1\value2\value3|
+					// Simple values in the array
+					err = setField(repeat, arrayValue.Index(j), config)
+					if err != nil {
+						return nameOk, err
+					}
 				}
+
 			}
 			targetValues[i].Set(arrayValue)
 		} else if targetFieldAnnotation.IsComponent {
@@ -107,30 +109,74 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 			if len(components) < targetFieldAnnotation.ComponentPos {
 				return nameOk, errmsg.LineParsing_ErrInputComponentsMissing
 			}
-			err = setField(targetValues[i], components[targetFieldAnnotation.ComponentPos-1], config)
+			err = setField(components[targetFieldAnnotation.ComponentPos-1], targetValues[i], config)
 			if err != nil {
 				return nameOk, err
 			}
-			// Field is not an array or component (normal singular field)
+		} else if targetFieldAnnotation.IsSubstructure {
+			// |comp1^comp2^comp3|
+			// If the field is a substructure use parseSubstructure to process it
+			err = parseSubstructure(inputField, targetValues[i].Addr().Interface(), config)
+			if err != nil {
+				return nameOk, err
+			}
 		} else {
-			err = setField(targetValues[i], inputField, config)
+			// |field|
+			// Field is not an array or component (normal singular field)
+			err = setField(inputField, targetValues[i], config)
 			if err != nil {
 				return nameOk, err
 			}
 		}
-		// TODO: handle componented array case
-		// |comp1^comp2^comp3\comp1^comp2^comp3\comp1^comp2^comp3|
-
-		// Check if there are more inputFields in the input not mapped to the struct
-		//if i == targetFieldCount-1 && len(inputFields) > targetFieldAnnotation.FieldPos {
-		// Note: this could be a warning about lost data
-		//}
+		// Note: this could be a place to produce warnings about lost data
+		// if i == targetFieldCount-1 && len(inputFields) > targetFieldAnnotation.FieldPos
 	}
-	// Return nil if everything went well
+	// Return no error if everything went well
 	return nameOk, nil
 }
 
-func setField(field reflect.Value, value string, config *models.Configuration) (err error) {
+func parseSubstructure(inputString string, targetStruct interface{}, config *models.Configuration) (err error) {
+	// Split the input with the field delimiter
+	inputFields := strings.Split(inputString, config.Internal.Delimiters.Component)
+
+	// Process the target structure
+	targetTypes, targetValues, _, err := ProcessStructReflection(targetStruct)
+	if err != nil {
+		return err
+	}
+
+	// Iterate over the inputFields of the targetStruct struct
+	for i, targetType := range targetTypes {
+		// Parse the targetStruct field targetFieldAnnotation
+		targetFieldAnnotation, err := ParseAstmFieldAnnotation(targetType)
+		if err != nil {
+			return err
+		}
+
+		// Not enough inputFields or empty inputField
+		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
+			// If the field is required it's an error, otherwise skip it
+			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRED {
+				return errmsg.LineParsing_ErrRequiredInputFieldMissing
+			} else {
+				continue
+			}
+		}
+		// Save the current inputField
+		inputField := inputFields[targetFieldAnnotation.FieldPos-1]
+
+		// Set field is value
+		err = setField(inputField, targetValues[i], config)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Return no error if everything went well
+	return nil
+}
+
+func setField(value string, field reflect.Value, config *models.Configuration) (err error) {
 	// Ensure the field is settable
 	if !field.CanSet() {
 		// Field is not settable

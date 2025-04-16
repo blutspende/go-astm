@@ -32,8 +32,7 @@ var (
 	LineParsing_ErrMandatoryInputFieldsMissing = errors.New("mandatory input fields missing")
 	LineParsing_ErrLineTypeNameMismatch        = errors.New("line type name mismatch")
 	LineParsing_ErrSequenceNumberMismatch      = errors.New("sequence number mismatch")
-	LineParsing_ErrInputFieldsMissing          = errors.New("input fields missing")
-	LineParsing_ErrRequiredFieldIsEmpty        = errors.New("required field is empty")
+	LineParsing_ErrRequiredInputFieldMissing   = errors.New("required input field missing")
 	LineParsing_ErrInputComponentsMissing      = errors.New("input components missing")
 
 	LineParsing_ErrNonSettableField          = errors.New("field is not settable")
