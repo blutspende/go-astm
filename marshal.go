@@ -15,33 +15,6 @@ import (
 	"golang.org/x/text/transform"
 )
 
-func Marshal(sourceStruct interface{}, configuration ...*models.Configuration) (result [][]byte, err error) {
-	// Set up the configuration
-	var config *models.Configuration
-	if len(configuration) > 0 {
-		config = configuration[0]
-	} else {
-		config = &models.DefaultConfiguration
-		config.Internal.Delimiters = models.DefaultDelimiters
-	}
-	config.Internal.TimeLocation, err = time.LoadLocation(config.TimeZone)
-	if err != nil {
-		return nil, err
-	}
-	// Build the lines from the source structure
-	lines, err := functions.BuildStruct(sourceStruct, 1, 0, config)
-	if err != nil {
-		return nil, err
-	}
-	// Convert UTF8 string array to encoding
-	result, err = functions.ConvertArrayFromUtf8ToEncoding(lines, config)
-	if err != nil {
-		return nil, err
-	}
-	// Return the result and no error if everything went well
-	return result, nil
-}
-
 /** Marshal - wrap datastructure to code
 **/
 func Marshal_old(message interface{}, enc Encoding, tz Timezone, notation Notation) ([][]byte, error) {
