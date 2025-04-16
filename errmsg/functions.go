@@ -34,10 +34,11 @@ var (
 	LineParsing_ErrRequiredFieldIsEmpty        = errors.New("required field is empty")
 	LineParsing_ErrInputComponentsMissing      = errors.New("input components missing")
 
-	LineParsing_ErrNonSettableField   = errors.New("field is not settable")
-	LineParsing_ErrDataParsingError   = errors.New("data parsing error")
-	LineParsing_ErrInvalidDateFormat  = errors.New("invalid date format")
-	LineParsing_ErrUsupportedDataType = errors.New("unsupported data type")
+	LineParsing_ErrNonSettableField          = errors.New("field is not settable")
+	LineParsing_ErrDataParsingError          = errors.New("data parsing error")
+	LineParsing_ErrInvalidDateFormat         = errors.New("invalid date format")
+	LineParsing_ErrUsupportedDataType        = errors.New("unsupported data type")
+	LineParsing_ErrReservedFieldPosReference = errors.New("field position 1 and 2 are reserved")
 )
 
 // StructureParsing
@@ -49,6 +50,7 @@ var (
 
 // LineBuilding
 var (
-	LineBuilding_ErrInvalidDateFormat  = errors.New("invalid date format")
-	LineBuilding_ErrUsupportedDataType = errors.New("unsupported data type")
+	LineBuilding_ErrInvalidDateFormat         = errors.New("invalid date format")
+	LineBuilding_ErrUsupportedDataType        = errors.New("unsupported data type")
+	LineBuilding_ErrReservedFieldPosReference = errors.New("field position 1 and 2 are reserved")
 )

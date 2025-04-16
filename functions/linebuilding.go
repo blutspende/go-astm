@@ -21,7 +21,6 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 	// Create a map to store field values indexed by FieldPos
 	fieldMap := make(map[int]string)
 
-	// TODO: question is, should we hard code the first two fields?
 	// Add line name
 	fieldMap[1] = lineTypeName
 	// If it's a header, add the other delimiters
@@ -42,15 +41,9 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 			return "", err
 		}
 
-		// TODO: question: should the sequence number be hard coded 2nd place?
-		// Set the sequence number if the field is a sequence number
-		//if sourceFieldAnnotation.Attribute == constants.ATTRIBUTE_SEQUENCE {
-		//	sourceValues[i].Set(reflect.ValueOf(sequenceNumber))
-		//}
-		// TODO: this should be an error, and also in line parsing a similar error
-		// Note: temporary solution
+		// Check for fieldPos not being lower than 3 (first 2 are reserved for line name and sequence number)
 		if sourceFieldAnnotation.FieldPos < 3 {
-			continue
+			return "", errmsg.LineBuilding_ErrReservedFieldPosReference
 		}
 
 		fieldValueString := ""
@@ -162,7 +155,11 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 	// Format the result as a string based on the field type
 	switch field.Kind() {
 	case reflect.String:
-		result = field.String()
+		if field.Type().ConvertibleTo(reflect.TypeOf("")) {
+			result = field.String()
+		} else {
+			return "", errmsg.LineBuilding_ErrUsupportedDataType
+		}
 	case reflect.Int:
 		result = strconv.Itoa(int(field.Int()))
 	case reflect.Float32, reflect.Float64:

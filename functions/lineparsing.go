@@ -15,6 +15,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 	if len(inputLine) == 0 {
 		return false, errmsg.LineParsing_ErrEmptyInput
 	}
+
 	// Handle header special case
 	if inputLine[0] == 'H' {
 		// Check if the inputLine is long enough to contain delimiters
@@ -37,8 +38,8 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 	}
 	nameOk = inputFields[0] == lineTypeName
 	// Name checking is always enforced, but instead of error it is returned in the nameOk variable
-	if !nameOk { //&& config.EnforceRecordNameCheck {
-		return nameOk, nil //errmsg.LineParsing_ErrLineTypeNameMismatch
+	if !nameOk {
+		return nameOk, nil
 	}
 	if inputFields[1] != strconv.Itoa(sequenceNumber) && inputLine[0] != 'H' && config.EnforceSequenceNumberCheck {
 		return nameOk, errmsg.LineParsing_ErrSequenceNumberMismatch
@@ -56,6 +57,11 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		targetFieldAnnotation, err := ParseAstmFieldAnnotation(targetType)
 		if err != nil {
 			return nameOk, err
+		}
+
+		// Check for fieldPos not being lower than 3 (first 2 are reserved for line name and sequence number)
+		if targetFieldAnnotation.FieldPos < 3 {
+			return nameOk, errmsg.LineParsing_ErrReservedFieldPosReference
 		}
 
 		// Not enough inputFields in the input inputLine
@@ -134,7 +140,11 @@ func setField(field reflect.Value, value string, config *models.Configuration) (
 	// Set the field value
 	switch field.Kind() {
 	case reflect.String:
-		field.Set(reflect.ValueOf(value))
+		if field.Type().ConvertibleTo(reflect.TypeOf("")) {
+			field.Set(reflect.ValueOf(value).Convert(field.Type()))
+		} else {
+			field.Set(reflect.ValueOf(value))
+		}
 	case reflect.Int:
 		num, err := strconv.Atoi(value)
 		if err != nil {

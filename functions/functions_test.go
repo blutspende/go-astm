@@ -56,13 +56,11 @@ type SimpleRecord struct {
 	Second string `astm:"4"`
 	Third  string `astm:"5"`
 }
-
 type UnorderedRecord struct {
 	First  string `astm:"3"`
 	Third  string `astm:"5"`
 	Second string `astm:"4"`
 }
-
 type MultitypeRecord struct {
 	String  string    `astm:"3"`
 	Int     int       `astm:"4"`
@@ -70,7 +68,6 @@ type MultitypeRecord struct {
 	Float64 float64   `astm:"6"`
 	Date    time.Time `astm:"7"`
 }
-
 type MultitypeLengthRecord struct {
 	FloatFull float64   `astm:"3"`
 	FloatFix3 float64   `astm:"4,length:3"`
@@ -78,7 +75,6 @@ type MultitypeLengthRecord struct {
 	LongDate  time.Time `astm:"6,longdate"`
 	ShortDate time.Time `astm:"7"`
 }
-
 type MultitypePointerRecord struct {
 	String  *string    `astm:"3"`
 	Int     *int       `astm:"4"`
@@ -86,7 +82,6 @@ type MultitypePointerRecord struct {
 	Float64 *float64   `astm:"6"`
 	Date    *time.Time `astm:"7"`
 }
-
 type ComponentedRecord struct {
 	First       string `astm:"3"`
 	SecondComp1 string `astm:"4.1"`
@@ -95,7 +90,6 @@ type ComponentedRecord struct {
 	ThirdComp2  string `astm:"5.2"`
 	ThirdComp3  string `astm:"5.3"`
 }
-
 type ArrayRecord struct {
 	First string   `astm:"3"`
 	Array []string `astm:"4"`
@@ -122,9 +116,16 @@ type RecordType2 struct {
 	First  string `astm:"3"`
 	Second string `astm:"4"`
 }
+type EnumString string
+type EnumRecord struct {
+	Enum EnumString `astm:"3"`
+}
+type ReservedFieldRecord struct {
+	TypeName  string `astm:"1"`
+	SeqNumber string `astm:"2"`
+}
 
 // Structures
-
 type SingleRecordStruct struct {
 	FirstRecord SimpleRecord `astm:"R"`
 }

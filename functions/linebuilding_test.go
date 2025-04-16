@@ -2,6 +2,7 @@ package functions
 
 import (
 	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -17,7 +18,7 @@ func TestBuildLine_SimpleRecord(t *testing.T) {
 		Third:  "third",
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second|third", result)
@@ -33,7 +34,7 @@ func TestBuildLine_MultitypeRecord(t *testing.T) {
 		Date:    time.Date(2006, 1, 2, 0, 0, 0, 0, config.Internal.TimeLocation),
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|string|3|3.14|3.14159265|20060102", result)
@@ -49,7 +50,7 @@ func TestBuildLine_MultitypeLengthRecord(t *testing.T) {
 		ShortDate: time.Date(2006, 1, 2, 15, 04, 05, 0, config.Internal.TimeLocation),
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|3.14159265|3.142|3|20060102150405|20060102", result)
@@ -64,7 +65,7 @@ func TestBuildLine_MultitypeLengthRecordRound(t *testing.T) {
 	}
 	config.RoundFixedNumbers = true
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|3.77777|3.778|4||", result)
@@ -81,7 +82,7 @@ func TestBuildLine_MultitypeLengthRecordTruncate(t *testing.T) {
 	}
 	config.RoundFixedNumbers = false
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|3.77777|3.777|3||", result)
@@ -93,7 +94,7 @@ func TestBuildLine_MultitypeRecordEmpty(t *testing.T) {
 	// Arrange
 	source := MultitypeRecord{}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1||0|0|0|", result)
@@ -103,7 +104,7 @@ func TestBuildLine_MultitypeLengthRecordEmpty(t *testing.T) {
 	// Arrange
 	source := MultitypeLengthRecord{}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|0|0.000|0||", result)
@@ -124,7 +125,7 @@ func TestBuildLine_MultitypePointerRecord(t *testing.T) {
 		Date:    &Date,
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|string|3|3.14|3.14159265|20060102", result)
@@ -134,7 +135,7 @@ func TestBuildLine_MultitypePointerRecordEmpty(t *testing.T) {
 	// Arrange
 	source := MultitypePointerRecord{}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|||||", result)
@@ -148,7 +149,7 @@ func TestBuildLine_UnorderedRecord(t *testing.T) {
 		Third:  "third",
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second|third", result)
@@ -162,7 +163,7 @@ func TestBuildLine_MissingData(t *testing.T) {
 		Third:  "third",
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first||third", result)
@@ -176,7 +177,7 @@ func TestBuildLine_MissingDataAtEndStandardNotation(t *testing.T) {
 		Third:  "",
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first||", result)
@@ -191,7 +192,7 @@ func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 	}
 	config.Notation = constants.NOTATION_SHORT
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first", result)
@@ -208,7 +209,7 @@ func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 	}
 	config.Notation = constants.NOTATION_SHORT
 	// Act
-	result, err := BuildLine(&source, "D", 3, config)
+	result, err := BuildLine(source, "D", 3, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "D|3|first|second|third", result)
@@ -222,7 +223,7 @@ func TestBuildLine_HeaderRecord(t *testing.T) {
 		First: "first",
 	}
 	// Act
-	result, err := BuildLine(&source, "H", 0, config)
+	result, err := BuildLine(source, "H", 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "H|\\^&|first", result)
@@ -238,7 +239,7 @@ func TestBuildLine_HeaderRecordCustomDelimiters(t *testing.T) {
 	config.Internal.Delimiters.Component = "*"
 	config.Internal.Delimiters.Escape = "%"
 	// Act
-	result, err := BuildLine(&source, "H", 0, config)
+	result, err := BuildLine(source, "H", 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "H/!*%/first", result)
@@ -259,7 +260,7 @@ func TestBuildLine_HeaderDelimiterChange(t *testing.T) {
 	config.Internal.Delimiters.Component = "*"
 	config.Internal.Delimiters.Escape = "%"
 	// Act
-	result, err := BuildLine(&source, "H", 0, config)
+	result, err := BuildLine(source, "H", 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "H/!*%/first/second1!second2/third1*third2", result)
@@ -274,7 +275,7 @@ func TestBuildLine_ArrayRecord(t *testing.T) {
 		Array: []string{"second1", "second2", "second3"},
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second1\\second2\\second3", result)
@@ -291,8 +292,30 @@ func TestBuildLine_ComponentedRecord(t *testing.T) {
 		ThirdComp3:  "third3",
 	}
 	// Act
-	result, err := BuildLine(&source, "T", 1, config)
+	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second1^second2|third1^third2^third3", result)
+}
+
+func TestBuildLine_EnumRecord(t *testing.T) {
+	// Arrange
+	source := EnumRecord{
+		Enum: "enum",
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|enum", result)
+}
+
+func TestBuildLine_ReservedFieldRecord(t *testing.T) {
+	// Arrange
+	source := ReservedFieldRecord{}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Error(t, err, errmsg.LineBuilding_ErrReservedFieldPosReference)
+	assert.Equal(t, "", result)
 }

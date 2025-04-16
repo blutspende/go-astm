@@ -146,6 +146,18 @@ func TestParseLine_MissingDataAtTheEnd(t *testing.T) {
 	assert.Equal(t, "", target.Third)
 }
 
+func TestParseLine_EnumRecord(t *testing.T) {
+	// Arrange
+	input := "T|1|enum"
+	target := EnumRecord{}
+	// Act
+	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.True(t, nameOk)
+	assert.Equal(t, EnumString("enum"), target.Enum)
+}
+
 func TestParseLine_RecordTypeNameMismatch(t *testing.T) {
 	// Arrange
 	input := "W|1|first|second|third"
@@ -212,4 +224,15 @@ func TestParseLine_SequenceNumberMismatchWithoutEnforcing(t *testing.T) {
 	assert.Nil(t, err)
 	// Tear down
 	teardown()
+}
+
+func TestParseLine_ReservedFieldRecord(t *testing.T) {
+	// Arrange
+	input := "T|1"
+	target := ReservedFieldRecord{}
+	// Act
+	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.True(t, nameOk)
+	assert.Error(t, err, errmsg.LineParsing_ErrReservedFieldPosReference)
 }
