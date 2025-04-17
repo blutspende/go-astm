@@ -148,7 +148,7 @@ func ProcessStructReflection(inputStruct interface{}) (outputTypes []reflect.Str
 	}
 	if targetPtrValue.Elem().Kind() != reflect.Struct {
 		// inputStruct must be a pointer to a struct
-		return nil, nil, 0, errmsg.AnnotationParsing_ErrInvalidTargetStruct
+		return nil, nil, 0, errmsg.AnnotationParsing_ErrInvalidInputStruct
 	}
 
 	// Get the underlying struct

@@ -2,21 +2,20 @@ package e2e
 
 import (
 	"fmt"
-	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
+	"github.com/blutspende/go-astm/v2/models/messageformat/lis02a2"
 	"testing"
 	"time"
 
 	"github.com/blutspende/go-astm/v2"
-	"github.com/blutspende/go-astm/v2/lib/standardlis2a2"
-
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/encoding/charmap"
 )
 
 type MissingComponentMessage struct {
-	MissingComponent MissingComponent `astm:"M"`
+	MissingComponent MissingComponentRecord `astm:"M"`
 }
-type MissingComponent struct {
+type MissingComponentRecord struct {
 	Combined   string `astm:"3"`
 	Component1 string `astm:"4.1"`
 	Component2 string `astm:"4.2"`
@@ -25,149 +24,119 @@ type MissingComponent struct {
 func TestMissingComponent(t *testing.T) {
 	// Arrange
 	testMessage := MissingComponentMessage{
-		MissingComponent: MissingComponent{
+		MissingComponent: MissingComponentRecord{
 			Combined:   "First^Second",
 			Component2: "Second",
 		},
 	}
-	config.Encoding = constants.ENCODING_UTF8
-
 	// Act
-	value, err := astm.Marshal(testMessage, config)
-
+	lines, err := astm.Marshal(testMessage, config)
 	// Assert
 	assert.Nil(t, err)
 	expectedResult := "M|1|First^Second|^Second"
-	assert.Equal(t, expectedResult, string(value[0]))
-
-	// Tear down
-	teardown()
+	assert.Equal(t, expectedResult, string(lines[0]))
 }
 
-/*
-// TODO: replace this with nested structure array
+type IllFormattedSubstructure struct {
+	ThirdComp string `astm:"3"`
+	FirstComp string `astm:"1"`
+}
+type WellFormattedSubstructure struct {
+	FirstComp  string `astm:"1"`
+	SecondComp string `astm:"2"`
+}
 type IllFormatedButLegal struct {
-	GeneratedSequence int    `astm:"1,sequence"`
-	ThirdfieldArray1  string `astm:"2.1.3"`
-	FirstFieldArray1  string `astm:"2.1.1"`
-	FirstFieldArray2  string `astm:"2.2.1"`
-	SecondfieldArray2 string `astm:"2.2.2"`
-	SomeEmptyField    string `astm:"3"`
+	Ill        IllFormattedSubstructure  `astm:"3"`
+	Well       WellFormattedSubstructure `astm:"4"`
+	EmptyField string                    `astm:"5"`
+}
+type IllFormattedMinimalMessage struct {
+	Header     lis02a2.Header      `astm:"H"`
+	Substruct  IllFormatedButLegal `astm:"?"`
+	Terminator lis02a2.Terminator  `astm:"L"`
 }
 
-type MinimalMessageMarshal struct {
-	Header     standardlis2a2.Header     `astm:"H"`
-	Ill        IllFormatedButLegal       `astm:"?"`
-	Terminator standardlis2a2.Terminator `astm:"L"`
-}
-
-func TestSimpleMarshal(t *testing.T) {
-	var msg MinimalMessageMarshal
-
-	msg.Header.AccessPassword = "password"
-	msg.Header.Version = "0.1.0"
-	msg.Header.SenderNameOrID = "test"
-
-	msg.Ill.ThirdfieldArray1 = "third-arr1"
-	msg.Ill.FirstFieldArray1 = "first-arr1"
-	msg.Ill.FirstFieldArray2 = "first-arr2"
-	msg.Ill.SecondfieldArray2 = "second-arr2"
-	config.Encoding = constants.ENCODING_ASCII
-
-	lines, err := astm.Marshal(msg, config)
-
-	for _, line := range lines {
-		linestr := string(line)
-		fmt.Println(linestr)
-	}
-
+func TestIllFormattedSubstructured(t *testing.T) {
+	// Arrange
+	var message IllFormattedMinimalMessage
+	message.Header.AccessPassword = "password"
+	message.Header.Version = "0.1.0"
+	message.Header.SenderNameOrID = "test"
+	message.Substruct.Ill.FirstComp = "struct1-comp1"
+	message.Substruct.Ill.ThirdComp = "struct1-comp3"
+	message.Substruct.Well.FirstComp = "struct2-comp1"
+	message.Substruct.Well.SecondComp = "struct2-comp2"
+	// Act
+	lines, err := astm.Marshal(message, config)
+	// Assert
 	assert.Nil(t, err)
-
+	assert.Len(t, lines, 3)
 	assert.Equal(t, "H|\\^&||password|test||||||||0.1.0|", string(lines[0]))
-	assert.Equal(t, "?|1|first-arr1^^third-arr1\\first-arr2^second-arr2|", string(lines[1]))
+	assert.Equal(t, "?|1|struct1-comp1^^struct1-comp3|struct2-comp12^struct2-comp2|", string(lines[1]))
 	assert.Equal(t, "L|1|", string(lines[2]))
-
-	teardown()
 }
-*/
 
-type ArrayMessageMarshal struct {
-	Header     standardlis2a2.Header     `astm:"H"`
-	Patient    []standardlis2a2.Patient  `astm:"P"`
-	Terminator standardlis2a2.Terminator `astm:"L"`
+type ArrayMessage struct {
+	Header     lis02a2.Header     `astm:"H"`
+	Patient    []lis02a2.Patient  `astm:"P"`
+	Terminator lis02a2.Terminator `astm:"L"`
 }
 
 func TestGenerateSequence(t *testing.T) {
-
-	var msg ArrayMessageMarshal
-
-	msg.Patient = make([]standardlis2a2.Patient, 2)
+	// Arrange
+	var msg ArrayMessage
+	msg.Patient = make([]lis02a2.Patient, 2)
 	msg.Patient[0].LastName = "Firstus'"
 	msg.Patient[0].FirstName = "Firstie"
 	msg.Patient[1].LastName = "Secundus'"
 	msg.Patient[1].FirstName = "Secundie"
-	config.Encoding = constants.ENCODING_ASCII
-
+	// Act
 	lines, err := astm.Marshal(msg, config)
-
+	// Assert
 	assert.Nil(t, err)
-	// output on screen
-	for _, line := range lines {
-		linestr := string(line)
-		fmt.Println(linestr)
-	}
-
+	assert.Len(t, lines, 4)
 	assert.Equal(t, "H|\\^&||||||||||||", string(lines[0]))
 	assert.Equal(t, "P|1||||Firstus'^Firstie|||||||||||||||||||||||||||||", string(lines[1]))
 	assert.Equal(t, "P|2||||Secundus'^Secundie|||||||||||||||||||||||||||||", string(lines[2]))
 	assert.Equal(t, "L|1|", string(lines[3]))
-
-	teardown()
 }
 
 type PatientResult struct {
-	Patient standardlis2a2.Patient  `astm:"P"`
-	Result  []standardlis2a2.Result `astm:"R"`
+	Patient lis02a2.Patient  `astm:"P"`
+	Result  []lis02a2.Result `astm:"R"`
 }
-
-type ArrayNestedStructMessageMarshal struct {
-	Header        standardlis2a2.Header `astm:"H"`
+type ArrayNestedStructMessage struct {
+	Header        lis02a2.Header `astm:"H"`
 	PatientResult []PatientResult
-	Terminator    standardlis2a2.Terminator `astm:"L"`
+	Terminator    lis02a2.Terminator `astm:"L"`
 }
 
 func TestNestedStruct(t *testing.T) {
-	var msg ArrayNestedStructMessageMarshal
-
+	// Arrange
+	var msg ArrayNestedStructMessage
 	msg.PatientResult = make([]PatientResult, 2)
 	msg.PatientResult[0].Patient.FirstName = "Chuck"
 	msg.PatientResult[0].Patient.LastName = "Norris"
 	msg.PatientResult[0].Patient.Religion = "Binaries"
-	msg.PatientResult[0].Result = make([]standardlis2a2.Result, 2)
-	msg.PatientResult[0].Result[0].ManufacturersTestName = "SulfurBloodCount"
+	msg.PatientResult[0].Result = make([]lis02a2.Result, 2)
+	msg.PatientResult[0].Result[0].UniversalTestID.ManufacturersTestName = "SulfurBloodCount"
 	msg.PatientResult[0].Result[0].MeasurementValueOfDevice = "100"
 	msg.PatientResult[0].Result[0].Units = "%"
-	msg.PatientResult[0].Result[1].ManufacturersTestName = "Catblood"
+	msg.PatientResult[0].Result[1].UniversalTestID.ManufacturersTestName = "Catblood"
 	msg.PatientResult[0].Result[1].MeasurementValueOfDevice = ">100000"
 	msg.PatientResult[0].Result[1].Units = "U/l"
 	msg.PatientResult[1].Patient.FirstName = "Eric"
 	msg.PatientResult[1].Patient.LastName = "Cartman"
 	msg.PatientResult[1].Patient.Religion = "None"
-	msg.PatientResult[1].Result = make([]standardlis2a2.Result, 1)
-	msg.PatientResult[1].Result[0].ManufacturersTestName = "Fungenes"
+	msg.PatientResult[1].Result = make([]lis02a2.Result, 1)
+	msg.PatientResult[1].Result[0].UniversalTestID.ManufacturersTestName = "Fungenes"
 	msg.PatientResult[1].Result[0].MeasurementValueOfDevice = "present"
 	msg.PatientResult[1].Result[0].Units = "none"
-	config.Encoding = constants.ENCODING_ASCII
-
+	// Act
 	lines, err := astm.Marshal(msg, config)
-
+	// Assert
 	assert.Nil(t, err)
-	// output on screen
-	for _, line := range lines {
-		linestr := string(line)
-		fmt.Println(linestr)
-	}
-
+	assert.Len(t, lines, 7)
 	assert.Equal(t, "H|\\^&||||||||||||", string(lines[0]))
 	assert.Equal(t, "P|1||||Norris^Chuck|||||||||||||||||||||||Binaries||||||", string(lines[1]))
 	assert.Equal(t, "R|1|^^^^SulfurBloodCount^^|^^100|%||||||^|||", string(lines[2]))
@@ -175,374 +144,341 @@ func TestNestedStruct(t *testing.T) {
 	assert.Equal(t, "P|2||||Cartman^Eric|||||||||||||||||||||||None||||||", string(lines[4]))
 	assert.Equal(t, "R|1|^^^^Fungenes^^|^^present|none||||||^|||", string(lines[5]))
 	assert.Equal(t, "L|1|", string(lines[6]))
-
-	teardown()
 }
 
-type TimeTestMessageMarshal struct {
-	Header standardlis2a2.Header `astm:"H"`
+type HeaderMessage struct {
+	Header lis02a2.Header `astm:"H"`
 }
 
-/*
-Test provides current time as UTC and expects the converter to stream as Belrin-Time
-*/
 func TestTimeLocalization(t *testing.T) {
-
-	var msg TimeTestMessageMarshal
-
+	// Note: Test provides current time as UTC and expects the converter to stream as Berlin-Time
+	// Arrange
+	var msg HeaderMessage
 	europeBerlin, err := time.LoadLocation("Europe/Berlin")
-	assert.Nil(t, err)
-
 	testTime := time.Now()
 	timeInBerlin := time.Now().In(europeBerlin)
-
 	msg.Header.DateAndTime = testTime.UTC()
-	config.Encoding = constants.ENCODING_ASCII
-
+	// Act
 	lines, err := astm.Marshal(msg, config)
+	// Assert
 	assert.Nil(t, err)
-
 	assert.Equal(t, fmt.Sprintf("H|\\^&||||||||||||%s", timeInBerlin.Format("20060102150405")), string(lines[0]))
-
-	teardown()
 }
 
-type TestMarshalEnum string
+type MarshalEnum string
 
-const (
-	SomeTestMarshalEnum1 TestMarshalEnum = "Something"
-	SomeTestMarshalEnum2 TestMarshalEnum = "SomethingElse"
-)
+const SomeTestMarshalEnum1 MarshalEnum = "Something"
+const SomeTestMarshalEnum2 MarshalEnum = "SomethingElse"
 
-type TestMarshalEnumRecord struct {
-	Field TestMarshalEnum
+type MarshalEnumRecord struct {
+	Field MarshalEnum `astm:"3"`
+}
+type MarshalEnumMessage struct {
+	Record MarshalEnumRecord `astm:"X"`
 }
 
-type TestMarshalEnumMessage struct {
-	Record TestMarshalEnumRecord `astm:"X"`
-}
-
-/*
-Marshalling of enums
-*/
 func TestEnumMarshal(t *testing.T) {
-	var msg TestMarshalEnumMessage
-
+	// Arrange
+	var msg MarshalEnumMessage
 	msg.Record.Field = SomeTestMarshalEnum2
-	config.Encoding = constants.ENCODING_ASCII
-	config.Notation = constants.NOTATION_SHORT
-
+	// Act
 	lines, err := astm.Marshal(msg, config)
-
+	// Assert
 	assert.Nil(t, err)
-	//TODO: what??
-	// output on screen
-	for _, line := range lines {
-		linestr := string(line)
-		fmt.Println(linestr)
-	}
-
-	teardown()
+	assert.Len(t, lines, 1)
+	assert.Equal(t, "X|1|SomethingElse", string(lines[0]))
 }
 
-type TestCorrectFieldEnumeration struct {
+type SpecimenDonorSubstructure struct {
+	CodeOfSpecimen    string `astm:"1"` // 8.4.4
+	TypeOfSpecimen    string `astm:"2"`
+	CodeOfDonor       string `astm:"3"`
+	TypeOfDonorSample string `astm:"4"`
+}
+type OrderRequestV5 struct {
+	SequenceNumber              int                         `astm:"2,sequence" db:"sequence_number"` // 8.4.2
+	SpecimenID                  string                      `astm:"3" db:"specimen_id"`              // 8.4.3
+	SpecimenDonors              []SpecimenDonorSubstructure `astm:"4"`                               // 8.4.4
+	UniversalTestID             string                      `astm:"5.1" db:"universal_test_id"`      // 8.4.5
+	UniversalTestIDName         string                      `astm:"5.2" db:"universal_test_id_name"` // 8.4.5
+	UniversalTestIDType         string                      `astm:"5.3" db:"universal_test_id_type"` // 8.4.5
+	ManufacturesTestID          string                      `astm:"5.4" db:"manufactures_test_id"`
+	RequestedOrderDateTime      time.Time                   `astm:"7,longdate" db:"requested_order_date_time"`     // 8.4.7
+	SpecimenCollectionDateTime  time.Time                   `astm:"8,longdate" db:"specimen_collection_date_time"` // 8.4.8
+	CollectionEndTime           time.Time                   `astm:"9,longdate" db:"collection_end_time"`           // 8.4.9
+	CollectionVolume            string                      `astm:"10" db:"collection_volume"`                     // 8.4.10
+	CollectorID                 string                      `astm:"11" db:"collector_id"`                          // 8.4.11
+	ActionCode                  string                      `astm:"12" db:"action_code"`                           // 8.4.12
+	DangerCode                  string                      `astm:"13" db:"danger_code"`                           // 8.4.13
+	RelevantClinicalInformation string                      `astm:"14" db:"relevant_clinical_information"`         // 8.4.14
+	DateTimeSpecimenReceived    string                      `astm:"15" db:"date_time_specimen_received"`           // 8.4.15
+	SpecimenTypeSource          string                      `astm:"16" db:"specimen_type_source"`                  // 8.4.16
+	OrderingPhysician           string                      `astm:"17" db:"ordering_physician"`                    // 8.4.17
+	PhysicianTelephone          string                      `astm:"18" db:"physician_telephone"`                   // 8.4.18
+	UserField1                  string                      `astm:"19" db:"user_field_1"`                          // 8.4.19
+	UserField2                  string                      `astm:"20" db:"user_field_2"`                          // 8.4.20
+	LaboratoryField1            string                      `astm:"21" db:"laboratory_field_1"`
+	LaboratoryField2            string                      `astm:"22" db:"laboratory_field_2"`
+	CreatedAt                   time.Time                   `db:"created_at"`
+	//TODO: do we need non annotated field support?
+}
+type FieldEnumerationMessage struct {
 	Request OrderRequestV5 `astm:"R"`
 }
 
-/*
-Testing field assignments
-*/
-type OrderRequestV5 struct {
-	// ID                  uuid.UUID `json:"id" db:"id"`
-	SequenceNumber      int    `astm:"2,sequence" db:"sequence_number"` // 8.4.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
-	SpecimenID          string `astm:"3" db:"specimen_id"`              // 8.4.3
-	CodeOfSpecimen1     string `astm:"4.1.1" db:"code_of_specimen_1"`   // 8.4.4
-	TypeOfSpecimen1     string `astm:"4.1.2" db:"type_of_specimen_1"`
-	CodeOfDonor1        string `astm:"4.1.3" db:"code_of_donor_1"`
-	TypeOfDonorSample1  string `astm:"4.1.4" db:"type_of_donor_sample_1"`
-	CodeOfSpecimen2     string `astm:"4.2.1" db:"code_of_specimen_2"` // 8.4.4
-	TypeOfSpecimen2     string `astm:"4.2.2" db:"type_of_specimen_2"`
-	CodeOfDonor2        string `astm:"4.2.3" db:"code_of_donor_2"`
-	TypeOfDonorSample2  string `astm:"4.2.4" db:"type_of_donor_sample_2"`
-	UniversalTestID     string `astm:"5.1" db:"universal_test_id"`      // 8.4.5
-	UniversalTestIDName string `astm:"5.2" db:"universal_test_id_name"` // 8.4.5
-	UniversalTestIDType string `astm:"5.3" db:"universal_test_id_type"` // 8.4.5
-	ManufacturesTestID  string `astm:"5.4" db:"manufactures_test_id"`
-	// Priority                    OrderPriority `astm:"6" db:"priority"`                               // 8.4.6
-	RequestedOrderDateTime      time.Time `astm:"7,longdate" db:"requested_order_date_time"`     // 8.4.7
-	SpecimenCollectionDateTime  time.Time `astm:"8,longdate" db:"specimen_collection_date_time"` // 8.4.8
-	CollectionEndTime           time.Time `astm:"9,longdate" db:"collection_end_time"`           // 8.4.9
-	CollectionVolume            string    `astm:"10" db:"collection_volume"`                     // 8.4.10
-	CollectorID                 string    `astm:"11" db:"collector_id"`                          // 8.4.11
-	ActionCode                  string    `astm:"12" db:"action_code"`                           // 8.4.12
-	DangerCode                  string    `astm:"13" db:"danger_code"`                           // 8.4.13
-	RelevantClinicalInformation string    `astm:"14" db:"relevant_clinical_information"`         // 8.4.14
-	DateTimeSpecimenReceived    string    `astm:"15" db:"date_time_specimen_received"`           // 8.4.15
-	SpecimenTypeSource          string    `astm:"16" db:"specimen_type_source"`                  // 8.4.16
-	OrderingPhysician           string    `astm:"17" db:"ordering_physician"`                    // 8.4.17
-	PhysicianTelephone          string    `astm:"18" db:"physician_telephone"`                   // 8.4.18
-	UserField1                  string    `astm:"19" db:"user_field_1"`                          // 8.4.19
-	UserField2                  string    `astm:"20" db:"user_field_2"`                          // 8.4.20
-	LaboratoryField1            string    `astm:"21" db:"laboratory_field_1"`
-	LaboratoryField2            string    `astm:"22" db:"laboratory_field_2"`
-	// ProtocolMessageHistoryID    uuid.UUID     `db:"message_history_id"`
-	CreatedAt time.Time `db:"created_at"`
-}
-
 func TestFieldEnumeration(t *testing.T) {
-	var orq TestCorrectFieldEnumeration
-
+	// Arrange
+	var orq FieldEnumerationMessage
 	orq.Request.ActionCode = "N"
-
-	config.Encoding = constants.ENCODING_ASCII
-
-	record, err := astm.Marshal(orq, config)
-
+	// Act
+	lines, err := astm.Marshal(orq, config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, "R|1||^^^\\^^^|^^^|||||||N||||||||||", string(record[0]))
-
-	teardown()
+	assert.Len(t, lines, 1)
+	assert.Equal(t, "R|1||^^^\\^^^|^^^|||||||N||||||||||", string(lines[0]))
 }
 
-/*
-Testing bug: one delimiter too much
-*/
-type TestOneDlimiterTooMuchStruct struct {
-	Terminator standardlis2a2.Terminator `astm:"L"`
+// TODO: is this test needed?
+type OneDelimiterTooMuchMessage struct {
+	Terminator lis02a2.Terminator `astm:"L"`
 }
 
-func TestOneDlimiterTooMuch(t *testing.T) {
-
-	var record TestOneDlimiterTooMuchStruct
-
+func TestOneDelimiterTooMuch(t *testing.T) {
+	// Arrange
+	var record OneDelimiterTooMuchMessage
 	record.Terminator.TerminatorCode = "N"
-	config.Encoding = constants.ENCODING_ASCII
-
-	filedata, err := astm.Marshal(record, config)
-
+	// Act
+	lines, err := astm.Marshal(record, config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(filedata))
-
-	assert.Equal(t, "L|1|N", string(filedata[0]))
-
-	teardown()
+	assert.Len(t, lines, 1)
+	assert.Equal(t, "L|1|N", string(lines[0]))
 }
 
-// --------------------------------------------------------------
-// Testing bug: German Language encoding
-// --------------------------------------------------------------
-type TestGermanLanguageDecoderRecord struct {
-	Patient standardlis2a2.Patient `astm:"P"`
+type GermanLanguageDecoderMessage struct {
+	Patient lis02a2.Patient `astm:"P"`
 }
 
-func TestGermanLanguageDecoder(t *testing.T) {
-
-	var record TestGermanLanguageDecoderRecord
-
+func TestGermanLanguageDecoder_Windows1252(t *testing.T) {
+	// Arrange
+	var record GermanLanguageDecoderMessage
 	record.Patient.FirstName = "Högendäg"
 	record.Patient.LastName = "Nügendiß"
-	config.Encoding = constants.ENCODING_WINDOWS1252
-
-	filedata, err := astm.Marshal(record, config)
-
+	config.Encoding = astmconst.ENCODING_WINDOWS1252
+	// Act
+	lines, err := astm.Marshal(record, config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(filedata))
-
-	expectedWindows1252 := helperEncode(charmap.Windows1252, []byte("P|1||||Nügendiß^Högendäg|||||||||||||||||||||||||||||"))
-
-	assert.Equal(t, expectedWindows1252, filedata[0])
-
+	assert.Len(t, lines, 1)
+	expected := helperEncode(charmap.Windows1252, []byte("P|1||||Nügendiß^Högendäg|||||||||||||||||||||||||||||"))
+	assert.Equal(t, expected, lines[0])
+	// Teardown
 	teardown()
-
-	config.Encoding = constants.ENCODING_ISO8859_1
-	// test for iso8859_1
-	filedata, err = astm.Marshal(record, config)
-
+}
+func TestGermanLanguageDecoder_ISO8859_1(t *testing.T) {
+	// Arrange
+	var record GermanLanguageDecoderMessage
+	record.Patient.FirstName = "Högendäg"
+	record.Patient.LastName = "Nügendiß"
+	config.Encoding = astmconst.ENCODING_ISO8859_1
+	// Act
+	lines, err := astm.Marshal(record, config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(filedata))
-
-	expectedWindowsISO8859_1 := helperEncode(charmap.ISO8859_1, []byte("P|1||||Nügendiß^Högendäg|||||||||||||||||||||||||||||"))
-
-	assert.Equal(t, expectedWindowsISO8859_1, filedata[0])
-
+	assert.Len(t, lines, 1)
+	expected := helperEncode(charmap.ISO8859_1, []byte("P|1||||Nügendiß^Högendäg|||||||||||||||||||||||||||||"))
+	assert.Equal(t, expected, lines[0])
+	// Teardown
 	teardown()
 }
 
-// Due to a bug that panics
+// TODO: what panics, what bug? Do we need it?
 func TestFailMarshalOnlyHeader(t *testing.T) {
-
-	var header standardlis2a2.Header
-	config.Encoding = constants.ENCODING_ASCII
-	config.Notation = constants.NOTATION_SHORT
-
-	message, err := astm.Marshal(header, config)
-
+	// Note: this test was created to test a bug that panics
+	// Arrange
+	var message HeaderMessage
+	config.Encoding = astmconst.ENCODING_ASCII
+	config.Notation = astmconst.NOTATION_SHORT
+	// Act
+	lines, err := astm.Marshal(message, config)
+	// Assert
 	assert.Nil(t, err)
-	assert.NotNil(t, message)
-
+	assert.NotNil(t, lines)
+	// Teardown
 	teardown()
 }
 
-// By value to structures don't work for marshalling
-func TestFailOnHeaderIsA_Reference(t *testing.T) {
+func TestPointerInput(t *testing.T) {
+	// Arrange
+	var message HeaderMessage
+	// Act
+	_, err := astm.Marshal(&message, config)
+	// Assert
+	assert.Nil(t, err)
+}
 
-	var header standardlis2a2.Header
-	config.Encoding = constants.ENCODING_ASCII
-	config.Notation = constants.NOTATION_SHORT
-
-	_, err := astm.Marshal(header, config)
-
-	assert.NotNil(t, err)
-
-	teardown()
+func TestQueryMessageNoQueryData(t *testing.T) {
+	// Arrange
+	var query lis02a2.QueryMessage
+	query.Terminator.TerminatorCode = "N"
+	// Act
+	lines, err := astm.Marshal(query, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Len(t, lines, 2)
+	assert.Equal(t, "H|\\^&||||||||||||", string(lines[0]))
+	assert.Equal(t, "L|1|N", string(lines[1]))
 }
 
 func TestQueryMessage(t *testing.T) {
-
-	var query standardlis2a2.QueryMessage
-
+	// Arrange
+	var query lis02a2.QueryMessage
 	query.Terminator.TerminatorCode = "N"
-	config.Encoding = constants.ENCODING_ASCII
-
-	// Test with no Querydata provided
-	filedata, err := astm.Marshal(query, config)
+	query.RequestInformations = []lis02a2.RequestInformation{
+		{
+			StartingRangeIDNumber: "SampleCode1",
+			UniversalTestID:       "ALL",
+		},
+	}
+	// Act
+	lines, err := astm.Marshal(query, config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
-	assert.Equal(t, "L|1|N", string(filedata[1]))
-
-	teardown()
-
-	query.RequestInformations = append(query.RequestInformations, standardlis2a2.RequestInformation{
-		StartingRangeIDNumber: "SampleCode1",
-		UniversalTestID:       "ALL",
-	})
-	config.Encoding = constants.ENCODING_ASCII
-
-	filedata, err = astm.Marshal(query, config)
-	assert.Nil(t, err)
-
-	assert.Equal(t, "H|\\^&||||||||||||", string(filedata[0]))
-	assert.Equal(t, "Q|1|SampleCode1||ALL||||||||", string(filedata[1]))
-	assert.Equal(t, "L|1|N", string(filedata[2]))
-
-	teardown()
+	assert.Equal(t, "H|\\^&||||||||||||", string(lines[0]))
+	assert.Equal(t, "Q|1|SampleCode1||ALL||||||||", string(lines[1]))
+	assert.Equal(t, "L|1|N", string(lines[2]))
 }
 
 func TestMarshalMultipleOrder(t *testing.T) {
-
-	msg := standardlis2a2.OrderMessage{
-		PatientOrders: []standardlis2a2.PatientOrder{
+	// Arrange
+	msg := lis02a2.OrderMessage{
+		PatientOrders: []lis02a2.PatientOrder{
 			{
-				Patient: standardlis2a2.Patient{
+				Patient: lis02a2.Patient{
 					LabAssignedPatientID: "Mate",
 				},
-				Orders: []standardlis2a2.Order{
+				Orders: []lis02a2.Order{
 					{
-						SpecimenID:      "Samplecode1",
-						UniversalTestID: "Brains",
+						SpecimenID: "Samplecode1",
+						UniversalTestID: lis02a2.StandardUniversalTestID{
+							UniversalTestID: "Brains",
+						},
 					},
 					{
-						SpecimenID:      "Samplecode1",
-						UniversalTestID: "Gutts",
+						SpecimenID: "Samplecode1",
+						UniversalTestID: lis02a2.StandardUniversalTestID{
+							UniversalTestID: "Gutts",
+						},
 					},
 				},
 			},
 			{
-				Patient: standardlis2a2.Patient{
+				Patient: lis02a2.Patient{
 					LabAssignedPatientID: "Stephan",
 				},
-				Orders: []standardlis2a2.Order{
+				Orders: []lis02a2.Order{
 					{
-						SpecimenID:      "Samplecode2",
-						UniversalTestID: "Looks",
+						SpecimenID: "Samplecode2",
+						UniversalTestID: lis02a2.StandardUniversalTestID{
+							UniversalTestID: "Looks",
+						},
 					},
 					{
-						SpecimenID:      "Samplecode2",
-						UniversalTestID: "Money",
+						SpecimenID: "Samplecode2",
+						UniversalTestID: lis02a2.StandardUniversalTestID{
+							UniversalTestID: "Money",
+						},
 					},
 				},
 			},
 		},
-		Terminator: standardlis2a2.Terminator{
+		Terminator: lis02a2.Terminator{
 			TerminatorCode: "N",
 		},
 	}
-	config.Encoding = constants.ENCODING_ASCII
-	config.Notation = constants.NOTATION_SHORT
-
-	filedata, err := astm.Marshal(msg, config)
+	config.Notation = astmconst.NOTATION_SHORT
+	// Act
+	lines, err := astm.Marshal(msg, config)
+	// Assert
 	assert.Nil(t, err)
-
-	for _, row := range filedata {
-		fmt.Println(string(row))
-	}
+	assert.Len(t, lines, 8)
+	assert.Equal(t, "H|\\^&", string(lines[0]))
+	assert.Equal(t, "P|1||Mate||^", string(lines[1]))
+	assert.Equal(t, "O|1|Samplecode1^^^||Brains^^^|||||||||||^", string(lines[2]))
+	assert.Equal(t, "O|2|Samplecode1^^^||Gutts^^^|||||||||||^", string(lines[3]))
+	assert.Equal(t, "P|2||Stephan||^", string(lines[4]))
+	assert.Equal(t, "O|1|Samplecode2^^^||Looks^^^|||||||||||^", string(lines[5]))
+	assert.Equal(t, "O|2|Samplecode2^^^||Money^^^|||||||||||^", string(lines[6]))
+	assert.Equal(t, "L|1|N", string(lines[7]))
+	// Teardown
 	teardown()
 }
 
 func TestShorthandOnStandardMessage(t *testing.T) {
-	msg := standardlis2a2.DefaultMessage{
-		Header: standardlis2a2.Header{
-			Delimiters:     "\\^&",
+	// Arrange
+	msg := lis02a2.StandardPOCRMessage{
+		Header: lis02a2.Header{
 			SenderNameOrID: "LIS",
-			ReceiverID:     "NotExistantTestSystem",
+			ReceiverID:     "NonExistentTestSystem",
 			DateAndTime:    time.Now(),
 		},
-		PatientOrderCommentedResults: []standardlis2a2.PORC{
+		PatientOrderCommentedResults: []lis02a2.PatientOrderCommentedResult{
 			{
-				Patient: standardlis2a2.Patient{},
-				OrderCommentedResults: []standardlis2a2.OrderCommentedResult{
+				Patient: lis02a2.Patient{},
+				OrderCommentedResults: []lis02a2.OrderCommentedResult{
 					{
-						Order: standardlis2a2.Order{
-							SpecimenID:      "VAL24981209",
-							UniversalTestID: "Pool_Cell",
-							Priority:        "R",
-							ActionCode:      "N",
-							SpecimenType:    "TestData",
+						Order: lis02a2.Order{
+							SpecimenID: "VAL24981209",
+							UniversalTestID: lis02a2.StandardUniversalTestID{
+								UniversalTestID: "Pool_Cell",
+							},
+							Priority:     "R",
+							ActionCode:   "N",
+							SpecimenType: "TestData",
 						},
 					},
 					{
-						Order: standardlis2a2.Order{
-							SpecimenID:      "VAL24981210",
-							UniversalTestID: "Pool_Cell",
-							Priority:        "R",
-							ActionCode:      "N",
-							SpecimenType:    "TestData",
+						Order: lis02a2.Order{
+							SpecimenID: "VAL24981210",
+							UniversalTestID: lis02a2.StandardUniversalTestID{
+								UniversalTestID: "Pool_Cell",
+							},
+							Priority:     "R",
+							ActionCode:   "N",
+							SpecimenType: "TestData",
 						},
 					},
 				},
 			},
 		},
-		Terminator: standardlis2a2.Terminator{
+		Terminator: lis02a2.Terminator{
 			TerminatorCode: "N",
 		},
 	}
-	config.Encoding = constants.ENCODING_ASCII
-	config.Notation = constants.NOTATION_SHORT
-
-	filedata, err := astm.Marshal(msg, config)
-
+	config.Encoding = astmconst.ENCODING_ASCII
+	config.Notation = astmconst.NOTATION_SHORT
+	// Act
+	lines, err := astm.Marshal(msg, config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, 6, len(filedata))
-	assert.Equal(t, []byte("M|1"), filedata[1])
-	assert.Equal(t, []byte("P|1"), filedata[2])
-	assert.Equal(t, []byte("O|1|VAL24981209||Pool_Cell|R||||||N||||TestData"), filedata[3])
-	assert.Equal(t, []byte("O|2|VAL24981210||Pool_Cell|R||||||N||||TestData"), filedata[4])
-	assert.Equal(t, []byte("L|1|N"), filedata[5])
-
+	assert.Len(t, lines, 6)
+	assert.Equal(t, []byte("M|1"), lines[1])
+	assert.Equal(t, []byte("P|1"), lines[2])
+	assert.Equal(t, []byte("O|1|VAL24981209||Pool_Cell|R||||||N||||TestData"), lines[3])
+	assert.Equal(t, []byte("O|2|VAL24981210||Pool_Cell|R||||||N||||TestData"), lines[4])
+	assert.Equal(t, []byte("L|1|N"), lines[5])
+	// Teardown
 	teardown()
 }
 
 func TestEmbeddedStructsAndArrays(t *testing.T) {
-	message := MessageMadeForTheNextTest{
+	// Arrange
+	message := HoribaYumizenMessage{
 		ExtraTests: struct {
-			SequenceNumber int       `astm:"2,sequence"`
 			ArrayOfInt     []int     `astm:"3"`
 			ArrayOfFloat32 []float32 `astm:"4"`
 			ArrayOfFloat64 []float64 `astm:"5"`
 		}(struct {
-			SequenceNumber int
 			ArrayOfInt     []int
 			ArrayOfFloat32 []float32
 			ArrayOfFloat64 []float64
@@ -572,27 +508,27 @@ func TestEmbeddedStructsAndArrays(t *testing.T) {
 				},
 			},
 		},
-		Terminator: standardlis2a2.Terminator{
+		Terminator: lis02a2.Terminator{
 			TerminatorCode: "N",
 		},
 	}
-	config.Encoding = constants.ENCODING_UTF8
-	config.TimeZone = constants.TIMEZONE_UTC
-
-	data, err := astm.Marshal(message, config)
+	config.Encoding = astmconst.ENCODING_UTF8
+	config.TimeZone = astmconst.TIMEZONE_UTC
+	// Act
+	lines, err := astm.Marshal(message, config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, "M|1|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\240423H1(^20240905000000^20250305\\240411M11^20240828000000^20241028", string(data[0]))
-	assert.Equal(t, "E|1|1\\2\\3|4.100\\4.200\\4.300|5.111\\5.222", string(data[1]))
-	assert.Equal(t, "L|1|N", string(data[2]))
-
+	assert.Equal(t, "M|1|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\240423H1(^20240905000000^20250305\\240411M11^20240828000000^20241028", string(lines[0]))
+	assert.Equal(t, "E|1|1\\2\\3|4.100\\4.200\\4.300|5.111\\5.222", string(lines[1]))
+	assert.Equal(t, "L|1|N", string(lines[2]))
+	// Teardown
 	teardown()
 }
 
 func TestEmbeddedStructsAndArraysShortNotation(t *testing.T) {
-	message := MessageMadeForTheNextTest{
+	// Arrange
+	message := HoribaYumizenMessage{
 		ExtraTests: struct {
-			SequenceNumber int       `astm:"2,sequence"`
 			ArrayOfInt     []int     `astm:"3"`
 			ArrayOfFloat32 []float32 `astm:"4"`
 			ArrayOfFloat64 []float64 `astm:"5"`
@@ -603,21 +539,21 @@ func TestEmbeddedStructsAndArraysShortNotation(t *testing.T) {
 			F2:       "REAGENT",
 			Reagents: []string{"DILUENT", "LYSE"},
 		},
-		Terminator: standardlis2a2.Terminator{
+		Terminator: lis02a2.Terminator{
 			TerminatorCode: "N",
 		},
 	}
-	config.Encoding = constants.ENCODING_UTF8
-	config.TimeZone = constants.TIMEZONE_UTC
-	config.Notation = constants.NOTATION_SHORT
-
-	data, err := astm.Marshal(message, config)
+	config.Encoding = astmconst.ENCODING_UTF8
+	config.TimeZone = astmconst.TIMEZONE_UTC
+	config.Notation = astmconst.NOTATION_SHORT
+	// Act
+	lines, err := astm.Marshal(message, config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, "M|1|REAGENT|DILUENT\\LYSE", string(data[0]))
-	assert.Equal(t, "E|1|1\\2\\3", string(data[1]))
-	assert.Equal(t, "L|1|N", string(data[2]))
-
+	assert.Equal(t, "M|1|REAGENT|DILUENT\\LYSE", string(lines[0]))
+	assert.Equal(t, "E|1|1\\2\\3", string(lines[1]))
+	assert.Equal(t, "L|1|N", string(lines[2]))
+	// Teardown
 	teardown()
 }
 
@@ -629,10 +565,12 @@ type CustomDecimalLength struct {
 		EmbeddedFloat2 float64 `astm:"1.2,length:2"`
 		EmbeddedFloat3 float64 `astm:"1.3"`
 		EmbeddedFloat4 float32 `astm:"1.4,length:invalidshoulddefaultto3"`
+		//TODO: do we want this to have default and not produce error instead?
 	} `astm:"3"`
 }
 
 func TestCustomDecimalLengthAnnotation(t *testing.T) {
+	// Arrange
 	message := struct {
 		DecimalLength CustomDecimalLength `astm:"D"`
 	}{
@@ -660,13 +598,14 @@ func TestCustomDecimalLengthAnnotation(t *testing.T) {
 			},
 		},
 	}
-	config.Encoding = constants.ENCODING_UTF8
-	config.TimeZone = constants.TIMEZONE_UTC
-	config.Notation = constants.NOTATION_SHORT
-
-	data, err := astm.Marshal(message, config)
+	config.Encoding = astmconst.ENCODING_UTF8
+	config.TimeZone = astmconst.TIMEZONE_UTC
+	config.Notation = astmconst.NOTATION_SHORT
+	// Act
+	lines, err := astm.Marshal(message, config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "D|0.3457|0.4|0.1234567^0.98^0.234^0.345\\0.9900000^0.11^0.223^0.334", string(data[0]))
-
+	assert.Equal(t, "D|0.3457|0.4|0.1234567^0.98^0.234^0.345\\0.9900000^0.11^0.223^0.334", string(lines[0]))
+	// Teardown
 	teardown()
 }

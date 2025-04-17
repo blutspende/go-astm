@@ -2,9 +2,31 @@ package lis02a2
 
 import "time"
 
-// Standard implementation for the lis2a2 protocol according to standard in every detail,
-// will work for most with some tinkering....
-// (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
+// Standard LIS02-A2 record and message format declarations to use for (un)marshaling
+// These structures can be used directly or as a base for custom implementations
+// Basis for the protocol definition: https://samson-rus.com/wp-content/files/LIS2-A2.pdf
+// The commended section numbers below (eg: 5.6.1) refer to the document's sections above
+// Page 30-33 provides information about the logical structure of messages
+
+// Record substructures //
+
+type StandardUniversalTestID struct { //5.6.1
+	UniversalTestID       string `astm:"1"`
+	UniversalTestIDName   string `astm:"2"`
+	UniversalTestIDType   string `astm:"3"`
+	ManufacturersTestType string `astm:"4"`
+}
+type ExtendedUniversalTestID struct { //5.6.1
+	UniversalTestID       string `astm:"1"`
+	UniversalTestIDName   string `astm:"2"`
+	UniversalTestIDType   string `astm:"3"`
+	ManufacturersTestType string `astm:"4"`
+	ManufacturersTestName string `astm:"5"`
+	ManufacturersTestCode string `astm:"6"`
+	TestCode              string `astm:"7"`
+}
+
+// Record structures //
 
 type Header struct {
 	MessageControlID        string    `astm:"3"`           // 6.3
@@ -20,8 +42,6 @@ type Header struct {
 	Version                 string    `astm:"13"`          // 6.13
 	DateAndTime             time.Time `astm:"14,longdate"` // 6.14
 }
-
-// https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Patient struct {
 	PracticeAssignedPatientID          string    `astm:"3"`   // 7.3
 	LabAssignedPatientID               string    `astm:"4"`   // 7.4
@@ -58,78 +78,60 @@ type Patient struct {
 	HospitalInstitution                string    `astm:"34"`  // 7.34
 	DosageCategory                     string    `astm:"35"`  // 7.35
 }
-
-// https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Order struct {
-	SpecimenID                   string    `astm:"3"`           // 8.4.3
-	InstrumentSpecimenID         string    `astm:"4"`           // 8.4.4
-	UniversalTestID              string    `astm:"5.1"`         // 8.4.5
-	UniversalTestIDName          string    `astm:"5.2"`         // 8.4.5
-	UniversalTestIDType          string    `astm:"5.3"`         // 8.4.5
-	ManufacturersTestType        string    `astm:"5.4"`         // 8.4.5
-	Priority                     string    `astm:"6"`           // 8.4.6
-	RequestedOrderDateTime       time.Time `astm:"7,longdate"`  // 8.4.7
-	SpecimenCollectionDateTime   time.Time `astm:"8,longdate"`  // 8.4.8
-	CollectionEndTime            time.Time `astm:"9,longdate"`  // 8.4.9
-	CollectionVolume             string    `astm:"10"`          // 8.4.10
-	CollectionID                 string    `astm:"11"`          // 8.4.11
-	ActionCode                   string    `astm:"12"`          // 8.4.12
-	DangerCode                   string    `astm:"13"`          // 8.4.13
-	RelevantClinicalInformation  string    `astm:"14"`          // 8.4.14
-	DateTimeSpecimenReceived     string    `astm:"15"`          // 8.4.15
-	SpecimenType                 string    `astm:"16.1"`        // 8.4.16
-	SpecimenSource               string    `astm:"16.2"`        // 8.4.16
-	OrderingPhysician            string    `astm:"17"`          // 8.4.17
-	PhysicianTelephone           string    `astm:"18"`          // 8.4.18
-	UserField1                   string    `astm:"19"`          // 8.4.19
-	UserField2                   string    `astm:"20"`          // 8.4.20
-	LaboratoryField1             string    `astm:"21"`          // 8.4.21
-	LaboratoryField2             string    `astm:"22"`          // 8.4.22
-	DateTimeResultsReported      time.Time `astm:"23,longdate"` // 8.4.23
-	InstrumentCharge             string    `astm:"24"`          // 8.4.24
-	InstrumentSectionID          string    `astm:"25"`          // 8.4.25
-	ReportType                   string    `astm:"26"`          // 8.4.26
-	Reserved                     string    `astm:"27"`          // 8.4.27
-	LocationOfSpecimenCollection string    `astm:"28"`          // 8.4.28
-	NosocomialInfectionFlag      string    `astm:"29"`          // 8.4.29
-	SpecimenService              string    `astm:"30"`          // 8.4.30
-	SpecimenInstitution          string    `astm:"31"`          // 8.4.31
+	SpecimenID                   string                  `astm:"3"`           // 8.4.3
+	InstrumentSpecimenID         string                  `astm:"4"`           // 8.4.4
+	UniversalTestID              StandardUniversalTestID `astm:"5"`           // 8.4.5
+	Priority                     string                  `astm:"6"`           // 8.4.6
+	RequestedOrderDateTime       time.Time               `astm:"7,longdate"`  // 8.4.7
+	SpecimenCollectionDateTime   time.Time               `astm:"8,longdate"`  // 8.4.8
+	CollectionEndTime            time.Time               `astm:"9,longdate"`  // 8.4.9
+	CollectionVolume             string                  `astm:"10"`          // 8.4.10
+	CollectionID                 string                  `astm:"11"`          // 8.4.11
+	ActionCode                   string                  `astm:"12"`          // 8.4.12
+	DangerCode                   string                  `astm:"13"`          // 8.4.13
+	RelevantClinicalInformation  string                  `astm:"14"`          // 8.4.14
+	DateTimeSpecimenReceived     string                  `astm:"15"`          // 8.4.15
+	SpecimenType                 string                  `astm:"16.1"`        // 8.4.16
+	SpecimenSource               string                  `astm:"16.2"`        // 8.4.16
+	OrderingPhysician            string                  `astm:"17"`          // 8.4.17
+	PhysicianTelephone           string                  `astm:"18"`          // 8.4.18
+	UserField1                   string                  `astm:"19"`          // 8.4.19
+	UserField2                   string                  `astm:"20"`          // 8.4.20
+	LaboratoryField1             string                  `astm:"21"`          // 8.4.21
+	LaboratoryField2             string                  `astm:"22"`          // 8.4.22
+	DateTimeResultsReported      time.Time               `astm:"23,longdate"` // 8.4.23
+	InstrumentCharge             string                  `astm:"24"`          // 8.4.24
+	InstrumentSectionID          string                  `astm:"25"`          // 8.4.25
+	ReportType                   string                  `astm:"26"`          // 8.4.26
+	Reserved                     string                  `astm:"27"`          // 8.4.27
+	LocationOfSpecimenCollection string                  `astm:"28"`          // 8.4.28
+	NosocomialInfectionFlag      string                  `astm:"29"`          // 8.4.29
+	SpecimenService              string                  `astm:"30"`          // 8.4.30
+	SpecimenInstitution          string                  `astm:"31"`          // 8.4.31
 }
-
-// https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Result struct {
-	UniversalTestID                          string    `astm:"3.1"`         // 9.3
-	UniversalTestIDName                      string    `astm:"3.2"`         // 9.3
-	UniversalTestIDType                      string    `astm:"3.3"`         // 9.3
-	ManufacturersTestType                    string    `astm:"3.4"`         // 9.3
-	ManufacturersTestName                    string    `astm:"3.5"`         // 9.3
-	ManufacturersTestCode                    string    `astm:"3.6"`         // 9.3
-	TestCode                                 string    `astm:"3.7"`         // 9.3
-	DataMeasurementValue                     string    `astm:"4.1"`         // 9.4
-	InitialMeasurementValue                  string    `astm:"4.2"`         // 9.4
-	MeasurementValueOfDevice                 string    `astm:"4.3"`         // 9.4
-	Units                                    string    `astm:"5"`           // 9.5
-	ReferenceRange                           string    `astm:"6"`           // 9.6
-	ResultAbnormalFlag                       string    `astm:"7"`           // 9.7
-	NatureOfAbnormalTesting                  string    `astm:"8"`           // 9.8
-	ResultStatus                             string    `astm:"9"`           // 9.9
-	DateOfChangeInInstrumentNormativeTesting time.Time `astm:"10,longdate"` // 9.10
-	OperatorIDPerformed                      string    `astm:"11.1"`        // 9.11
-	OperatorIDVerified                       string    `astm:"11.2"`        // 9.11
-	DateTimeTestStarted                      time.Time `astm:"12,longdate"` // 9.12
-	DateTimeCompleted                        time.Time `astm:"13,longdate"` // 9.13
-	IntstrumentIdentification                string    `astm:"14"`          // 9.14
+	UniversalTestID                          ExtendedUniversalTestID `astm:"3"`           // 9.3
+	DataMeasurementValue                     string                  `astm:"4.1"`         // 9.4
+	InitialMeasurementValue                  string                  `astm:"4.2"`         // 9.4
+	MeasurementValueOfDevice                 string                  `astm:"4.3"`         // 9.4
+	Units                                    string                  `astm:"5"`           // 9.5
+	ReferenceRange                           string                  `astm:"6"`           // 9.6
+	ResultAbnormalFlag                       string                  `astm:"7"`           // 9.7
+	NatureOfAbnormalTesting                  string                  `astm:"8"`           // 9.8
+	ResultStatus                             string                  `astm:"9"`           // 9.9
+	DateOfChangeInInstrumentNormativeTesting time.Time               `astm:"10,longdate"` // 9.10
+	OperatorIDPerformed                      string                  `astm:"11.1"`        // 9.11
+	OperatorIDVerified                       string                  `astm:"11.2"`        // 9.11
+	DateTimeTestStarted                      time.Time               `astm:"12,longdate"` // 9.12
+	DateTimeCompleted                        time.Time               `astm:"13,longdate"` // 9.13
+	InstrumentIdentification                 string                  `astm:"14"`          // 9.14
 }
-
-// https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Comment struct {
 	CommentSource string `astm:"3"` // 10.3
 	CommentText   string `astm:"4"` // 10.4
 	CommentType   string `astm:"5"` // 10.5
 }
-
-// Lis2RequestInformation - RequestInformation
-// https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type RequestInformation struct {
 	StartingRangeIDNumber           string `astm:"3"`  // 11.3
 	EndingRangeIDNumber             string `astm:"4"`  // 11.4
@@ -143,15 +145,6 @@ type RequestInformation struct {
 	UserField2                      string `astm:"12"` // 11.12
 	RequestInformationStatus        string `astm:"13"` // 11.13
 }
-
-// Lis2Terminator - Terminator Record (Hasta la vista....)
-// https://samson-rus.com/wp-content/files/LIS2-A2.pdf
-type Terminator struct {
-	TerminatorCode string `astm:"3"` // 12.3
-}
-
-// Lis2Manufacturer -Manufacturer Record
-// https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Manufacturer struct {
 	F2  string `astm:"3"`  // 14.3
 	F3  string `astm:"4"`  // 14.4
@@ -166,47 +159,43 @@ type Manufacturer struct {
 	F12 string `astm:"13"` // 14.13
 	F13 string `astm:"14"` // 14.14
 }
+type Terminator struct { //Hasta la vista...
+	TerminatorCode string `astm:"3"` // 12.3
+}
+
+// Message structures //
 
 type CommentedResult struct {
 	Result   Result    `astm:"R"`
 	Comments []Comment `astm:"C,optional"`
 }
-
 type OrderCommentedResult struct {
 	Order            Order `astm:"O"`
 	CommentedResults []CommentedResult
 }
-
-type PORC struct {
+type PatientOrderCommentedResult struct {
 	Patient               Patient   `astm:"P"`
 	Comment               []Comment `astm:"C,optional"`
 	OrderCommentedResults []OrderCommentedResult
 }
-
-// https://samson-rus.com/wp-content/files/LIS2-A2.pdf Page 30 : Logial Structure of Message
-type DefaultMessage struct {
+type StandardPOCRMessage struct {
 	Header                       Header       `astm:"H"`
 	Manufacturer                 Manufacturer `astm:"M,optional"`
-	PatientOrderCommentedResults []PORC
+	PatientOrderCommentedResults []PatientOrderCommentedResult
 	Terminator                   Terminator `astm:"L"`
 }
-
-type DefaultMultiMessage struct {
-	Messages []DefaultMessage
+type StandardMultiPOCRMessage struct {
+	Messages []StandardPOCRMessage
 }
-
-// Default Query message
 type QueryMessage struct {
 	Header              Header               `astm:"H"`
 	RequestInformations []RequestInformation `astm:"Q"`
 	Terminator          Terminator           `astm:"L"`
 }
-
 type PatientOrder struct {
 	Patient Patient `astm:"P"`
 	Orders  []Order `astm:"O"`
 }
-
 type OrderMessage struct {
 	Header        Header `astm:"H"`
 	PatientOrders []PatientOrder
