@@ -1,6 +1,8 @@
 package models
 
-import "github.com/blutspende/go-astm/v2/constants"
+import (
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
+)
 
 // Configuration struct for the whole process
 type Configuration struct {
@@ -15,11 +17,11 @@ type Configuration struct {
 }
 
 var DefaultConfiguration = Configuration{
-	Encoding:                   constants.ENCODING_ISO8859_1,
-	LineSeparator:              constants.LF,
+	Encoding:                   astmconst.ENCODING_ISO8859_1,
+	LineSeparator:              astmconst.LF,
 	AutoDetectLineSeparator:    true,
-	TimeZone:                   constants.TIMEZONE_EUROPE_BERLIN,
+	TimeZone:                   astmconst.TIMEZONE_EUROPE_BERLIN,
 	EnforceSequenceNumberCheck: true,
-	Notation:                   constants.NOTATION_STANDARD,
+	Notation:                   astmconst.NOTATION_STANDARD,
 	RoundFixedNumbers:          true,
 }

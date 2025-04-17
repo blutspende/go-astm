@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -69,7 +69,7 @@ func TestBuildLine_MultitypeLengthRecordRound(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|3.77777|3.778|4||", result)
-	// Tear down
+	// Teardown
 	teardown()
 }
 
@@ -86,7 +86,7 @@ func TestBuildLine_MultitypeLengthRecordTruncate(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|3.77777|3.777|3||", result)
-	// Tear down
+	// Teardown
 	teardown()
 }
 
@@ -190,13 +190,13 @@ func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 		Second: "",
 		Third:  "",
 	}
-	config.Notation = constants.NOTATION_SHORT
+	config.Notation = astmconst.NOTATION_SHORT
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first", result)
-	// Tear down
+	// Teardown
 	teardown()
 }
 
@@ -207,13 +207,13 @@ func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 		Second: "second",
 		Third:  "third",
 	}
-	config.Notation = constants.NOTATION_SHORT
+	config.Notation = astmconst.NOTATION_SHORT
 	// Act
 	result, err := BuildLine(source, "D", 3, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "D|3|first|second|third", result)
-	// Tear down
+	// Teardown
 	teardown()
 }
 
@@ -243,7 +243,7 @@ func TestBuildLine_HeaderRecordCustomDelimiters(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "H/!*%/first", result)
-	// Tear down
+	// Teardown
 	teardown()
 }
 
@@ -264,7 +264,7 @@ func TestBuildLine_HeaderDelimiterChange(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "H/!*%/first/second1!second2/third1*third2", result)
-	// Tear down
+	// Teardown
 	teardown()
 }
 

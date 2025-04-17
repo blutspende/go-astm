@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
 	"reflect"
@@ -172,11 +172,10 @@ func ProcessStructReflection(inputStruct interface{}) (outputTypes []reflect.Str
 
 func isValidAttribute(attribute string) bool {
 	validAttributes := []string{
-		constants.ATTRIBUTE_REQUIRED,
-		constants.ATTRIBUTE_OPTIONAL,
-		constants.ATTRIBUTE_SEQUENCE,
-		constants.ATTRIBUTE_LONGDATE,
-		constants.ATTRIBUTE_LENGTH,
+		astmconst.ATTRIBUTE_REQUIRED,
+		astmconst.ATTRIBUTE_OPTIONAL,
+		astmconst.ATTRIBUTE_LONGDATE,
+		astmconst.ATTRIBUTE_LENGTH,
 	}
 	return isInList(attribute, validAttributes)
 }

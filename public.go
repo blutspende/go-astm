@@ -1,6 +1,7 @@
 package astm
 
 import (
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/functions"
 	"github.com/blutspende/go-astm/v2/models"
 	"regexp"
@@ -53,21 +54,21 @@ func Marshal(sourceStruct interface{}, configuration ...*models.Configuration) (
 	return result, nil
 }
 
-func IdentifyMessage(messageData []byte, configuration ...*models.Configuration) (messageType MessageType, err error) {
+func IdentifyMessage(messageData []byte, configuration ...*models.Configuration) (messageType astmconst.MessageType, err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
-		return MESSAGETYPE_UNKOWN, err
+		return astmconst.MESSAGETYPE_UNKOWN, err
 	}
 	// Convert encoding to UTF8
 	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, config)
 	if err != nil {
-		return MESSAGETYPE_UNKOWN, err
+		return astmconst.MESSAGETYPE_UNKOWN, err
 	}
 	// Split the message data into lines
 	lines, err := functions.SliceLines(utf8Data, config)
 	if err != nil {
-		return MESSAGETYPE_UNKOWN, err
+		return astmconst.MESSAGETYPE_UNKOWN, err
 	}
 	// Extract the first characters from each line
 	firstChars := ""
@@ -85,16 +86,16 @@ func IdentifyMessage(messageData []byte, configuration ...*models.Configuration)
 	// Check the first characters against the regexes and return the message type
 	switch {
 	case regexp.MustCompile(expressionQuery).MatchString(firstChars):
-		return MESSAGETYPE_QUERY, nil
+		return astmconst.MESSAGETYPE_QUERY, nil
 	case regexp.MustCompile(expressionOrder).MatchString(firstChars):
-		return MESSAGETYPE_ORDERS_ONLY, nil
+		return astmconst.MESSAGETYPE_ORDERS_ONLY, nil
 	case regexp.MustCompile(expressionOrderAndResult).MatchString(firstChars):
-		return MESSAGETYPE_ORDERS_AND_RESULTS, nil
+		return astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, nil
 	case regexp.MustCompile(expressionManyOrderAndResult).MatchString(firstChars):
-		return MESSAGETYPE_ORDERS_AND_RESULTS, nil
+		return astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, nil
 	}
 	// If no match was found return unknown
-	return MESSAGETYPE_UNKOWN, err
+	return astmconst.MESSAGETYPE_UNKOWN, err
 }
 
 func loadConfiguration(configuration ...*models.Configuration) (config *models.Configuration, err error) {

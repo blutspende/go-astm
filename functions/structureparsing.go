@@ -3,6 +3,7 @@ package functions
 import (
 	"errors"
 	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
 	"reflect"
@@ -100,7 +101,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				}
 				// If there is a type name mismatch but the target is optional it can be skipped, otherwise it's an error
 				if !nameOk {
-					if targetStructAnnotation.Attribute == constants.ATTRIBUTE_OPTIONAL {
+					if targetStructAnnotation.Attribute == astmconst.ATTRIBUTE_OPTIONAL {
 						err = nil
 						*lineIndex--
 						continue

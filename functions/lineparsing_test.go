@@ -114,7 +114,7 @@ func TestParseLine_HeaderDelimiterChange(t *testing.T) {
 	assert.Equal(t, "second2", target.Array[1])
 	assert.Equal(t, "third1", target.Comp1)
 	assert.Equal(t, "third2", target.Comp2)
-	// Tear down
+	// Teardown
 	teardown()
 }
 
@@ -233,7 +233,7 @@ func TestParseLine_SequenceNumberMismatchWithoutEnforcing(t *testing.T) {
 	_, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	// Tear down
+	// Teardown
 	teardown()
 }
 

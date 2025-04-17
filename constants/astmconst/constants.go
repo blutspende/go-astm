@@ -1,4 +1,13 @@
-package constants
+package astmconst
+
+// Message format attributes
+
+const ATTRIBUTE_REQUIRED string = "required" // field-annotation: by default all fields are optinal
+const ATTRIBUTE_OPTIONAL string = "optional" // record-annotation: by default all records are mandatory
+const ATTRIBUTE_LONGDATE string = "longdate" // Indicating that the date should be formatted as longdate (output only)
+const ATTRIBUTE_LENGTH string = "length"     // used for specifying the decimal length of float fields - astm:"1,length:2" (output only)
+
+// Public functions parameters
 
 const ENCODING_UTF8 string = "UTF8"
 const ENCODING_ASCII string = "ASCII"
@@ -20,8 +29,16 @@ var CR string = string(byte(0x0D))
 var LFCR string = string([]byte{byte(0x0A), byte(0x0D)})
 var CRLF string = string([]byte{byte(0x0D), byte(0x0A)})
 
-// Notation defines how the output format is build
 // NOTATION_STANDARD will always produce as many delimiters as there are values in the export-format
 // NOTATION_SHORT will skip all delimiters to the right of the last value
 const NOTATION_STANDARD string = "STANDARD"
 const NOTATION_SHORT string = "SHORT"
+
+// Possible results from IdentifyMessage
+
+type MessageType int
+
+const MESSAGETYPE_UNKOWN MessageType = -1
+const MESSAGETYPE_QUERY MessageType = 1
+const MESSAGETYPE_ORDERS_ONLY MessageType = 2
+const MESSAGETYPE_ORDERS_AND_RESULTS MessageType = 3

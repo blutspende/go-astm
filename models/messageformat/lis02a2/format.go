@@ -1,12 +1,12 @@
-// Standard implementation for the lis2a2 protocol according to standard in every detail,
-// will work for most with some tinkering....
-package standardlis2a2
+package lis02a2
 
 import "time"
 
+// Standard implementation for the lis2a2 protocol according to standard in every detail,
+// will work for most with some tinkering....
 // (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
+
 type Header struct {
-	Delimiters              string    `astm:"2"`           // 6.2
 	MessageControlID        string    `astm:"3"`           // 6.3
 	AccessPassword          string    `astm:"4"`           // 6.4
 	SenderNameOrID          string    `astm:"5"`           // 6.5
@@ -23,46 +23,44 @@ type Header struct {
 
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Patient struct {
-	SequenceNumber                     int       `astm:"2,sequence"` // 7.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
-	PracticeAssignedPatientID          string    `astm:"3"`          // 7.3
-	LabAssignedPatientID               string    `astm:"4"`          // 7.4
-	ID3                                string    `astm:"5"`          // 7.5
-	LastName                           string    `astm:"6.1"`        // 7.6.1
-	FirstName                          string    `astm:"6.2"`        // 7.6.2
-	MothersMaidenName                  string    `astm:"7"`          // 7.7
-	DOB                                time.Time `astm:"8"`          // 7.8
-	Gender                             string    `astm:"9"`          // 7.9
-	Race                               string    `astm:"10"`         // 7.10
-	Address                            string    `astm:"11"`         // 7.11
-	F12                                string    `astm:"12"`         // 7.12
-	Telephone                          string    `astm:"13"`         // 7.13
-	AttendingPhysicianID               string    `astm:"14"`         // 7.14
-	SpecialField1                      string    `astm:"15"`         // 7.15
-	SpecialField2                      string    `astm:"16"`         // 7.16
-	Height                             string    `astm:"17"`         // 7.17
-	Weight                             string    `astm:"18"`         // 7.18
-	SuspectedDiagnosis                 string    `astm:"19"`         // 7.19
-	ActiveMedication                   string    `astm:"20"`         // 7.20
-	Diet                               string    `astm:"21"`         // 7.21
-	PracticeField1                     string    `astm:"22"`         // 7.22
-	PracticeField2                     string    `astm:"23"`         // 7.23
-	AdmissionAndDischargeDates         string    `astm:"24"`         // 7.24
-	AdmissionStatus                    string    `astm:"25"`         // 7.25
-	Location                           string    `astm:"26"`         // 7.26
-	NatureOfAlternativeDiagnosticCodes string    `astm:"27"`         // 7.27
-	AlternativeDiagnosticCodes         string    `astm:"28"`         // 7.28
-	Religion                           string    `astm:"29"`         // 7.29
-	MaritalStatus                      string    `astm:"30"`         // 7.30
-	IsolationStatus                    string    `astm:"31"`         // 7.31
-	Language                           string    `astm:"32"`         // 7.32
-	HospitalService                    string    `astm:"33"`         // 7.33
-	HospitalInstitution                string    `astm:"34"`         // 7.34
-	DosageCategory                     string    `astm:"35"`         // 7.35
+	PracticeAssignedPatientID          string    `astm:"3"`   // 7.3
+	LabAssignedPatientID               string    `astm:"4"`   // 7.4
+	ID3                                string    `astm:"5"`   // 7.5
+	LastName                           string    `astm:"6.1"` // 7.6.1
+	FirstName                          string    `astm:"6.2"` // 7.6.2
+	MothersMaidenName                  string    `astm:"7"`   // 7.7
+	DOB                                time.Time `astm:"8"`   // 7.8
+	Gender                             string    `astm:"9"`   // 7.9
+	Race                               string    `astm:"10"`  // 7.10
+	Address                            string    `astm:"11"`  // 7.11
+	F12                                string    `astm:"12"`  // 7.12
+	Telephone                          string    `astm:"13"`  // 7.13
+	AttendingPhysicianID               string    `astm:"14"`  // 7.14
+	SpecialField1                      string    `astm:"15"`  // 7.15
+	SpecialField2                      string    `astm:"16"`  // 7.16
+	Height                             string    `astm:"17"`  // 7.17
+	Weight                             string    `astm:"18"`  // 7.18
+	SuspectedDiagnosis                 string    `astm:"19"`  // 7.19
+	ActiveMedication                   string    `astm:"20"`  // 7.20
+	Diet                               string    `astm:"21"`  // 7.21
+	PracticeField1                     string    `astm:"22"`  // 7.22
+	PracticeField2                     string    `astm:"23"`  // 7.23
+	AdmissionAndDischargeDates         string    `astm:"24"`  // 7.24
+	AdmissionStatus                    string    `astm:"25"`  // 7.25
+	Location                           string    `astm:"26"`  // 7.26
+	NatureOfAlternativeDiagnosticCodes string    `astm:"27"`  // 7.27
+	AlternativeDiagnosticCodes         string    `astm:"28"`  // 7.28
+	Religion                           string    `astm:"29"`  // 7.29
+	MaritalStatus                      string    `astm:"30"`  // 7.30
+	IsolationStatus                    string    `astm:"31"`  // 7.31
+	Language                           string    `astm:"32"`  // 7.32
+	HospitalService                    string    `astm:"33"`  // 7.33
+	HospitalInstitution                string    `astm:"34"`  // 7.34
+	DosageCategory                     string    `astm:"35"`  // 7.35
 }
 
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Order struct {
-	SequenceNumber               int       `astm:"2,sequence"`  // 8.4.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
 	SpecimenID                   string    `astm:"3"`           // 8.4.3
 	InstrumentSpecimenID         string    `astm:"4"`           // 8.4.4
 	UniversalTestID              string    `astm:"5.1"`         // 8.4.5
@@ -100,7 +98,6 @@ type Order struct {
 
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Result struct {
-	SequenceNumber                           int       `astm:"2,sequence"`  // 9.2 https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 	UniversalTestID                          string    `astm:"3.1"`         // 9.3
 	UniversalTestIDName                      string    `astm:"3.2"`         // 9.3
 	UniversalTestIDType                      string    `astm:"3.3"`         // 9.3
@@ -126,52 +123,48 @@ type Result struct {
 
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Comment struct {
-	SequenceNumber int    `astm:"2,sequence"` // 10.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
-	CommentSource  string `astm:"3"`          // 10.3
-	CommentText    string `astm:"4"`          // 10.4
-	CommentType    string `astm:"5"`          // 10.5
+	CommentSource string `astm:"3"` // 10.3
+	CommentText   string `astm:"4"` // 10.4
+	CommentType   string `astm:"5"` // 10.5
 }
 
 // Lis2RequestInformation - RequestInformation
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type RequestInformation struct {
-	SequenceNumber                  int    `astm:"2,sequence"` // 11.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
-	StartingRangeIDNumber           string `astm:"3"`          // 11.3
-	EndingRangeIDNumber             string `astm:"4"`          // 11.4
-	UniversalTestID                 string `astm:"5"`          // 11.5
-	NatureOfRequestTimeLimits       string `astm:"6"`          // 11.6
-	BeginningRequestResultsDateTime string `astm:"7"`          // 11.7
-	EndingRequestResultsDateTime    string `astm:"8"`          // 11.8
-	RequestingPhysicianName         string `astm:"9"`          // 11.9
-	RequestingPhysicianTelephone    string `astm:"10"`         // 11.10
-	UserField1                      string `astm:"11"`         // 11.11
-	UserField2                      string `astm:"12"`         // 11.12
-	RequestInformationStatus        string `astm:"13"`         // 11.13
+	StartingRangeIDNumber           string `astm:"3"`  // 11.3
+	EndingRangeIDNumber             string `astm:"4"`  // 11.4
+	UniversalTestID                 string `astm:"5"`  // 11.5
+	NatureOfRequestTimeLimits       string `astm:"6"`  // 11.6
+	BeginningRequestResultsDateTime string `astm:"7"`  // 11.7
+	EndingRequestResultsDateTime    string `astm:"8"`  // 11.8
+	RequestingPhysicianName         string `astm:"9"`  // 11.9
+	RequestingPhysicianTelephone    string `astm:"10"` // 11.10
+	UserField1                      string `astm:"11"` // 11.11
+	UserField2                      string `astm:"12"` // 11.12
+	RequestInformationStatus        string `astm:"13"` // 11.13
 }
 
 // Lis2Terminator - Terminator Record (Hasta la vista....)
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Terminator struct {
-	SequenceNumber int    `astm:"2,sequence"` // 12.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
-	TerminatorCode string `astm:"3"`          // 12.3
+	TerminatorCode string `astm:"3"` // 12.3
 }
 
 // Lis2Manufacturer -Manufacturer Record
 // https://samson-rus.com/wp-content/files/LIS2-A2.pdf
 type Manufacturer struct {
-	SequenceNumber int    `astm:"2,sequence"` // 14.2 (see https://samson-rus.com/wp-content/files/LIS2-A2.pdf)
-	F2             string `astm:"3"`          // 14.3
-	F3             string `astm:"4"`          // 14.4
-	F4             string `astm:"5"`          // 14.5
-	F5             string `astm:"6"`          // 14.6
-	F6             string `astm:"7"`          // 14.7
-	F7             string `astm:"8"`          // 14.8
-	F8             string `astm:"9"`          // 14.9
-	F9             string `astm:"10"`         // 14.10
-	F10            string `astm:"11"`         // 14.11
-	F11            string `astm:"12"`         // 14.12
-	F12            string `astm:"13"`         // 14.13
-	F13            string `astm:"14"`         // 14.14
+	F2  string `astm:"3"`  // 14.3
+	F3  string `astm:"4"`  // 14.4
+	F4  string `astm:"5"`  // 14.5
+	F5  string `astm:"6"`  // 14.6
+	F6  string `astm:"7"`  // 14.7
+	F7  string `astm:"8"`  // 14.8
+	F8  string `astm:"9"`  // 14.9
+	F9  string `astm:"10"` // 14.10
+	F10 string `astm:"11"` // 14.11
+	F11 string `astm:"12"` // 14.12
+	F12 string `astm:"13"` // 14.13
+	F13 string `astm:"14"` // 14.14
 }
 
 type CommentedResult struct {

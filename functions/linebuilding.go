@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
 	"math"
@@ -152,7 +152,7 @@ func buildSubstructure(sourceStruct interface{}, config *models.Configuration) (
 	}
 
 	// Construct the result string
-	result = constructResult(componentMap, config.Internal.Delimiters.Component, constants.NOTATION_STANDARD)
+	result = constructResult(componentMap, config.Internal.Delimiters.Component, astmconst.NOTATION_STANDARD)
 
 	// Return result with no error
 	return result, nil
@@ -169,7 +169,7 @@ func constructResult(fieldMap map[int]string, delimiter string, notation string)
 	// Determine how many fields to include based on the notation
 	lastElementIndex := len(fieldMap) - 1
 	// In short notation the empty fields in the end are skipped
-	if notation == constants.NOTATION_SHORT {
+	if notation == astmconst.NOTATION_SHORT {
 		for i, key := range keys {
 			if fieldMap[key] != "" {
 				lastElementIndex = i
@@ -215,7 +215,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		return result, nil
 	case reflect.Float32, reflect.Float64:
 		precision := -1
-		if annotation.Attribute == constants.ATTRIBUTE_LENGTH {
+		if annotation.Attribute == astmconst.ATTRIBUTE_LENGTH {
 			precision = annotation.AttributeValue
 		}
 		result = strconv.FormatFloat(field.Float(), 'f', precision, field.Type().Bits())
@@ -229,7 +229,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		// Check for time.Time type (it reflects as a Struct)
 		if field.Type() == reflect.TypeOf(time.Time{}) {
 			timeFormat := "20060102"
-			if annotation.Attribute == constants.ATTRIBUTE_LONGDATE {
+			if annotation.Attribute == astmconst.ATTRIBUTE_LONGDATE {
 				timeFormat = "20060102150405"
 			}
 			timeValue, ok := field.Interface().(time.Time)

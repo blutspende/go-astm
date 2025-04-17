@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
 	"strings"
@@ -27,9 +27,9 @@ func SliceLines(input string, config *models.Configuration) (output []string, er
 		lfCnt := 0
 		crCnt := 0
 		for _, c := range input {
-			if c == rune(constants.LF[0]) {
+			if c == rune(astmconst.LF[0]) {
 				lfCnt++
-			} else if c == rune(constants.CR[0]) {
+			} else if c == rune(astmconst.CR[0]) {
 				crCnt++
 			}
 		}
@@ -41,13 +41,13 @@ func SliceLines(input string, config *models.Configuration) (output []string, er
 		}
 
 		if lfCnt == 0 {
-			input = strings.ReplaceAll(input, constants.CR, constants.LF)
+			input = strings.ReplaceAll(input, astmconst.CR, astmconst.LF)
 
 		} else {
-			input = strings.ReplaceAll(input, constants.CR, "")
+			input = strings.ReplaceAll(input, astmconst.CR, "")
 		}
 
-		lines = strings.Split(input, constants.LF)
+		lines = strings.Split(input, astmconst.LF)
 	}
 
 	for i := range lines {
@@ -61,7 +61,7 @@ func SliceLines(input string, config *models.Configuration) (output []string, er
 }
 
 func BuildLines(input []string, config *models.Configuration) (output string) {
-	linebreak := constants.LF
+	linebreak := astmconst.LF
 	if config.LineSeparator != "" && !config.AutoDetectLineSeparator {
 		linebreak = config.LineSeparator
 	}

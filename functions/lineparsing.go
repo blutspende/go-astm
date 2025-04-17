@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v2/constants"
+	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
 	"reflect"
@@ -67,7 +67,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		// Not enough inputFields or empty inputField
 		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
 			// If the field is required it's an error, otherwise skip it
-			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRED {
+			if targetFieldAnnotation.Attribute == astmconst.ATTRIBUTE_REQUIRED {
 				return nameOk, errmsg.LineParsing_ErrRequiredInputFieldMissing
 			} else {
 				continue
@@ -156,7 +156,7 @@ func parseSubstructure(inputString string, targetStruct interface{}, config *mod
 		// Not enough inputFields or empty inputField
 		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
 			// If the field is required it's an error, otherwise skip it
-			if targetFieldAnnotation.Attribute == constants.ATTRIBUTE_REQUIRED {
+			if targetFieldAnnotation.Attribute == astmconst.ATTRIBUTE_REQUIRED {
 				return errmsg.LineParsing_ErrRequiredInputFieldMissing
 			} else {
 				continue
