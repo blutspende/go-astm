@@ -141,6 +141,10 @@ type ReservedFieldRecord struct {
 	TypeName  string `astm:"1"`
 	SeqNumber string `astm:"2"`
 }
+type SparseFieldRecord struct {
+	Field3 string `astm:"3"`
+	Field5 string `astm:"5"`
+}
 type SubstructureField struct {
 	FirstComponent  string `astm:"1"`
 	SecondComponent string `astm:"2"`
@@ -155,6 +159,16 @@ type SubstructureArrayRecord struct {
 	First  string              `astm:"3"`
 	Second []SubstructureField `astm:"4"`
 	Third  string              `astm:"5"`
+}
+
+type SparseSubstructureField struct {
+	Component1 string `astm:"1"`
+	Component3 string `astm:"3"`
+	Component6 string `astm:"6"`
+}
+type SparseSubstructureRecord struct {
+	First  string                  `astm:"3"`
+	Second SparseSubstructureField `astm:"4"`
 }
 
 // Structures
@@ -183,4 +197,12 @@ type OptionalArrayMessage struct {
 	First    RecordType1   `astm:"F"`
 	Optional []RecordType2 `astm:"A,optional"`
 	Last     RecordType1   `astm:"L"`
+}
+type OptionalArrayAtTheEndMessage struct {
+	First    RecordType1   `astm:"F"`
+	Optional []RecordType2 `astm:"A,optional"`
+}
+type OptionalAtTheEndMessage struct {
+	First    RecordType1 `astm:"F"`
+	Optional RecordType2 `astm:"O,optional"`
 }

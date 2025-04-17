@@ -23,7 +23,6 @@ func TestBuildLine_SimpleRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second|third", result)
 }
-
 func TestBuildLine_MultitypeRecord(t *testing.T) {
 	// Arrange
 	source := MultitypeRecord{
@@ -39,7 +38,6 @@ func TestBuildLine_MultitypeRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|string|3|3.14|3.14159265|20060102", result)
 }
-
 func TestBuildLine_MultitypeLengthRecord(t *testing.T) {
 	// Arrange
 	source := MultitypeLengthRecord{
@@ -55,7 +53,6 @@ func TestBuildLine_MultitypeLengthRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|3.14159265|3.142|3|20060102150405|20060102", result)
 }
-
 func TestBuildLine_MultitypeLengthRecordRound(t *testing.T) {
 	// Arrange
 	source := MultitypeLengthRecord{
@@ -72,7 +69,6 @@ func TestBuildLine_MultitypeLengthRecordRound(t *testing.T) {
 	// Teardown
 	teardown()
 }
-
 func TestBuildLine_MultitypeLengthRecordTruncate(t *testing.T) {
 	// Arrange
 	source := MultitypeLengthRecord{
@@ -89,7 +85,6 @@ func TestBuildLine_MultitypeLengthRecordTruncate(t *testing.T) {
 	// Teardown
 	teardown()
 }
-
 func TestBuildLine_MultitypeRecordEmpty(t *testing.T) {
 	// Arrange
 	source := MultitypeRecord{}
@@ -99,7 +94,6 @@ func TestBuildLine_MultitypeRecordEmpty(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1||0|0|0|", result)
 }
-
 func TestBuildLine_MultitypeLengthRecordEmpty(t *testing.T) {
 	// Arrange
 	source := MultitypeLengthRecord{}
@@ -109,7 +103,6 @@ func TestBuildLine_MultitypeLengthRecordEmpty(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|0|0.000|0||", result)
 }
-
 func TestBuildLine_MultitypePointerRecord(t *testing.T) {
 	// Arrange
 	String := "string"
@@ -130,7 +123,6 @@ func TestBuildLine_MultitypePointerRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|string|3|3.14|3.14159265|20060102", result)
 }
-
 func TestBuildLine_MultitypePointerRecordEmpty(t *testing.T) {
 	// Arrange
 	source := MultitypePointerRecord{}
@@ -140,7 +132,6 @@ func TestBuildLine_MultitypePointerRecordEmpty(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|||||", result)
 }
-
 func TestBuildLine_UnorderedRecord(t *testing.T) {
 	// Arrange
 	source := UnorderedRecord{
@@ -154,7 +145,6 @@ func TestBuildLine_UnorderedRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second|third", result)
 }
-
 func TestBuildLine_MissingData(t *testing.T) {
 	// Arrange
 	source := SimpleRecord{
@@ -168,7 +158,6 @@ func TestBuildLine_MissingData(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first||third", result)
 }
-
 func TestBuildLine_MissingDataAtEndStandardNotation(t *testing.T) {
 	// Arrange
 	source := SimpleRecord{
@@ -182,7 +171,6 @@ func TestBuildLine_MissingDataAtEndStandardNotation(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first||", result)
 }
-
 func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 	// Arrange
 	source := SimpleRecord{
@@ -199,7 +187,6 @@ func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 	// Teardown
 	teardown()
 }
-
 func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 	// Arrange
 	source := SimpleRecord{
@@ -216,7 +203,6 @@ func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 	// Teardown
 	teardown()
 }
-
 func TestBuildLine_HeaderRecord(t *testing.T) {
 	// Arrange
 	source := HeaderRecord{
@@ -228,7 +214,6 @@ func TestBuildLine_HeaderRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "H|\\^&|first", result)
 }
-
 func TestBuildLine_HeaderRecordCustomDelimiters(t *testing.T) {
 	// Arrange
 	source := HeaderRecord{
@@ -246,7 +231,6 @@ func TestBuildLine_HeaderRecordCustomDelimiters(t *testing.T) {
 	// Teardown
 	teardown()
 }
-
 func TestBuildLine_HeaderDelimiterChange(t *testing.T) {
 	// Arrange
 	source := HeaderDelimiterChange{
@@ -267,7 +251,6 @@ func TestBuildLine_HeaderDelimiterChange(t *testing.T) {
 	// Teardown
 	teardown()
 }
-
 func TestBuildLine_ArrayRecord(t *testing.T) {
 	// Arrange
 	source := ArrayRecord{
@@ -280,7 +263,6 @@ func TestBuildLine_ArrayRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second1\\second2\\second3", result)
 }
-
 func TestBuildLine_ComponentedRecord(t *testing.T) {
 	// Arrange
 	source := ComponentedRecord{
@@ -297,7 +279,6 @@ func TestBuildLine_ComponentedRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second1^second2|third1^third2^third3", result)
 }
-
 func TestBuildLine_EnumRecord(t *testing.T) {
 	// Arrange
 	source := EnumRecord{
@@ -309,7 +290,6 @@ func TestBuildLine_EnumRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|enum", result)
 }
-
 func TestBuildLine_ReservedFieldRecord(t *testing.T) {
 	// Arrange
 	source := ReservedFieldRecord{}
@@ -319,7 +299,18 @@ func TestBuildLine_ReservedFieldRecord(t *testing.T) {
 	assert.Error(t, err, errmsg.LineBuilding_ErrReservedFieldPosReference)
 	assert.Equal(t, "", result)
 }
-
+func TestBuildLine_SparseFieldRecord(t *testing.T) {
+	// Arrange
+	source := SparseFieldRecord{
+		Field3: "field3",
+		Field5: "field5",
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|field3||field5", result)
+}
 func TestBuildLine_SubstructureRecord(t *testing.T) {
 	// Arrange
 	source := SubstructureRecord{
@@ -337,7 +328,35 @@ func TestBuildLine_SubstructureRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|firstComponent^secondComponent^thirdComponent|third", result)
 }
-
+func TestBuildLine_SubstructureRecordMissingData(t *testing.T) {
+	// Arrange
+	source := SubstructureRecord{
+		Second: SubstructureField{
+			FirstComponent: "firstComponent",
+		},
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1||firstComponent^^|", result)
+}
+func TestBuildLine_SparseSubstructureRecord(t *testing.T) {
+	// Arrange
+	source := SparseSubstructureRecord{
+		First: "first",
+		Second: SparseSubstructureField{
+			Component1: "component1",
+			Component3: "component3",
+			Component6: "component6",
+		},
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|first|component1^^component3^^^component6", result)
+}
 func TestBuildLine_SubstructureArrayRecord(t *testing.T) {
 	// Arrange
 	source := SubstructureArrayRecord{

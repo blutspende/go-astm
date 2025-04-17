@@ -144,7 +144,37 @@ func TestParseStruct_OptionalArrayMessageWithData(t *testing.T) {
 	assert.Equal(t, "first", target.Last.First)
 	assert.Equal(t, "second", target.Last.Second)
 }
-
+func TestParseStruct_OptionalArrayAtTheEndMessageWithMissingOptionalData(t *testing.T) {
+	// Arrange
+	input := []string{
+		"F|1|first|second",
+	}
+	target := OptionalArrayAtTheEndMessage{}
+	lineIndex := 0
+	// Act
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "first", target.First.First)
+	assert.Equal(t, "second", target.First.Second)
+	assert.Len(t, target.Optional, 0)
+}
+func TestParseStruct_OptionalAtTheEndMessageWithMissingOptionalData(t *testing.T) {
+	// Arrange
+	input := []string{
+		"F|1|first|second",
+	}
+	target := OptionalAtTheEndMessage{}
+	lineIndex := 0
+	// Act
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "first", target.First.First)
+	assert.Equal(t, "second", target.First.Second)
+	assert.Equal(t, "", target.Optional.First)
+	assert.Equal(t, "", target.Optional.Second)
+}
 func TestParseStruct_UnexpectedLineTypeError(t *testing.T) {
 	// Arrange
 	input := []string{
@@ -158,7 +188,6 @@ func TestParseStruct_UnexpectedLineTypeError(t *testing.T) {
 	// Assert
 	assert.Error(t, err, errmsg.LineParsing_ErrLineTypeNameMismatch)
 }
-
 func TestParseStruct_LinesDepletedError(t *testing.T) {
 	// Arrange
 	input := []string{

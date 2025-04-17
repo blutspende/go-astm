@@ -85,8 +85,12 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				// Non-composite target: there is a single line to parse
 				// Make sure there are enough input lines
 				if *lineIndex >= len(inputLines) {
-					return errmsg.StructureParsing_ErrInputLinesDepleted
-					//TODO: handle optional element at the end of the input
+					// Skip if the structure is optional, error otherwise
+					if targetStructAnnotation.Attribute == astmconst.ATTRIBUTE_OPTIONAL {
+						continue
+					} else {
+						return errmsg.StructureParsing_ErrInputLinesDepleted
+					}
 				}
 				// Determine sequence number: first element inherits from the parent call, the rest is 1
 				seq := 1

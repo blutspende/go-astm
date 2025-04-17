@@ -6,7 +6,6 @@ import (
 	"github.com/blutspende/go-astm/v2/models"
 	"math"
 	"reflect"
-	"sort"
 	"strconv"
 	"time"
 )
@@ -159,37 +158,28 @@ func buildSubstructure(sourceStruct interface{}, config *models.Configuration) (
 }
 
 func constructResult(fieldMap map[int]string, delimiter string, notation string) (result string) {
-	// Sort the keys of the map
-	keys := make([]int, 0, len(fieldMap))
-	for k := range fieldMap {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-
-	// Determine how many fields to include based on the notation
-	lastElementIndex := len(fieldMap) - 1
-	// In short notation the empty fields in the end are skipped
-	if notation == astmconst.NOTATION_SHORT {
-		for i, key := range keys {
-			if fieldMap[key] != "" {
-				lastElementIndex = i
-			}
+	// Determine how many fields to include by finding the biggest index
+	lastIndex := 0
+	for key := range fieldMap {
+		// In short notation only non-empty fields are included at the end
+		// TODO: does short notation also apply to components?
+		if key > lastIndex && (!(notation == astmconst.NOTATION_SHORT) || fieldMap[key] != "") {
+			lastIndex = key
 		}
 	}
-
-	// Construct the result string
-	for i, key := range keys {
-		result += fieldMap[key]
-		// Add the field delimiter if not the last field
-		if i < lastElementIndex {
+	// Iterate from one to the last index, building the result string
+	result = ""
+	for i := 1; i <= lastIndex; i++ {
+		// If the field exists in the map, append its value to the result
+		if value, exists := fieldMap[i]; exists {
+			result += value
+		}
+		// Add the delimiter after all but the last element
+		if i != lastIndex {
 			result += delimiter
 		}
-		// Break when we reach the targeted last element
-		if i == lastElementIndex {
-			break
-		}
 	}
-
+	// Return the built string
 	return result
 }
 

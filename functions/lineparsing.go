@@ -107,7 +107,12 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 			components := strings.Split(inputField, config.Internal.Delimiters.Component)
 			// Not enough components in the inputField
 			if len(components) < targetFieldAnnotation.ComponentPos {
-				return nameOk, errmsg.LineParsing_ErrInputComponentsMissing
+				// Error if the component is required, skip otherwise
+				if targetFieldAnnotation.Attribute == astmconst.ATTRIBUTE_REQUIRED {
+					return nameOk, errmsg.LineParsing_ErrInputComponentsMissing
+				} else {
+					continue
+				}
 			}
 			err = setField(components[targetFieldAnnotation.ComponentPos-1], targetValues[i], config)
 			if err != nil {

@@ -137,7 +137,6 @@ func ParseAstmStructAnnotation(input reflect.StructField) (result models.AstmStr
 	return result, err
 }
 
-// TODO: find a better place for this
 func ProcessStructReflection(inputStruct interface{}) (outputTypes []reflect.StructField, outputValues []reflect.Value, length int, err error) {
 	// Ensure the inputStruct is a pointer to a struct
 	targetPtrValue := reflect.ValueOf(inputStruct)
