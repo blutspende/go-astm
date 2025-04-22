@@ -95,10 +95,18 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 				// Add the component value and a component delimiter to the field string
 				componentFieldString += componentValue + config.Internal.Delimiters.Component
 			}
-			// Remove the last component delimiter
+			// Remove trailing component delimiters
+			cutIndex := 0
 			if len(componentFieldString) > 0 {
-				componentFieldString = componentFieldString[:len(componentFieldString)-1]
+				cutIndex = len(componentFieldString) - 1
 			}
+			if config.Notation == astmconst.NOTATION_SHORT {
+				// In short notation, remove trailing delimiters until there is data
+				for ; cutIndex > 0 && componentFieldString[cutIndex] == config.Internal.Delimiters.Component[0]; cutIndex-- {
+					// Do nothing, just decrement cutIndex
+				}
+			}
+			componentFieldString = componentFieldString[:cutIndex]
 			// Set the field value string to the component field string
 			fieldValueString = componentFieldString
 		} else if sourceFieldAnnotation.IsSubstructure {
@@ -152,7 +160,8 @@ func buildSubstructure(sourceStruct interface{}, config *astmmodels.Configuratio
 	}
 
 	// Construct the result string
-	result = constructResult(componentMap, config.Internal.Delimiters.Component, astmconst.NOTATION_STANDARD)
+	// TODO: does short notation also apply to components?
+	result = constructResult(componentMap, config.Internal.Delimiters.Component, config.Notation)
 
 	// Return result with no error
 	return result, nil
@@ -163,7 +172,6 @@ func constructResult(fieldMap map[int]string, delimiter string, notation string)
 	lastIndex := 0
 	for key := range fieldMap {
 		// In short notation only non-empty fields are included at the end
-		// TODO: does short notation also apply to components?
 		if key > lastIndex && (!(notation == astmconst.NOTATION_SHORT) || fieldMap[key] != "") {
 			lastIndex = key
 		}

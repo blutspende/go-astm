@@ -187,6 +187,20 @@ func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 	// Teardown
 	teardown()
 }
+func TestBuildLine_MissingDataAtEndWithComponentsShortNotation(t *testing.T) {
+	// Arrange
+	source := ComponentedRecord{
+		First: "first",
+	}
+	config.Notation = astmconst.NOTATION_SHORT
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|first", result)
+	// Teardown
+	teardown()
+}
 func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 	// Arrange
 	source := SimpleRecord{
@@ -194,14 +208,11 @@ func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 		Second: "second",
 		Third:  "third",
 	}
-	config.Notation = astmconst.NOTATION_SHORT
 	// Act
 	result, err := BuildLine(source, "D", 3, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "D|3|first|second|third", result)
-	// Teardown
-	teardown()
 }
 func TestBuildLine_HeaderRecord(t *testing.T) {
 	// Arrange
@@ -340,6 +351,22 @@ func TestBuildLine_SubstructureRecordMissingData(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1||firstComponent^^|", result)
+}
+func TestBuildLine_SubstructureRecordMissingDataShortNotation(t *testing.T) {
+	// Arrange
+	source := SubstructureRecord{
+		Second: SubstructureField{
+			FirstComponent: "firstComponent",
+		},
+	}
+	config.Notation = astmconst.NOTATION_SHORT
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1||firstComponent", result)
+	// Teardown
+	teardown()
 }
 func TestBuildLine_SparseSubstructureRecord(t *testing.T) {
 	// Arrange
