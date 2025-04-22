@@ -3,7 +3,7 @@ package e2e
 import (
 	"bytes"
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
-	"github.com/blutspende/go-astm/v2/models"
+	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 	"testing"
@@ -11,14 +11,14 @@ import (
 )
 
 // Configuration struct for tests
-var config *models.Configuration
+var config *astmmodels.Configuration
 
 // Reset config to default values
 func teardown() {
-	config = &models.Configuration{}
-	*config = models.DefaultConfiguration
+	config = &astmmodels.Configuration{}
+	*config = astmmodels.DefaultConfiguration
 	config.Encoding = astmconst.ENCODING_UTF8
-	config.Internal.Delimiters = models.DefaultDelimiters
+	config.Internal.Delimiters = astmmodels.DefaultDelimiters
 	config.Internal.TimeLocation, _ = time.LoadLocation(config.TimeZone)
 }
 

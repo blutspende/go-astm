@@ -1,7 +1,8 @@
-package models
+package astmmodels
 
 import (
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
+	"time"
 )
 
 // Configuration struct for the whole process
@@ -24,4 +25,25 @@ var DefaultConfiguration = Configuration{
 	EnforceSequenceNumberCheck: true,
 	Notation:                   astmconst.NOTATION_STANDARD,
 	RoundFixedNumbers:          true,
+}
+
+// Delimiters used in ASTM parsing
+type Delimiters struct {
+	Field     string
+	Repeat    string
+	Component string
+	Escape    string
+}
+
+var DefaultDelimiters = Delimiters{
+	Field:     `|`,
+	Repeat:    `\`,
+	Component: `^`,
+	Escape:    `&`,
+}
+
+// Internal configuration for parsing (part of the Configuration struct)
+type InternalConfiguration struct {
+	TimeLocation *time.Location
+	Delimiters   Delimiters
 }

@@ -3,14 +3,14 @@ package functions
 import (
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
-	"github.com/blutspende/go-astm/v2/models"
+	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, sequenceNumber int, config *models.Configuration) (nameOk bool, err error) {
+func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, sequenceNumber int, config *astmmodels.Configuration) (nameOk bool, err error) {
 	// Check for input line length
 	if len(inputLine) == 0 {
 		return false, errmsg.LineParsing_ErrEmptyInput
@@ -140,7 +140,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 	return nameOk, nil
 }
 
-func parseSubstructure(inputString string, targetStruct interface{}, config *models.Configuration) (err error) {
+func parseSubstructure(inputString string, targetStruct interface{}, config *astmmodels.Configuration) (err error) {
 	// Split the input with the field delimiter
 	inputFields := strings.Split(inputString, config.Internal.Delimiters.Component)
 
@@ -181,7 +181,7 @@ func parseSubstructure(inputString string, targetStruct interface{}, config *mod
 	return nil
 }
 
-func setField(value string, field reflect.Value, config *models.Configuration) (err error) {
+func setField(value string, field reflect.Value, config *astmmodels.Configuration) (err error) {
 	// Ensure the field is settable
 	if !field.CanSet() {
 		// Field is not settable

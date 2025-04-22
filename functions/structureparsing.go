@@ -5,11 +5,11 @@ import (
 	"github.com/blutspende/go-astm/v2/constants"
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
-	"github.com/blutspende/go-astm/v2/models"
+	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"reflect"
 )
 
-func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, sequenceNumber int, depth int, config *models.Configuration) (err error) {
+func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, sequenceNumber int, depth int, config *astmmodels.Configuration) (err error) {
 	// Check for maximum depth
 	if depth >= constants.MAX_DEPTH {
 		return errmsg.StructureParsing_ErrMaxDepthReached

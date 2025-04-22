@@ -3,12 +3,12 @@ package astm
 import (
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/functions"
-	"github.com/blutspende/go-astm/v2/models"
+	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"regexp"
 	"time"
 )
 
-func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...*models.Configuration) (err error) {
+func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...*astmmodels.Configuration) (err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
@@ -34,7 +34,7 @@ func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...*m
 	return nil
 }
 
-func Marshal(sourceStruct interface{}, configuration ...*models.Configuration) (result [][]byte, err error) {
+func Marshal(sourceStruct interface{}, configuration ...*astmmodels.Configuration) (result [][]byte, err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
@@ -54,7 +54,7 @@ func Marshal(sourceStruct interface{}, configuration ...*models.Configuration) (
 	return result, nil
 }
 
-func IdentifyMessage(messageData []byte, configuration ...*models.Configuration) (messageType astmconst.MessageType, err error) {
+func IdentifyMessage(messageData []byte, configuration ...*astmmodels.Configuration) (messageType astmconst.MessageType, err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
@@ -98,12 +98,12 @@ func IdentifyMessage(messageData []byte, configuration ...*models.Configuration)
 	return astmconst.MESSAGETYPE_UNKOWN, err
 }
 
-func loadConfiguration(configuration ...*models.Configuration) (config *models.Configuration, err error) {
+func loadConfiguration(configuration ...*astmmodels.Configuration) (config *astmmodels.Configuration, err error) {
 	if len(configuration) > 0 {
 		config = configuration[0]
 	} else {
-		config = &models.DefaultConfiguration
-		config.Internal.Delimiters = models.DefaultDelimiters
+		config = &astmmodels.DefaultConfiguration
+		config.Internal.Delimiters = astmmodels.DefaultDelimiters
 	}
 	config.Internal.TimeLocation, err = time.LoadLocation(config.TimeZone)
 	if err != nil {

@@ -3,10 +3,10 @@ package functions
 import (
 	"github.com/blutspende/go-astm/v2/constants"
 	"github.com/blutspende/go-astm/v2/errmsg"
-	"github.com/blutspende/go-astm/v2/models"
+	"github.com/blutspende/go-astm/v2/models/astmmodels"
 )
 
-func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config *models.Configuration) (result []string, err error) {
+func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config *astmmodels.Configuration) (result []string, err error) {
 	// Check for maximum depth
 	if depth >= constants.MAX_DEPTH {
 		return nil, errmsg.StructureParsing_ErrMaxDepthReached

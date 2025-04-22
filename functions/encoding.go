@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
-	"github.com/blutspende/go-astm/v2/models"
+	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 	"io"
 )
 
-func ConvertFromEncodingToUtf8(input []byte, config *models.Configuration) (output string, err error) {
+func ConvertFromEncodingToUtf8(input []byte, config *astmmodels.Configuration) (output string, err error) {
 	cmap, err := findCharmapForEncoding(config.Encoding)
 	if err != nil {
 		return "", err
@@ -23,7 +23,7 @@ func ConvertFromEncodingToUtf8(input []byte, config *models.Configuration) (outp
 	return string(encoded), err
 }
 
-func ConvertFromUtf8ToEncoding(input string, config *models.Configuration) (output []byte, err error) {
+func ConvertFromUtf8ToEncoding(input string, config *astmmodels.Configuration) (output []byte, err error) {
 	cmap, err := findCharmapForEncoding(config.Encoding)
 	if err != nil {
 		return []byte{}, err
@@ -35,7 +35,7 @@ func ConvertFromUtf8ToEncoding(input string, config *models.Configuration) (outp
 	return output, err
 }
 
-func ConvertArrayFromUtf8ToEncoding(input []string, config *models.Configuration) (output [][]byte, err error) {
+func ConvertArrayFromUtf8ToEncoding(input []string, config *astmmodels.Configuration) (output [][]byte, err error) {
 	output = make([][]byte, len(input))
 	for i, line := range input {
 		output[i], err = ConvertFromUtf8ToEncoding(line, config)

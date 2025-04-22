@@ -1,19 +1,19 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v2/models"
+	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"testing"
 	"time"
 )
 
 // Configuration struct for tests
-var config *models.Configuration
+var config *astmmodels.Configuration
 
 // Reset config to default values
 func teardown() {
-	config = &models.Configuration{}
-	*config = models.DefaultConfiguration
-	config.Internal.Delimiters = models.DefaultDelimiters
+	config = &astmmodels.Configuration{}
+	*config = astmmodels.DefaultConfiguration
+	config.Internal.Delimiters = astmmodels.DefaultDelimiters
 	config.Internal.TimeLocation, _ = time.LoadLocation(config.TimeZone)
 }
 

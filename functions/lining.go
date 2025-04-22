@@ -3,11 +3,11 @@ package functions
 import (
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
-	"github.com/blutspende/go-astm/v2/models"
+	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"strings"
 )
 
-func SliceLines(input string, config *models.Configuration) (output []string, err error) {
+func SliceLines(input string, config *astmmodels.Configuration) (output []string, err error) {
 	// Check for empty input
 	if input == "" {
 		return nil, errmsg.Lining_ErrNotEnoughLines
@@ -60,7 +60,7 @@ func SliceLines(input string, config *models.Configuration) (output []string, er
 	return output, nil
 }
 
-func BuildLines(input []string, config *models.Configuration) (output string) {
+func BuildLines(input []string, config *astmmodels.Configuration) (output string) {
 	linebreak := astmconst.LF
 	if config.LineSeparator != "" && !config.AutoDetectLineSeparator {
 		linebreak = config.LineSeparator
