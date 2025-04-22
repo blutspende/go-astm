@@ -242,7 +242,8 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 			if timeValue.IsZero() {
 				result = ""
 			} else {
-				result = timeValue.In(config.Internal.TimeLocation).Format(timeFormat) // Format the date as a string
+				// Format the date as a string in the config's timezone
+				result = timeValue.In(config.Internal.TimeLocation).Format(timeFormat)
 			}
 			return result, nil
 		} else {

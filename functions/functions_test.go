@@ -170,6 +170,9 @@ type SparseSubstructureRecord struct {
 	First  string                  `astm:"3"`
 	Second SparseSubstructureField `astm:"4"`
 }
+type TimeRecord struct {
+	Time time.Time `astm:"3,longdate"`
+}
 
 // Structures
 type SingleRecordStruct struct {

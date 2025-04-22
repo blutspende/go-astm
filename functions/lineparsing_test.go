@@ -50,7 +50,7 @@ func TestParseLine_MultitypeRecord(t *testing.T) {
 	assert.Equal(t, 3, target.Int)
 	assert.Equal(t, float32(3.14), target.Float32)
 	assert.Equal(t, float64(3.14159265), target.Float64)
-	expectedShortTime := time.Date(2006, 1, 2, 0, 0, 0, 0, config.Internal.TimeLocation)
+	expectedShortTime := time.Date(2006, 1, 1, 23, 0, 0, 0, time.UTC)
 	assert.Equal(t, expectedShortTime, target.Date)
 }
 
@@ -282,4 +282,17 @@ func TestParseLine_SubstructureArrayRecord(t *testing.T) {
 	assert.Equal(t, "r2c2", target.Second[1].SecondComponent)
 	assert.Equal(t, "r2c3", target.Second[1].ThirdComponent)
 	assert.Equal(t, "third", target.Third)
+}
+
+func TestParseLine_TimeLineTimeZone(t *testing.T) {
+	// Arrange
+	input := "T|1|20060306164429"
+	target := TimeRecord{}
+	// Act
+	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.True(t, nameOk)
+	expectedTime := time.Date(2006, 03, 06, 16, 44, 29, 0, config.Internal.TimeLocation).UTC()
+	assert.Equal(t, expectedTime, target.Time)
 }

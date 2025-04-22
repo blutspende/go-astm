@@ -77,6 +77,7 @@ func TestReadMinimalMessage(t *testing.T) {
 	assert.Equal(t, "IH v5.2", message.Header.SenderStreetAddress)
 	assert.Equal(t, "", message.Header.Comment)
 	locale, err := time.LoadLocation("Europe/Berlin")
+	//TODO: checking the date in the same locale as the message is kind of pointless
 	localtime := message.Header.DateAndTime.In(locale)
 	assert.Equal(t, "20220315194227", localtime.Format("20060102150405"))
 }

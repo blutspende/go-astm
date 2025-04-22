@@ -427,3 +427,15 @@ func TestBuildLine_SubstructureArrayRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|r1c1^r1c2^r1c3\\r2c1^r2c2^r2c3|third", result)
 }
+
+func TestBuildLine_TimeLineTimeZone(t *testing.T) {
+	// Arrange
+	source := TimeRecord{
+		Time: time.Date(2006, 03, 06, 16, 44, 29, 0, config.Internal.TimeLocation).UTC(),
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|20060306164429", result)
+}

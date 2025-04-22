@@ -233,7 +233,7 @@ func setField(value string, field reflect.Value, config *astmmodels.Configuratio
 			if err != nil {
 				return errmsg.LineParsing_ErrDataParsingError
 			}
-			field.Set(reflect.ValueOf(timeInLocation))
+			field.Set(reflect.ValueOf(timeInLocation.UTC()))
 			return nil
 		} else {
 			// Note: option to handle other struct types here
