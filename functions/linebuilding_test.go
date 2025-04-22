@@ -290,6 +290,25 @@ func TestBuildLine_ComponentedRecord(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|first|second1^second2|third1^third2^third3", result)
 }
+func TestBuildLine_ComponentedRecordShortNotation(t *testing.T) {
+	// Arrange
+	source := ComponentedRecord{
+		First:       "first",
+		SecondComp1: "second1",
+		SecondComp2: "second2",
+		ThirdComp1:  "third1",
+		ThirdComp2:  "third2",
+		ThirdComp3:  "third3",
+	}
+	config.Notation = astmconst.NOTATION_SHORT
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|first|second1^second2|third1^third2^third3", result)
+	// Teardown
+	teardown()
+}
 func TestBuildLine_EnumRecord(t *testing.T) {
 	// Arrange
 	source := EnumRecord{

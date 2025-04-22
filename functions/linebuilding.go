@@ -96,15 +96,19 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 				componentFieldString += componentValue + config.Internal.Delimiters.Component
 			}
 			// Remove trailing component delimiters
-			cutIndex := 0
-			if len(componentFieldString) > 0 {
-				cutIndex = len(componentFieldString) - 1
-			}
+			cutIndex := len(componentFieldString)
 			if config.Notation == astmconst.NOTATION_SHORT {
 				// In short notation, remove trailing delimiters until there is data
-				for ; cutIndex > 0 && componentFieldString[cutIndex] == config.Internal.Delimiters.Component[0]; cutIndex-- {
+				for ; cutIndex > 0 && componentFieldString[cutIndex-1] == config.Internal.Delimiters.Component[0]; cutIndex-- {
 					// Do nothing, just decrement cutIndex
 				}
+			} else {
+				// In standard notation only remove the last excess delimiter
+				cutIndex--
+			}
+			// Make sure cutIndex is not negative (it should never actually happen)
+			if cutIndex < 0 {
+				cutIndex = 0
 			}
 			componentFieldString = componentFieldString[:cutIndex]
 			// Set the field value string to the component field string
