@@ -103,6 +103,11 @@ func loadConfiguration(configuration ...*astmmodels.Configuration) (config *astm
 		config = configuration[0]
 	} else {
 		config = &astmmodels.DefaultConfiguration
+	}
+	if config.Internal.Delimiters.Field == "" ||
+		config.Internal.Delimiters.Repeat == "" ||
+		config.Internal.Delimiters.Component == "" ||
+		config.Internal.Delimiters.Escape == "" {
 		config.Internal.Delimiters = astmmodels.DefaultDelimiters
 	}
 	config.Internal.TimeLocation, err = time.LoadLocation(config.TimeZone)

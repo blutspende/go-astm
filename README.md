@@ -276,7 +276,7 @@ The letters (R, H, etc.) in the annotation mark the record line's record name (i
 R|1|value1|value2
 ```
 ```
-H\^&||||
+H|\^&||||
 R|1|value1|value2
 L|1|N
 ```
@@ -302,7 +302,7 @@ type Lis02a2Message {
 }
 ```
 ```
-H\^&||||
+H|\^&||||
 R|1|value1|value2
 R|2|value1|value2
 R|3|value1|value2
@@ -323,7 +323,7 @@ type Lis02a2Message {
 }
 ```
 ```
-H\^&||||
+H|\^&||||
 F|1|value1|value2
 S|1|value1|value2
 L|1|N
@@ -339,7 +339,7 @@ type Lis02a2Message {
 }
 ```
 ```
-H\^&||||
+H|\^&||||
 F|1|value1|value2
 S|1|value1|value2
 F|2|value1|value2
