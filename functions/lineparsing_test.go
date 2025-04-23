@@ -293,6 +293,6 @@ func TestParseLine_TimeLineTimeZone(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
-	expectedTime := time.Date(2006, 03, 06, 16, 44, 29, 0, config.Internal.TimeLocation).UTC()
+	expectedTime := time.Date(2006, 03, 06, 16, 44, 29, 0, config.TimeLocation).UTC()
 	assert.Equal(t, expectedTime, target.Time)
 }

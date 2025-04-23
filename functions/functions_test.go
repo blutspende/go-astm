@@ -13,8 +13,8 @@ var config *astmmodels.Configuration
 func teardown() {
 	config = &astmmodels.Configuration{}
 	*config = astmmodels.DefaultConfiguration
-	config.Internal.Delimiters = astmmodels.DefaultDelimiters
-	config.Internal.TimeLocation, _ = time.LoadLocation(config.TimeZone)
+	config.Delimiters = astmmodels.DefaultDelimiters
+	config.TimeLocation, _ = time.LoadLocation(config.TimeZone)
 }
 
 // Setup mock data for every test

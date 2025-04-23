@@ -23,14 +23,14 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 			return false, errmsg.LineParsing_ErrHeaderTooShort
 		}
 		// Override delimiters
-		config.Internal.Delimiters.Field = string(inputLine[1])
-		config.Internal.Delimiters.Repeat = string(inputLine[2])
-		config.Internal.Delimiters.Component = string(inputLine[3])
-		config.Internal.Delimiters.Escape = string(inputLine[4])
+		config.Delimiters.Field = string(inputLine[1])
+		config.Delimiters.Repeat = string(inputLine[2])
+		config.Delimiters.Component = string(inputLine[3])
+		config.Delimiters.Escape = string(inputLine[4])
 	}
 
 	// Split the input with the field delimiter
-	inputFields := strings.Split(inputLine, config.Internal.Delimiters.Field)
+	inputFields := strings.Split(inputLine, config.Delimiters.Field)
 
 	// Check for validity with parent data
 	if len(inputFields) < 2 {
@@ -79,7 +79,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		if targetFieldAnnotation.IsArray {
 			// |rep1\rep2\rep3|
 			// Field is an array
-			repeats := strings.Split(inputField, config.Internal.Delimiters.Repeat)
+			repeats := strings.Split(inputField, config.Delimiters.Repeat)
 			arrayType := reflect.SliceOf(targetValues[i].Type().Elem())
 			arrayValue := reflect.MakeSlice(arrayType, len(repeats), len(repeats))
 			for j, repeat := range repeats {
@@ -104,7 +104,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		} else if targetFieldAnnotation.IsComponent {
 			// |comp1^comp2^comp3|
 			// Field is a component
-			components := strings.Split(inputField, config.Internal.Delimiters.Component)
+			components := strings.Split(inputField, config.Delimiters.Component)
 			// Not enough components in the inputField
 			if len(components) < targetFieldAnnotation.ComponentPos {
 				// Error if the component is required, skip otherwise
@@ -142,7 +142,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 
 func parseSubstructure(inputString string, targetStruct interface{}, config *astmmodels.Configuration) (err error) {
 	// Split the input with the field delimiter
-	inputFields := strings.Split(inputString, config.Internal.Delimiters.Component)
+	inputFields := strings.Split(inputString, config.Delimiters.Component)
 
 	// Process the target structure
 	targetTypes, targetValues, _, err := ProcessStructReflection(targetStruct)
@@ -229,7 +229,7 @@ func setField(value string, field reflect.Value, config *astmmodels.Configuratio
 			default:
 				return errmsg.LineParsing_ErrInvalidDateFormat
 			}
-			timeInLocation, err := time.ParseInLocation(timeFormat, value, config.Internal.TimeLocation)
+			timeInLocation, err := time.ParseInLocation(timeFormat, value, config.TimeLocation)
 			if err != nil {
 				return errmsg.LineParsing_ErrDataParsingError
 			}

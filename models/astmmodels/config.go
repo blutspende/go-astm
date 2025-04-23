@@ -14,7 +14,8 @@ type Configuration struct {
 	EnforceSequenceNumberCheck bool
 	Notation                   string
 	RoundFixedNumbers          bool
-	Internal                   InternalConfiguration
+	Delimiters                 Delimiters
+	TimeLocation               *time.Location
 }
 
 var DefaultConfiguration = Configuration{
@@ -25,6 +26,8 @@ var DefaultConfiguration = Configuration{
 	EnforceSequenceNumberCheck: true,
 	Notation:                   astmconst.NOTATION_STANDARD,
 	RoundFixedNumbers:          true,
+	Delimiters:                 DefaultDelimiters,
+	TimeLocation:               nil,
 }
 
 // Delimiters used in ASTM parsing
@@ -40,10 +43,4 @@ var DefaultDelimiters = Delimiters{
 	Repeat:    `\`,
 	Component: `^`,
 	Escape:    `&`,
-}
-
-// Internal configuration for parsing (part of the Configuration struct)
-type InternalConfiguration struct {
-	TimeLocation *time.Location
-	Delimiters   Delimiters
 }

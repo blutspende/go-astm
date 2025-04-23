@@ -25,9 +25,9 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 	fieldMap[1] = lineTypeName
 	// If it's a header, add the other delimiters
 	if lineTypeName == "H" {
-		fieldMap[2] = config.Internal.Delimiters.Repeat +
-			config.Internal.Delimiters.Component +
-			config.Internal.Delimiters.Escape
+		fieldMap[2] = config.Delimiters.Repeat +
+			config.Delimiters.Component +
+			config.Delimiters.Escape
 	} else {
 		// If it's not a header add the sequence number
 		fieldMap[2] = strconv.Itoa(sequenceNumber)
@@ -67,7 +67,7 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 				}
 				fieldValueString += convertedValue
 				if j < sourceValues[i].Len()-1 {
-					fieldValueString += config.Internal.Delimiters.Repeat
+					fieldValueString += config.Delimiters.Repeat
 				}
 			}
 		} else if sourceFieldAnnotation.IsComponent {
@@ -93,13 +93,13 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 				}
 
 				// Add the component value and a component delimiter to the field string
-				componentFieldString += componentValue + config.Internal.Delimiters.Component
+				componentFieldString += componentValue + config.Delimiters.Component
 			}
 			// Remove trailing component delimiters
 			cutIndex := len(componentFieldString)
 			if config.Notation == astmconst.NOTATION_SHORT {
 				// In short notation, remove trailing delimiters until there is data
-				for ; cutIndex > 0 && componentFieldString[cutIndex-1] == config.Internal.Delimiters.Component[0]; cutIndex-- {
+				for ; cutIndex > 0 && componentFieldString[cutIndex-1] == config.Delimiters.Component[0]; cutIndex-- {
 					// Do nothing, just decrement cutIndex
 				}
 			} else {
@@ -132,7 +132,7 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 	}
 
 	// Construct the result string based on the field map
-	result = constructResult(fieldMap, config.Internal.Delimiters.Field, config.Notation)
+	result = constructResult(fieldMap, config.Delimiters.Field, config.Notation)
 
 	return result, nil
 }
@@ -165,7 +165,7 @@ func buildSubstructure(sourceStruct interface{}, config *astmmodels.Configuratio
 
 	// Construct the result string
 	// TODO: does short notation also apply to components?
-	result = constructResult(componentMap, config.Internal.Delimiters.Component, config.Notation)
+	result = constructResult(componentMap, config.Delimiters.Component, config.Notation)
 
 	// Return result with no error
 	return result, nil
@@ -243,7 +243,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 				result = ""
 			} else {
 				// Format the date as a string in the config's timezone
-				result = timeValue.In(config.Internal.TimeLocation).Format(timeFormat)
+				result = timeValue.In(config.TimeLocation).Format(timeFormat)
 			}
 			return result, nil
 		} else {

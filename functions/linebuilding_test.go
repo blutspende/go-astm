@@ -30,7 +30,7 @@ func TestBuildLine_MultitypeRecord(t *testing.T) {
 		Int:     3,
 		Float32: 3.14,
 		Float64: 3.14159265,
-		Date:    time.Date(2006, 1, 2, 0, 0, 0, 0, config.Internal.TimeLocation),
+		Date:    time.Date(2006, 1, 2, 0, 0, 0, 0, config.TimeLocation),
 	}
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
@@ -44,8 +44,8 @@ func TestBuildLine_MultitypeLengthRecord(t *testing.T) {
 		FloatFull: 3.14159265,
 		FloatFix3: 3.14159265,
 		FloatFix0: 3.14159265,
-		LongDate:  time.Date(2006, 1, 2, 15, 04, 05, 0, config.Internal.TimeLocation),
-		ShortDate: time.Date(2006, 1, 2, 15, 04, 05, 0, config.Internal.TimeLocation),
+		LongDate:  time.Date(2006, 1, 2, 15, 04, 05, 0, config.TimeLocation),
+		ShortDate: time.Date(2006, 1, 2, 15, 04, 05, 0, config.TimeLocation),
 	}
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
@@ -109,7 +109,7 @@ func TestBuildLine_MultitypePointerRecord(t *testing.T) {
 	Int := 3
 	Float32 := float32(3.14)
 	Float64 := float64(3.14159265)
-	Date := time.Date(2006, 1, 2, 0, 0, 0, 0, config.Internal.TimeLocation)
+	Date := time.Date(2006, 1, 2, 0, 0, 0, 0, config.TimeLocation)
 	source := MultitypePointerRecord{
 		String:  &String,
 		Int:     &Int,
@@ -230,10 +230,10 @@ func TestBuildLine_HeaderRecordCustomDelimiters(t *testing.T) {
 	source := HeaderRecord{
 		First: "first",
 	}
-	config.Internal.Delimiters.Field = "/"
-	config.Internal.Delimiters.Repeat = "!"
-	config.Internal.Delimiters.Component = "*"
-	config.Internal.Delimiters.Escape = "%"
+	config.Delimiters.Field = "/"
+	config.Delimiters.Repeat = "!"
+	config.Delimiters.Component = "*"
+	config.Delimiters.Escape = "%"
 	// Act
 	result, err := BuildLine(source, "H", 0, config)
 	// Assert
@@ -250,10 +250,10 @@ func TestBuildLine_HeaderDelimiterChange(t *testing.T) {
 		Comp1: "third1",
 		Comp2: "third2",
 	}
-	config.Internal.Delimiters.Field = "/"
-	config.Internal.Delimiters.Repeat = "!"
-	config.Internal.Delimiters.Component = "*"
-	config.Internal.Delimiters.Escape = "%"
+	config.Delimiters.Field = "/"
+	config.Delimiters.Repeat = "!"
+	config.Delimiters.Component = "*"
+	config.Delimiters.Escape = "%"
 	// Act
 	result, err := BuildLine(source, "H", 0, config)
 	// Assert
@@ -431,7 +431,7 @@ func TestBuildLine_SubstructureArrayRecord(t *testing.T) {
 func TestBuildLine_TimeLineTimeZone(t *testing.T) {
 	// Arrange
 	source := TimeRecord{
-		Time: time.Date(2006, 03, 06, 16, 44, 29, 0, config.Internal.TimeLocation).UTC(),
+		Time: time.Date(2006, 03, 06, 16, 44, 29, 0, config.TimeLocation).UTC(),
 	}
 	// Act
 	result, err := BuildLine(source, "T", 1, config)

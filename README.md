@@ -17,13 +17,13 @@ Library for handling the ASTM protocol in Go.
 - `Unmarshal`: Converts a byte array to a Go structure
 - `IdentifyMessage`: Identifies the type of message without decoding it
 ``` go
-func Marshal(sourceStruct interface{}, configuration ...*models.Configuration) (result [][]byte, err error) 
-func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...*models.Configuration) (err error)
-func IdentifyMessage(messageData []byte, configuration ...*models.Configuration) (messageType astmconst.MessageType, err error) 
+func Marshal(sourceStruct interface{}, configuration ...models.Configuration) (result [][]byte, err error) 
+func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...models.Configuration) (err error)
+func IdentifyMessage(messageData []byte, configuration ...models.Configuration) (messageType astmconst.MessageType, err error) 
 ```
 
 # Setting up configuration
-For all three functions a configuration structure can be provided to determine behaviour. The `Internal` is for the internal workings and should be ignored.
+For all three functions a configuration structure can be provided to determine behaviour.
 
 ``` go
 type Configuration struct {
@@ -34,7 +34,8 @@ type Configuration struct {
 	EnforceSequenceNumberCheck bool
 	Notation                   string
 	RoundFixedNumbers          bool
-	Internal                   InternalConfiguration
+	Delimiters                 Delimiters
+	TimeLocation               *time.Location
 }
 ```
 It can also be omitted, in case the default is used:
@@ -47,6 +48,14 @@ var DefaultConfiguration = Configuration{
 	EnforceSequenceNumberCheck: true,
 	Notation:                   astmconst.NOTATION_STANDARD,
 	RoundFixedNumbers:          true,
+	Delimiters:                 DefaultDelimiters,
+	TimeLocation:               nil,
+}
+var DefaultDelimiters = Delimiters{
+	Field:     `|`,
+	Repeat:    `\`,
+	Component: `^`,
+	Escape:    `&`,
 }
 ```
 ## Encoding
@@ -63,7 +72,7 @@ astmconst.ENCODING_DOS866
 astmconst.ENCODING_ISO8859_1
 ```
 ## LineSeparator
-Line separator can be auto-detected, or set manually. A few constants are provided for convenience, but any string is valid. This is only relevant for unmarshal.
+Line separator can be auto-detected, or set manually. If `AutoDetectLineSeparator` is set to true, this can be ignored. A few constants are provided for convenience, but any string is valid. This is only relevant for unmarshal.
 ``` go
 astmconst.LF
 astmconst.CR
@@ -92,6 +101,18 @@ Standard notation will produce as many fields as there are in the source structu
 ## RoundFixedNumbers
 Floating point numbers can be annotated to be fixed point numbers. This is done by using the `length:N` annotation, where N is the number of decimals. 
 If `RoundFixedNumbers` is set to true, the fixed numbers are rounded up or down to the given decimal number. If it is set to false the excess decimals are truncated. This is only relevant for marshal.
+## Delimiters
+Used for building the protocol's record structure. When the configuration is provided for marshal the default is automatically used if any of the delimiter's fields are empty. If all fields are set, the default can be overridden. Each field should contain exactly one character. Unmarshal automatically detects the delimiters in the header record. This is only relevant for marshal.
+``` go
+type Delimiters struct {
+	Field     string
+	Repeat    string
+	Component string
+	Escape    string
+}
+```
+## TimeLocation
+For internal use only. Should be ignored.
 
 # Usage of the library functions
 

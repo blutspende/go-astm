@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...*astmmodels.Configuration) (err error) {
+func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...astmmodels.Configuration) (err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
@@ -34,7 +34,7 @@ func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...*a
 	return nil
 }
 
-func Marshal(sourceStruct interface{}, configuration ...*astmmodels.Configuration) (result [][]byte, err error) {
+func Marshal(sourceStruct interface{}, configuration ...astmmodels.Configuration) (result [][]byte, err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
@@ -54,7 +54,7 @@ func Marshal(sourceStruct interface{}, configuration ...*astmmodels.Configuratio
 	return result, nil
 }
 
-func IdentifyMessage(messageData []byte, configuration ...*astmmodels.Configuration) (messageType astmconst.MessageType, err error) {
+func IdentifyMessage(messageData []byte, configuration ...astmmodels.Configuration) (messageType astmconst.MessageType, err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
@@ -98,19 +98,19 @@ func IdentifyMessage(messageData []byte, configuration ...*astmmodels.Configurat
 	return astmconst.MESSAGETYPE_UNKOWN, err
 }
 
-func loadConfiguration(configuration ...*astmmodels.Configuration) (config *astmmodels.Configuration, err error) {
+func loadConfiguration(configuration ...astmmodels.Configuration) (config *astmmodels.Configuration, err error) {
 	if len(configuration) > 0 {
-		config = configuration[0]
+		config = &configuration[0]
 	} else {
 		config = &astmmodels.DefaultConfiguration
 	}
-	if config.Internal.Delimiters.Field == "" ||
-		config.Internal.Delimiters.Repeat == "" ||
-		config.Internal.Delimiters.Component == "" ||
-		config.Internal.Delimiters.Escape == "" {
-		config.Internal.Delimiters = astmmodels.DefaultDelimiters
+	if config.Delimiters.Field == "" ||
+		config.Delimiters.Repeat == "" ||
+		config.Delimiters.Component == "" ||
+		config.Delimiters.Escape == "" {
+		config.Delimiters = astmmodels.DefaultDelimiters
 	}
-	config.Internal.TimeLocation, err = time.LoadLocation(config.TimeZone)
+	config.TimeLocation, err = time.LoadLocation(config.TimeZone)
 	if err != nil {
 		return nil, err
 	}
