@@ -11,15 +11,15 @@ import (
 )
 
 // Configuration struct for tests
-var config *astmmodels.Configuration
+var config astmmodels.Configuration
 
 // Reset config to default values
 func teardown() {
-	config = &astmmodels.Configuration{}
-	*config = astmmodels.DefaultConfiguration
+	//config = astmmodels.Configuration{}
+	config = astmmodels.DefaultConfiguration
 	config.Encoding = astmconst.ENCODING_UTF8
-	config.Internal.Delimiters = astmmodels.DefaultDelimiters
-	config.Internal.TimeLocation, _ = time.LoadLocation(config.TimeZone)
+	config.Delimiters = astmmodels.DefaultDelimiters
+	config.TimeLocation, _ = time.LoadLocation(config.TimeZone)
 }
 
 // Setup default config and run all tests

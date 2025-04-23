@@ -164,7 +164,6 @@ func buildSubstructure(sourceStruct interface{}, config *astmmodels.Configuratio
 	}
 
 	// Construct the result string
-	// TODO: does short notation also apply to components?
 	result = constructResult(componentMap, config.Delimiters.Component, config.Notation)
 
 	// Return result with no error

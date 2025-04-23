@@ -51,7 +51,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 					// Composite target: recursively parse the composite structure
 					err = ParseStruct(inputLines, elem.Addr().Interface(), lineIndex, seq, depth+1, config)
 					// If the error is a line type name mismatch, it means the end of the array
-					// TODO: maybe this should be handled some other way
+					// Note: here an error is used to communicate the end of the array, it is not a real error
 					if errors.Is(err, errmsg.StructureParsing_ErrLineTypeNameMismatch) {
 						nameOk = false
 					}

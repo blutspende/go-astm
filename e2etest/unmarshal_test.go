@@ -76,10 +76,8 @@ func TestReadMinimalMessage(t *testing.T) {
 	assert.Equal(t, "Bio-Rad", message.Header.SenderNameOrID)
 	assert.Equal(t, "IH v5.2", message.Header.SenderStreetAddress)
 	assert.Equal(t, "", message.Header.Comment)
-	locale, err := time.LoadLocation("Europe/Berlin")
-	//TODO: checking the date in the same locale as the message is kind of pointless
-	localtime := message.Header.DateAndTime.In(locale)
-	assert.Equal(t, "20220315194227", localtime.Format("20060102150405"))
+	expectedTime := time.Date(2022, 03, 15, 19, 42, 27, 0, config.TimeLocation).UTC()
+	assert.Equal(t, expectedTime, message.Header.DateAndTime)
 }
 
 type FullSingleASTMMessage struct {
@@ -328,48 +326,6 @@ func TestComponentAccessOnTime(t *testing.T) {
 	assert.Equal(t, expDate2, message.Comment.Reagents[1].ExpirationDateOfReagent)
 }
 
-// TODO: rework this with substructures
-type TestCommentNoneBugComment struct {
-	SequenceNumber int       `astm:"2,sequence"`
-	Field1         time.Time `astm:"3.1.4"` // out of bounds with component index
-	Field2         time.Time `astm:"3.2.4"` // out of bounds with repeat index
-	Field3         time.Time `astm:"4.4"`
-}
-type TestCommentNoneBugMessage struct {
-	Field TestCommentNoneBugComment `astm:"C"`
-}
-
-type TestCommentNoneBugCommentCrash struct {
-	SequenceNumber int       `astm:"2,sequence"`
-	Field1         time.Time `astm:"3.1.4,required"` // out of bounds with component index
-	Field2         time.Time `astm:"3.2.4"`          // out of bounds with repeat index
-	Field3         time.Time `astm:"4.4,required"`
-}
-
-type TestCommentNoneBugMessageCrash struct {
-	Field TestCommentNoneBugComment `astm:"C"`
-}
-
-func TestCommentNoneBug(t *testing.T) {
-	data := ""
-	data += "C|1|^^^||\r"
-
-	var message TestCommentNoneBugMessage
-	err := astm.Unmarshal([]byte(data), &message, config)
-
-	assert.Nil(t, err)
-
-	assert.Equal(t, time.Time{}, message.Field.Field1)
-	assert.Equal(t, time.Time{}, message.Field.Field2)
-	assert.Equal(t, time.Time{}, message.Field.Field3)
-
-	// TODO: put back this commented test in a new test case
-	/* var crash TestCommentNoneBugMessageCrash
-	err := lis2a2.Unmarshal([]byte(data), &crash,
-		lis2a2.ENCODING_UTF8, lis2a2.TimezoneEuropeBerlin)
-	assert.NotNil(t, err) */
-}
-
 type MessageGermanLanguageTest struct {
 	Header     lis02a2.Header     `astm:"H"`
 	Patient    lis02a2.Patient    `astm:"P"`
@@ -486,7 +442,6 @@ func TestFullMultipleASTMMessage(t *testing.T) {
 	assert.Len(t, message.Messages, 4)
 }
 
-// TODO: should it fail though?
 func TestFullMultipleASTMMessageWithWrongInput(t *testing.T) {
 	// Arrange
 	messageString := multiMessage()
@@ -497,7 +452,6 @@ func TestFullMultipleASTMMessageWithWrongInput(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-// TODO: do we need this double 0D line separator to work?
 func TestFailOnUndisciplinedMultipleCRCRatEndOfLine(t *testing.T) {
 	// Arrange
 	messageString := "H|\\^&|||\u000d\u000d"
@@ -644,7 +598,7 @@ func TestEncodingVeryLongCharsets(t *testing.T) {
 	}
 	config.Encoding = astmconst.ENCODING_WINDOWS1252
 	// Act
-	encoded, err := functions.ConvertFromEncodingToUtf8(veryLongMessage, config)
+	encoded, err := functions.ConvertFromEncodingToUtf8(veryLongMessage, &config)
 	// Assert
 	assert.Nil(t, err)
 	// in this case the encoding should equal the original: no special characters

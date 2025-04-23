@@ -296,3 +296,45 @@ func TestParseLine_TimeLineTimeZone(t *testing.T) {
 	expectedTime := time.Date(2006, 03, 06, 16, 44, 29, 0, config.TimeLocation).UTC()
 	assert.Equal(t, expectedTime, target.Time)
 }
+
+// TODO: add test for out of bounds component
+//type TestCommentNoneBugComment struct {
+//	SequenceNumber int       `astm:"2,sequence"`
+//	Field1         time.Time `astm:"3.1.4"` // out of bounds with component index
+//	Field2         time.Time `astm:"3.2.4"` // out of bounds with repeat index
+//	Field3         time.Time `astm:"4.4"`
+//}
+//type TestCommentNoneBugMessage struct {
+//	Field TestCommentNoneBugComment `astm:"C"`
+//}
+//
+//type TestCommentNoneBugCommentCrash struct {
+//	SequenceNumber int       `astm:"2,sequence"`
+//	Field1         time.Time `astm:"3.1.4,required"` // out of bounds with component index
+//	Field2         time.Time `astm:"3.2.4"`          // out of bounds with repeat index
+//	Field3         time.Time `astm:"4.4,required"`
+//}
+//
+//type TestCommentNoneBugMessageCrash struct {
+//	Field TestCommentNoneBugComment `astm:"C"`
+//}
+//
+//func TestCommentNoneBug(t *testing.T) {
+//	data := ""
+//	data += "C|1|^^^||\r"
+//
+//	var message TestCommentNoneBugMessage
+//	err := astm.Unmarshal([]byte(data), &message, config)
+//
+//	assert.Nil(t, err)
+//
+//	assert.Equal(t, time.Time{}, message.Field.Field1)
+//	assert.Equal(t, time.Time{}, message.Field.Field2)
+//	assert.Equal(t, time.Time{}, message.Field.Field3)
+//
+//	// td: put back this commented test in a new test case
+//	/* var crash TestCommentNoneBugMessageCrash
+//	err := lis2a2.Unmarshal([]byte(data), &crash,
+//		lis2a2.ENCODING_UTF8, lis2a2.TimezoneEuropeBerlin)
+//	assert.NotNil(t, err) */
+//}

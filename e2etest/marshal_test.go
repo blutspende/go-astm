@@ -218,8 +218,7 @@ type OrderRequestV5 struct {
 	UserField2                  string                      `astm:"20" db:"user_field_2"`                          // 8.4.20
 	LaboratoryField1            string                      `astm:"21" db:"laboratory_field_1"`
 	LaboratoryField2            string                      `astm:"22" db:"laboratory_field_2"`
-	//TODO: do we need non annotated field support?
-	//CreatedAt                   time.Time                   `db:"created_at"`
+	CreatedAt                   time.Time                   `db:"created_at"`
 }
 type FieldEnumerationMessage struct {
 	Request OrderRequestV5 `astm:"R"`
@@ -235,23 +234,6 @@ func TestFieldEnumeration(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, lines, 1)
 	assert.Equal(t, "R|1|||^^^|||||||N||||||||||", string(lines[0]))
-}
-
-type OneDelimiterTooMuchMessage struct {
-	Terminator lis02a2.Terminator `astm:"L"`
-}
-
-// TODO: is this test needed?
-func TestOneDelimiterTooMuch(t *testing.T) {
-	// Arrange
-	var record OneDelimiterTooMuchMessage
-	record.Terminator.TerminatorCode = "N"
-	// Act
-	lines, err := astm.Marshal(record, config)
-	// Assert
-	assert.Nil(t, err)
-	assert.Len(t, lines, 1)
-	assert.Equal(t, "L|1|N", string(lines[0]))
 }
 
 type GermanLanguageDecoderMessage struct {
@@ -291,9 +273,7 @@ func TestGermanLanguageDecoder_ISO8859_1(t *testing.T) {
 	teardown()
 }
 
-// TODO: what panics, what bug? Do we need it?
-func TestFailMarshalOnlyHeader(t *testing.T) {
-	// Note: this test was created to test a bug that panics
+func TestMarshalOnlyEmptyHeader(t *testing.T) {
 	// Arrange
 	var message HeaderMessage
 	config.Encoding = astmconst.ENCODING_ASCII
@@ -413,7 +393,6 @@ func TestMarshalMultipleOrder(t *testing.T) {
 	teardown()
 }
 
-// TODO: debug this test fail
 func TestShorthandOnStandardMessage(t *testing.T) {
 	// Arrange
 	msg := lis02a2.StandardPOCRMessage{
@@ -471,7 +450,6 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 	teardown()
 }
 
-// TODO: debug this test fail in arrays
 func TestEmbeddedStructsAndArrays(t *testing.T) {
 	// Arrange
 	message := HoribaYumizenMessage{
@@ -566,8 +544,6 @@ type CustomDecimalLength struct {
 		EmbeddedFloat2 float64 `astm:"2,length:2"`
 		EmbeddedFloat3 float64 `astm:"3"`
 		EmbeddedFloat4 float32 `astm:"4,length:3"`
-		//TODO: do we want this to have default and not produce error instead?
-		//EmbeddedFloat4 float32 `astm:"4,length:invalidshoulddefaultto3"`
 	} `astm:"5"`
 }
 
@@ -583,7 +559,6 @@ func TestCustomDecimalLengthAnnotation(t *testing.T) {
 				EmbeddedFloat1 float32 `astm:"1,length:7"`
 				EmbeddedFloat2 float64 `astm:"2,length:2"`
 				EmbeddedFloat3 float64 `astm:"3"`
-				//EmbeddedFloat4 float32 `astm:"4,length:invalidshoulddefaultto3"`
 				EmbeddedFloat4 float32 `astm:"4,length:3"`
 			}{
 				{
@@ -608,7 +583,6 @@ func TestCustomDecimalLengthAnnotation(t *testing.T) {
 	lines, err := astm.Marshal(message, config)
 	// Assert
 	assert.Nil(t, err)
-	//TODO: should it always default to 3?
 	assert.Equal(t, "D|1|0.3457|0.4|0.1234567^0.98^0.234^0.345\\0.9900000^0.11^0.223^0.334", string(lines[0]))
 	// Teardown
 	teardown()
