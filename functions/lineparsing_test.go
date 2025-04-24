@@ -289,12 +289,39 @@ func TestParseLine_TimeLineTimeZone(t *testing.T) {
 	input := "T|1|20060306164429"
 	target := TimeRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.True(t, nameOk)
 	expectedTime := time.Date(2006, 03, 06, 16, 44, 29, 0, config.TimeLocation).UTC()
 	assert.Equal(t, expectedTime, target.Time)
+}
+
+func TestParseLine_WrongComponentOrder(t *testing.T) {
+	// Arrange
+	input := "T|1|first|comp1^comp2^comp3"
+	target := WrongComponentOrderRecord{}
+	// Act
+	_, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "first", target.First)
+	assert.Equal(t, "comp1", target.Comp1)
+	assert.Equal(t, "comp2", target.Comp2)
+	assert.Equal(t, "comp3", target.Comp3)
+}
+
+func TestParseLine_WrongComponentPlacement(t *testing.T) {
+	// Arrange
+	input := "T|1|field1|comp1^comp2|field2"
+	target := WrongComponentPlacementRecord{}
+	// Act
+	_, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "field1", target.Field1)
+	assert.Equal(t, "comp1", target.Comp1)
+	assert.Equal(t, "field2", target.Field2)
+	assert.Equal(t, "comp2", target.Comp2)
 }
 
 // TODO: add test for out of bounds component

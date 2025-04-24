@@ -21,6 +21,9 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 	// Create a map to store field values indexed by FieldPos
 	fieldMap := make(map[int]string)
 
+	// Create an array to store already processed component fields to allow any sparse placement
+	processedComponentFields := make([]int, 0)
+
 	// Add line name
 	fieldMap[1] = lineTypeName
 	// If it's a header, add the other delimiters
@@ -71,48 +74,34 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 				}
 			}
 		} else if sourceFieldAnnotation.IsComponent {
-			// If the field is a component, iterate over sourceTypes until a field is not a component
-			// Note: components for the same field have to come sequentially, or it will break
-			componentFieldString := ""
-			for ; i < len(sourceTypes); i++ {
+			if contains(processedComponentFields, sourceFieldAnnotation.FieldPos) {
+				// If the field is already processed, skip it
+				continue
+			}
+			// Create a map to store the component values indexed by ComponentPos
+			componentMap := make(map[int]string)
+			// Iterate over the whole inputFields of the targetStruct struct to find the components anywhere
+			for j := 0; j < sourceTypesLength; j++ {
 				// Parse the targetStruct field targetFieldAnnotation
-				currentFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
+				currentFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[j])
 				if err != nil {
 					return "", err
 				}
-				// If the field is not the same field anymore, break the loop
-				if currentFieldAnnotation.FieldPos != sourceFieldAnnotation.FieldPos {
-					i--
-					break
+				// If the field number is the same as the sourceFieldAnnotation, process it
+				if currentFieldAnnotation.FieldPos == sourceFieldAnnotation.FieldPos {
+					// Convert current component
+					componentValue, err := convertField(sourceValues[j], currentFieldAnnotation, config)
+					if err != nil {
+						return "", err
+					}
+					// Store the value in the component map
+					componentMap[currentFieldAnnotation.ComponentPos] = componentValue
 				}
-
-				// Convert current component
-				componentValue, err := convertField(sourceValues[i], currentFieldAnnotation, config)
-				if err != nil {
-					return "", err
-				}
-
-				// Add the component value and a component delimiter to the field string
-				componentFieldString += componentValue + config.Delimiters.Component
 			}
-			// Remove trailing component delimiters
-			cutIndex := len(componentFieldString)
-			if config.Notation == astmconst.NOTATION_SHORT {
-				// In short notation, remove trailing delimiters until there is data
-				for ; cutIndex > 0 && componentFieldString[cutIndex-1] == config.Delimiters.Component[0]; cutIndex-- {
-					// Do nothing, just decrement cutIndex
-				}
-			} else {
-				// In standard notation only remove the last excess delimiter
-				cutIndex--
-			}
-			// Make sure cutIndex is not negative (it should never actually happen)
-			if cutIndex < 0 {
-				cutIndex = 0
-			}
-			componentFieldString = componentFieldString[:cutIndex]
-			// Set the field value string to the component field string
-			fieldValueString = componentFieldString
+			// Construct the result into the fieldValueString
+			fieldValueString = constructResult(componentMap, config.Delimiters.Component, config.Notation)
+			// Mark the field as processed
+			processedComponentFields = append(processedComponentFields, sourceFieldAnnotation.FieldPos)
 		} else if sourceFieldAnnotation.IsSubstructure {
 			// If the field is a substructure use buildSubstructure to process it
 			fieldValueString, err = buildSubstructure(sourceValues[i].Interface(), config)
@@ -251,4 +240,13 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 	}
 	// Return error if no type match was found (each successful conversion returns with nil)
 	return "", errmsg.LineBuilding_ErrUsupportedDataType
+}
+
+func contains(slice []int, item int) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
 }

@@ -160,7 +160,6 @@ type SubstructureArrayRecord struct {
 	Second []SubstructureField `astm:"4"`
 	Third  string              `astm:"5"`
 }
-
 type SparseSubstructureField struct {
 	Component1 string `astm:"1"`
 	Component3 string `astm:"3"`
@@ -172,6 +171,28 @@ type SparseSubstructureRecord struct {
 }
 type TimeRecord struct {
 	Time time.Time `astm:"3,longdate"`
+}
+type WrongComponentOrderRecord struct {
+	First string `astm:"3"`
+	Comp2 string `astm:"4.2"`
+	Comp1 string `astm:"4.1"`
+	Comp3 string `astm:"4.3"`
+}
+type WrongComponentPlacementRecord struct {
+	Field1 string `astm:"3"`
+	Comp1  string `astm:"4.1"`
+	Field2 string `astm:"5"`
+	Comp2  string `astm:"4.2"`
+}
+type MultipleWrongComponentPlacementRecord struct {
+	Field3 string `astm:"3"`
+	Comp41 string `astm:"4.1"`
+	Field5 string `astm:"5"`
+	Comp62 string `astm:"6.2"`
+	Comp42 string `astm:"4.2"`
+	Field7 string `astm:"7"`
+	Comp61 string `astm:"6.1"`
+	Field8 string `astm:"8"`
 }
 
 // Structures

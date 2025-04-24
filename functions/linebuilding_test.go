@@ -439,3 +439,52 @@ func TestBuildLine_TimeLineTimeZone(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|20060306164429", result)
 }
+
+func TestBuildLine_WrongComponentOrder(t *testing.T) {
+	// Arrange
+	source := WrongComponentOrderRecord{
+		First: "first",
+		Comp2: "comp2",
+		Comp1: "comp1",
+		Comp3: "comp3",
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|first|comp1^comp2^comp3", result)
+}
+
+func TestBuildLine_WrongComponentPlacement(t *testing.T) {
+	// Arrange
+	source := WrongComponentPlacementRecord{
+		Field1: "field1",
+		Comp1:  "comp1",
+		Field2: "field2",
+		Comp2:  "comp2",
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|field1|comp1^comp2|field2", result)
+}
+
+func TestBuildLine_MultipleWrongComponentPlacement(t *testing.T) {
+	// Arrange
+	source := MultipleWrongComponentPlacementRecord{
+		Field3: "field3",
+		Comp41: "comp41",
+		Field5: "field5",
+		Comp62: "comp62",
+		Comp42: "comp42",
+		Field7: "field7",
+		Comp61: "comp61",
+		Field8: "field8",
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|field3|comp41^comp42|field5|comp61^comp62|field7|field8", result)
+}
