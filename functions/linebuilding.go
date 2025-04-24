@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"errors"
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models"
@@ -41,7 +42,12 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 		// Parse the sourceStruct field sourceFieldAnnotation
 		sourceFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
 		if err != nil {
-			return "", err
+			if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+				// If the annotation is missing, skip this field
+				continue
+			} else {
+				return "", err
+			}
 		}
 
 		// Check for fieldPos not being lower than 3 (first 2 are reserved for line name and sequence number)
@@ -85,7 +91,12 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 				// Parse the targetStruct field targetFieldAnnotation
 				currentFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[j])
 				if err != nil {
-					return "", err
+					if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+						// If the annotation is missing, skip this field
+						continue
+					} else {
+						return "", err
+					}
 				}
 				// If the field number is the same as the sourceFieldAnnotation, process it
 				if currentFieldAnnotation.FieldPos == sourceFieldAnnotation.FieldPos {
@@ -141,7 +152,12 @@ func buildSubstructure(sourceStruct interface{}, config *astmmodels.Configuratio
 		// Parse the sourceStruct field sourceFieldAnnotation
 		sourceFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
 		if err != nil {
-			return "", err
+			if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+				// If the annotation is missing, skip this field
+				continue
+			} else {
+				return "", err
+			}
 		}
 		// Convert the component directly
 		componentValueString, err := convertField(sourceValues[i], sourceFieldAnnotation, config)
@@ -205,12 +221,12 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		result = strconv.Itoa(int(field.Int()))
 		return result, nil
 	case reflect.Float32, reflect.Float64:
-		precision := -1
+		precision := config.DefaultDecimalPrecision
 		if annotation.Attribute == astmconst.ATTRIBUTE_LENGTH {
 			precision = annotation.AttributeValue
 		}
 		result = strconv.FormatFloat(field.Float(), 'f', precision, field.Type().Bits())
-		if !config.RoundFixedNumbers && precision >= 0 {
+		if !config.RoundLastDecimal && precision >= 0 {
 			factor := math.Pow(10, float64(precision))
 			truncated := math.Trunc(field.Float()*factor) / factor
 			result = strconv.FormatFloat(truncated, 'f', precision, field.Type().Bits())

@@ -85,12 +85,15 @@ type MultitypeRecord struct {
 	Float64 float64   `astm:"6"`
 	Date    time.Time `astm:"7"`
 }
-type MultitypeLengthRecord struct {
-	FloatFull float64   `astm:"3"`
-	FloatFix3 float64   `astm:"4,length:3"`
-	FloatFix0 float64   `astm:"5,length:0"`
-	LongDate  time.Time `astm:"6,longdate"`
-	ShortDate time.Time `astm:"7"`
+type DateLengthRecord struct {
+	ShortDate time.Time `astm:"3"`
+	LongDate  time.Time `astm:"4,longdate"`
+}
+type FloatLengthRecord struct {
+	Default    float64 `astm:"3"`
+	Length0    float64 `astm:"4,length:0"`
+	Length4    float64 `astm:"5,length:4"`
+	LengthFull float64 `astm:"6,length:-1"`
 }
 type MultitypePointerRecord struct {
 	String  *string    `astm:"3"`
@@ -120,10 +123,15 @@ type HeaderDelimiterChange struct {
 	Comp1 string   `astm:"5.1"`
 	Comp2 string   `astm:"5.2"`
 }
-type MissingRequiredField struct {
+type RequiredFieldRecord struct {
 	First  string `astm:"3"`
 	Second string `astm:"4,required"`
 	Third  string `astm:"5"`
+}
+type RequiredComponentRecord struct {
+	First  string `astm:"3.1"`
+	Second string `astm:"3.2,required"`
+	Third  string `astm:"3.3"`
 }
 type RecordType1 struct {
 	First  string `astm:"3"`
@@ -193,6 +201,11 @@ type MultipleWrongComponentPlacementRecord struct {
 	Field7 string `astm:"7"`
 	Comp61 string `astm:"6.1"`
 	Field8 string `astm:"8"`
+}
+type MissingAnnotationRecord struct {
+	Field3  string `astm:"3"`
+	Missing string
+	Field4  string `astm:"4"`
 }
 
 // Structures

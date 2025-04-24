@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"errors"
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
 	"github.com/blutspende/go-astm/v2/models/astmmodels"
@@ -56,7 +57,12 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		// Parse the targetStruct field targetFieldAnnotation
 		targetFieldAnnotation, err := ParseAstmFieldAnnotation(targetType)
 		if err != nil {
-			return nameOk, err
+			if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+				// If the annotation is missing, skip this field
+				continue
+			} else {
+				return nameOk, err
+			}
 		}
 
 		// Check for fieldPos not being lower than 3 (first 2 are reserved for line name and sequence number)
@@ -155,7 +161,12 @@ func parseSubstructure(inputString string, targetStruct interface{}, config *ast
 		// Parse the targetStruct field targetFieldAnnotation
 		targetFieldAnnotation, err := ParseAstmFieldAnnotation(targetType)
 		if err != nil {
-			return err
+			if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+				// If the annotation is missing, skip this field
+				continue
+			} else {
+				return err
+			}
 		}
 
 		// Not enough inputFields or empty inputField

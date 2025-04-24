@@ -33,7 +33,8 @@ type Configuration struct {
 	TimeZone                   string
 	EnforceSequenceNumberCheck bool
 	Notation                   string
-	RoundFixedNumbers          bool
+	DefaultDecimalPrecision    int
+	RoundLastDecimal           bool
 	Delimiters                 Delimiters
 	TimeLocation               *time.Location
 }
@@ -47,7 +48,8 @@ var DefaultConfiguration = Configuration{
 	TimeZone:                   astmconst.TIMEZONE_EUROPE_BERLIN,
 	EnforceSequenceNumberCheck: true,
 	Notation:                   astmconst.NOTATION_STANDARD,
-	RoundFixedNumbers:          true,
+	DefaultDecimalPrecision:    3,
+	RoundLastDecimal:           true,
 	Delimiters:                 DefaultDelimiters,
 	TimeLocation:               nil,
 }
@@ -98,9 +100,10 @@ astmconst.NOTATION_STANDARD
 astmconst.NOTATION_SHORT
 ```
 Standard notation will produce as many fields as there are in the source structure, while short notation will omit empty fields at the end of a line. This is only relevant for marshal.
-## RoundFixedNumbers
-Floating point numbers can be annotated to be fixed point numbers. This is done by using the `length:N` annotation, where N is the number of decimals. 
-If `RoundFixedNumbers` is set to true, the fixed numbers are rounded up or down to the given decimal number. If it is set to false the excess decimals are truncated. This is only relevant for marshal.
+## DefaultDecimalPrecision
+The default decimal precision is used for floating point numbers. If a field is not annotated with `length:N`, the default decimal precision is used. `-1` can be set to allow numbers to take any length required. This is only relevant for marshal.
+## RoundLastDecimal
+If it is set to true, floating point numbers are rounded up or down (based on common rounding rules) at the last decimal place determined by either `DefaultDecimalPrecision` or `length:N` annotation. If it is set to false the excess decimals are truncated. This is only relevant for marshal.
 ## Delimiters
 Used for building the protocol's record structure. When the configuration is provided for marshal the default is automatically used if any of the delimiter's fields are empty. If all fields are set, the default can be overridden. Each field should contain exactly one character. Unmarshal automatically detects the delimiters in the header record. This is only relevant for marshal.
 ``` go

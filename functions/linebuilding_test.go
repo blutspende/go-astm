@@ -36,52 +36,68 @@ func TestBuildLine_MultitypeRecord(t *testing.T) {
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "T|1|string|3|3.14|3.14159265|20060102", result)
+	assert.Equal(t, "T|1|string|3|3.140|3.142|20060102", result)
 }
-func TestBuildLine_MultitypeLengthRecord(t *testing.T) {
+func TestBuildLine_DateLength(t *testing.T) {
 	// Arrange
-	source := MultitypeLengthRecord{
-		FloatFull: 3.14159265,
-		FloatFix3: 3.14159265,
-		FloatFix0: 3.14159265,
-		LongDate:  time.Date(2006, 1, 2, 15, 04, 05, 0, config.TimeLocation),
+	source := DateLengthRecord{
 		ShortDate: time.Date(2006, 1, 2, 15, 04, 05, 0, config.TimeLocation),
+		LongDate:  time.Date(2006, 1, 2, 15, 04, 05, 0, config.TimeLocation),
 	}
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "T|1|3.14159265|3.142|3|20060102150405|20060102", result)
+	assert.Equal(t, "T|1|20060102|20060102150405", result)
 }
-func TestBuildLine_MultitypeLengthRecordRound(t *testing.T) {
+func TestBuildLine_FloatLengthRounded(t *testing.T) {
 	// Arrange
-	source := MultitypeLengthRecord{
-		FloatFull: 3.77777,
-		FloatFix3: 3.77777,
-		FloatFix0: 3.77777,
+	source := FloatLengthRecord{
+		Default:    3.14159265,
+		Length0:    3.14159265,
+		Length4:    3.14159265,
+		LengthFull: 3.14159265,
 	}
-	config.RoundFixedNumbers = true
+	config.RoundLastDecimal = true
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "T|1|3.77777|3.778|4||", result)
+	assert.Equal(t, "T|1|3.142|3|3.1416|3.14159265", result)
 	// Teardown
 	teardown()
 }
-func TestBuildLine_MultitypeLengthRecordTruncate(t *testing.T) {
+func TestBuildLine_FloatLengthTruncated(t *testing.T) {
 	// Arrange
-	source := MultitypeLengthRecord{
-		FloatFull: 3.77777,
-		FloatFix3: 3.77777,
-		FloatFix0: 3.77777,
+	source := FloatLengthRecord{
+		Default:    3.14159265,
+		Length0:    3.14159265,
+		Length4:    3.14159265,
+		LengthFull: 3.14159265,
 	}
-	config.RoundFixedNumbers = false
+	config.RoundLastDecimal = false
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "T|1|3.77777|3.777|3||", result)
+	assert.Equal(t, "T|1|3.141|3|3.1415|3.14159265", result)
+	// Teardown
+	teardown()
+}
+func TestBuildLine_FloatLengthDefault(t *testing.T) {
+	// Arrange
+	source := FloatLengthRecord{
+		Default:    0,
+		Length0:    0,
+		Length4:    0,
+		LengthFull: 0,
+	}
+	config.DefaultDecimalPrecision = 2
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|0.00|0|0.0000|0", result)
 	// Teardown
 	teardown()
 }
@@ -92,16 +108,16 @@ func TestBuildLine_MultitypeRecordEmpty(t *testing.T) {
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "T|1||0|0|0|", result)
+	assert.Equal(t, "T|1||0|0.000|0.000|", result)
 }
 func TestBuildLine_MultitypeLengthRecordEmpty(t *testing.T) {
 	// Arrange
-	source := MultitypeLengthRecord{}
+	source := FloatLengthRecord{}
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "T|1|0|0.000|0||", result)
+	assert.Equal(t, "T|1|0.000|0|0.0000|0", result)
 }
 func TestBuildLine_MultitypePointerRecord(t *testing.T) {
 	// Arrange
@@ -121,7 +137,7 @@ func TestBuildLine_MultitypePointerRecord(t *testing.T) {
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "T|1|string|3|3.14|3.14159265|20060102", result)
+	assert.Equal(t, "T|1|string|3|3.140|3.142|20060102", result)
 }
 func TestBuildLine_MultitypePointerRecordEmpty(t *testing.T) {
 	// Arrange
@@ -487,4 +503,18 @@ func TestBuildLine_MultipleWrongComponentPlacement(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|field3|comp41^comp42|field5|comp61^comp62|field7|field8", result)
+}
+
+func TestBuildLine_MissingAnnotation(t *testing.T) {
+	// Arrange
+	source := MissingAnnotationRecord{
+		Field3:  "field3",
+		Missing: "missing",
+		Field4:  "field4",
+	}
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|field3|field4", result)
 }

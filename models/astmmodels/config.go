@@ -13,7 +13,8 @@ type Configuration struct {
 	TimeZone                   string
 	EnforceSequenceNumberCheck bool
 	Notation                   string
-	RoundFixedNumbers          bool
+	DefaultDecimalPrecision    int
+	RoundLastDecimal           bool
 	Delimiters                 Delimiters
 	TimeLocation               *time.Location
 }
@@ -25,7 +26,8 @@ var DefaultConfiguration = Configuration{
 	TimeZone:                   astmconst.TIMEZONE_EUROPE_BERLIN,
 	EnforceSequenceNumberCheck: true,
 	Notation:                   astmconst.NOTATION_STANDARD,
-	RoundFixedNumbers:          true,
+	DefaultDecimalPrecision:    3,
+	RoundLastDecimal:           true,
 	Delimiters:                 DefaultDelimiters,
 	TimeLocation:               nil,
 }

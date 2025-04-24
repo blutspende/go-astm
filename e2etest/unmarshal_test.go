@@ -103,7 +103,7 @@ func TestFullSingleASTMMessage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "Testus", message.Patient.LastName)
 	assert.Equal(t, "Test", message.Patient.FirstName)
-	assert.Equal(t, "19400607", message.Patient.DOB.Format("20060102")) // dates are read okay
+	assert.Equal(t, "19400607", message.Patient.DOB.Format("20060102"))
 	assert.Equal(t, "specimen1^^^\\specimen2^^^", message.Order.InstrumentSpecimenID)
 	assert.Equal(t, "lalina", message.Result.OperatorIDPerformed)
 }

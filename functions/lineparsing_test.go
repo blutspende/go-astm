@@ -132,6 +132,29 @@ func TestParseLine_MissingData(t *testing.T) {
 	assert.Equal(t, "third", target.Third)
 }
 
+func TestParseLine_MissingComponent(t *testing.T) {
+	// Arrange
+	input := "T|1|first^second"
+	target := RequiredComponentRecord{}
+	// Act
+	_, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "first", target.First)
+	assert.Equal(t, "second", target.Second)
+	assert.Equal(t, "", target.Third)
+}
+
+func TestParseLine_MissingRequiredComponent(t *testing.T) {
+	// Arrange
+	input := "T|1|first"
+	target := RequiredComponentRecord{}
+	// Act
+	_, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Error(t, err, errmsg.LineParsing_ErrInputComponentsMissing)
+}
+
 func TestParseLine_MissingDataAtTheEnd(t *testing.T) {
 	// Arrange
 	input := "T|1|first"
@@ -194,7 +217,7 @@ func TestParseLine_MandatoryFieldsMissing(t *testing.T) {
 func TestParseLine_MissingRequiredField(t *testing.T) {
 	// Arrange
 	input := "T|1|first||third"
-	target := MissingRequiredField{}
+	target := RequiredFieldRecord{}
 	// Act
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
@@ -205,7 +228,7 @@ func TestParseLine_MissingRequiredField(t *testing.T) {
 func TestParseLine_NotEnoughInputFields(t *testing.T) {
 	// Arrange
 	input := "T|1|first"
-	target := MissingRequiredField{}
+	target := RequiredFieldRecord{}
 	// Act
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
@@ -324,44 +347,14 @@ func TestParseLine_WrongComponentPlacement(t *testing.T) {
 	assert.Equal(t, "comp2", target.Comp2)
 }
 
-// TODO: add test for out of bounds component
-//type TestCommentNoneBugComment struct {
-//	SequenceNumber int       `astm:"2,sequence"`
-//	Field1         time.Time `astm:"3.1.4"` // out of bounds with component index
-//	Field2         time.Time `astm:"3.2.4"` // out of bounds with repeat index
-//	Field3         time.Time `astm:"4.4"`
-//}
-//type TestCommentNoneBugMessage struct {
-//	Field TestCommentNoneBugComment `astm:"C"`
-//}
-//
-//type TestCommentNoneBugCommentCrash struct {
-//	SequenceNumber int       `astm:"2,sequence"`
-//	Field1         time.Time `astm:"3.1.4,required"` // out of bounds with component index
-//	Field2         time.Time `astm:"3.2.4"`          // out of bounds with repeat index
-//	Field3         time.Time `astm:"4.4,required"`
-//}
-//
-//type TestCommentNoneBugMessageCrash struct {
-//	Field TestCommentNoneBugComment `astm:"C"`
-//}
-//
-//func TestCommentNoneBug(t *testing.T) {
-//	data := ""
-//	data += "C|1|^^^||\r"
-//
-//	var message TestCommentNoneBugMessage
-//	err := astm.Unmarshal([]byte(data), &message, config)
-//
-//	assert.Nil(t, err)
-//
-//	assert.Equal(t, time.Time{}, message.Field.Field1)
-//	assert.Equal(t, time.Time{}, message.Field.Field2)
-//	assert.Equal(t, time.Time{}, message.Field.Field3)
-//
-//	// td: put back this commented test in a new test case
-//	/* var crash TestCommentNoneBugMessageCrash
-//	err := lis2a2.Unmarshal([]byte(data), &crash,
-//		lis2a2.ENCODING_UTF8, lis2a2.TimezoneEuropeBerlin)
-//	assert.NotNil(t, err) */
-//}
+func TestParseLine_MissingAnnotation(t *testing.T) {
+	// Arrange
+	input := "T|1|field3|field4"
+	target := MissingAnnotationRecord{}
+	// Act
+	_, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "field3", target.Field3)
+	assert.Equal(t, "field4", target.Field4)
+}
