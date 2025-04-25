@@ -15,7 +15,6 @@ var config astmmodels.Configuration
 
 // Reset config to default values
 func teardown() {
-	//config = astmmodels.Configuration{}
 	config = astmmodels.DefaultConfiguration
 	config.Encoding = astmconst.ENCODING_UTF8
 	config.Delimiters = astmmodels.DefaultDelimiters

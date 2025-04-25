@@ -132,7 +132,7 @@ type Comment struct {
 	CommentText   string `astm:"4"` // 10.4
 	CommentType   string `astm:"5"` // 10.5
 }
-type RequestInformation struct {
+type Query struct {
 	StartingRangeIDNumber           string `astm:"3"`  // 11.3
 	EndingRangeIDNumber             string `astm:"4"`  // 11.4
 	UniversalTestID                 string `astm:"5"`  // 11.5
@@ -188,9 +188,9 @@ type StandardMultiPOCRMessage struct {
 	Messages []StandardPOCRMessage
 }
 type QueryMessage struct {
-	Header              Header               `astm:"H"`
-	RequestInformations []RequestInformation `astm:"Q"`
-	Terminator          Terminator           `astm:"L"`
+	Header     Header     `astm:"H"`
+	Queries    []Query    `astm:"Q"`
+	Terminator Terminator `astm:"L"`
 }
 type PatientOrder struct {
 	Patient Patient `astm:"P"`
