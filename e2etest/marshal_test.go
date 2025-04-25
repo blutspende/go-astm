@@ -313,7 +313,7 @@ func TestQueryMessage(t *testing.T) {
 	// Arrange
 	var query lis02a2.QueryMessage
 	query.Terminator.TerminatorCode = "N"
-	query.RequestInformations = []lis02a2.RequestInformation{
+	query.Queries = []lis02a2.Query{
 		{
 			StartingRangeIDNumber: "SampleCode1",
 			UniversalTestID:       "ALL",

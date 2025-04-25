@@ -17,7 +17,7 @@ func TestIdentifyOrderMessage(t *testing.T) {
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDERS_ONLY, messageType)
+	assert.Equal(t, astmconst.MESSAGETYPE_ORDER, messageType)
 }
 
 func TestIdentifyOrderMessageWithMultiHeader(t *testing.T) {
@@ -40,7 +40,7 @@ func TestIdentifyOrderMessageWithMultiHeader(t *testing.T) {
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDERS_ONLY, messageType)
+	assert.Equal(t, astmconst.MESSAGETYPE_ORDER, messageType)
 	// Teardown
 	teardown()
 }
@@ -104,7 +104,7 @@ L|1|N`
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, messageType)
+	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
 	// Teardown
 	teardown()
 }
@@ -132,7 +132,7 @@ L|1|N`
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, messageType)
+	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
 	// Teardown
 	teardown()
 }
@@ -183,7 +183,7 @@ func TestIdentifyHPORCOROCOROC(t *testing.T) {
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, messageType)
+	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
 	// Teardown
 	teardown()
 }
@@ -205,7 +205,7 @@ L|1|N`
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, messageType)
+	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
 	// Teardown
 	teardown()
 }
@@ -246,7 +246,7 @@ L|1|N`
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, messageType)
+	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
 	// Teardown
 	teardown()
 }

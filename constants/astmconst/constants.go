@@ -36,9 +36,7 @@ const NOTATION_SHORT string = "SHORT"
 
 // Possible results from IdentifyMessage
 
-type MessageType int
-
-const MESSAGETYPE_UNKOWN MessageType = -1
-const MESSAGETYPE_QUERY MessageType = 1
-const MESSAGETYPE_ORDERS_ONLY MessageType = 2
-const MESSAGETYPE_ORDERS_AND_RESULTS MessageType = 3
+const MESSAGETYPE_UNIDENTIFIED string = "UNIDENTIFIED"
+const MESSAGETYPE_QUERY string = "QUERY"
+const MESSAGETYPE_ORDER string = "ORDER"
+const MESSAGETYPE_RESULT string = "RESULT"

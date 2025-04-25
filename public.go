@@ -54,21 +54,21 @@ func Marshal(sourceStruct interface{}, configuration ...astmmodels.Configuration
 	return result, nil
 }
 
-func IdentifyMessage(messageData []byte, configuration ...astmmodels.Configuration) (messageType astmconst.MessageType, err error) {
+func IdentifyMessage(messageData []byte, configuration ...astmmodels.Configuration) (messageType string, err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
-		return astmconst.MESSAGETYPE_UNKOWN, err
+		return astmconst.MESSAGETYPE_UNIDENTIFIED, err
 	}
 	// Convert encoding to UTF8
 	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, config)
 	if err != nil {
-		return astmconst.MESSAGETYPE_UNKOWN, err
+		return astmconst.MESSAGETYPE_UNIDENTIFIED, err
 	}
 	// Split the message data into lines
 	lines, err := functions.SliceLines(utf8Data, config)
 	if err != nil {
-		return astmconst.MESSAGETYPE_UNKOWN, err
+		return astmconst.MESSAGETYPE_UNIDENTIFIED, err
 	}
 	// Extract the first characters from each line
 	firstChars := ""
@@ -88,14 +88,14 @@ func IdentifyMessage(messageData []byte, configuration ...astmmodels.Configurati
 	case regexp.MustCompile(expressionQuery).MatchString(firstChars):
 		return astmconst.MESSAGETYPE_QUERY, nil
 	case regexp.MustCompile(expressionOrder).MatchString(firstChars):
-		return astmconst.MESSAGETYPE_ORDERS_ONLY, nil
+		return astmconst.MESSAGETYPE_ORDER, nil
 	case regexp.MustCompile(expressionOrderAndResult).MatchString(firstChars):
-		return astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, nil
+		return astmconst.MESSAGETYPE_RESULT, nil
 	case regexp.MustCompile(expressionManyOrderAndResult).MatchString(firstChars):
-		return astmconst.MESSAGETYPE_ORDERS_AND_RESULTS, nil
+		return astmconst.MESSAGETYPE_RESULT, nil
 	}
 	// If no match was found return unknown
-	return astmconst.MESSAGETYPE_UNKOWN, err
+	return astmconst.MESSAGETYPE_UNIDENTIFIED, err
 }
 
 func loadConfiguration(configuration ...astmmodels.Configuration) (config *astmmodels.Configuration, err error) {
