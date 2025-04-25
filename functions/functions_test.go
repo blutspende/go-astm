@@ -180,6 +180,9 @@ type SparseSubstructureRecord struct {
 type TimeRecord struct {
 	Time time.Time `astm:"3,longdate"`
 }
+type ShortDateRecord struct {
+	Time time.Time `astm:"3"`
+}
 type WrongComponentOrderRecord struct {
 	First string `astm:"3"`
 	Comp2 string `astm:"4.2"`

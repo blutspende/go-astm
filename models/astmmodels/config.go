@@ -15,6 +15,7 @@ type Configuration struct {
 	Notation                   string
 	DefaultDecimalPrecision    int
 	RoundLastDecimal           bool
+	KeepShortDateTimeZone      bool
 	Delimiters                 Delimiters
 	TimeLocation               *time.Location
 }
@@ -28,6 +29,7 @@ var DefaultConfiguration = Configuration{
 	Notation:                   astmconst.NOTATION_STANDARD,
 	DefaultDecimalPrecision:    3,
 	RoundLastDecimal:           true,
+	KeepShortDateTimeZone:      true,
 	Delimiters:                 DefaultDelimiters,
 	TimeLocation:               nil,
 }

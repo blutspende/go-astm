@@ -50,7 +50,7 @@ func TestParseLine_MultitypeRecord(t *testing.T) {
 	assert.Equal(t, 3, target.Int)
 	assert.Equal(t, float32(3.14), target.Float32)
 	assert.Equal(t, float64(3.14159265), target.Float64)
-	expectedShortTime := time.Date(2006, 1, 1, 23, 0, 0, 0, time.UTC)
+	expectedShortTime := time.Date(2006, 1, 2, 0, 0, 0, 0, config.TimeLocation)
 	assert.Equal(t, expectedShortTime, target.Date)
 }
 
@@ -357,4 +357,34 @@ func TestParseLine_MissingAnnotation(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "field3", target.Field3)
 	assert.Equal(t, "field4", target.Field4)
+}
+
+func TestParseLine_ShortDateKeepTimeZone(t *testing.T) {
+	// Arrange
+	input := "T|1|20060304"
+	target := ShortDateRecord{}
+	config.KeepShortDateTimeZone = true
+	// Act
+	_, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	expectedTime := time.Date(2006, 03, 04, 0, 0, 0, 0, config.TimeLocation)
+	assert.Equal(t, expectedTime, target.Time)
+	// Teardown
+	teardown()
+}
+
+func TestParseLine_ShortDateDontKeepTimeZone(t *testing.T) {
+	// Arrange
+	input := "T|1|20060304"
+	target := ShortDateRecord{}
+	config.KeepShortDateTimeZone = false
+	// Act
+	_, err := ParseLine(input, &target, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	expectedTime := time.Date(2006, 03, 04, 0, 0, 0, 0, config.TimeLocation).UTC()
+	assert.Equal(t, expectedTime, target.Time)
+	// Teardown
+	teardown()
 }

@@ -430,7 +430,7 @@ func multiMessage() string {
 	return messageString
 }
 
-func TestFullMultipleASTMMessage(t *testing.T) {
+func TestMultiMessage(t *testing.T) {
 	// Arrange
 	messageString := multiMessage()
 	var message lis02a2.StandardMultiPOCRMessage
@@ -442,14 +442,15 @@ func TestFullMultipleASTMMessage(t *testing.T) {
 	assert.Len(t, message.Messages, 4)
 }
 
-func TestFullMultipleASTMMessageWithWrongInput(t *testing.T) {
+func TestMultiMessageWithSingleMessageInput(t *testing.T) {
+	// Note: single message also works, because there is no check for extra unparsed lines
 	// Arrange
 	messageString := multiMessage()
 	var message lis02a2.StandardPOCRMessage
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 }
 
 func TestFailOnUndisciplinedMultipleCRCRatEndOfLine(t *testing.T) {

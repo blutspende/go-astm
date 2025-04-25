@@ -518,3 +518,33 @@ func TestBuildLine_MissingAnnotation(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "T|1|field3|field4", result)
 }
+
+func TestBuildLine_ShortDateKeepTimeZone(t *testing.T) {
+	// Arrange
+	source := ShortDateRecord{
+		Time: time.Date(2006, 03, 04, 0, 0, 0, 0, config.TimeLocation),
+	}
+	config.KeepShortDateTimeZone = true
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|20060304", result)
+	// Teardown
+	teardown()
+}
+
+func TestBuildLine_ShortDateDontKeepTimeZone(t *testing.T) {
+	// Arrange
+	source := ShortDateRecord{
+		Time: time.Date(2006, 03, 04, 0, 0, 0, 0, config.TimeLocation).UTC(),
+	}
+	config.KeepShortDateTimeZone = false
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|20060304", result)
+	// Teardown
+	teardown()
+}

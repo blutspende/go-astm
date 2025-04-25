@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/blutspende/go-astm/v2/constants/astmconst"
 	"github.com/blutspende/go-astm/v2/errmsg"
+	"github.com/blutspende/go-astm/v2/models"
 	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"reflect"
 	"strconv"
@@ -99,7 +100,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 				} else {
 					// |value1\value2\value3|
 					// Simple values in the array
-					err = setField(repeat, arrayValue.Index(j), config)
+					err = setField(repeat, arrayValue.Index(j), targetFieldAnnotation, config)
 					if err != nil {
 						return nameOk, err
 					}
@@ -120,7 +121,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 					continue
 				}
 			}
-			err = setField(components[targetFieldAnnotation.ComponentPos-1], targetValues[i], config)
+			err = setField(components[targetFieldAnnotation.ComponentPos-1], targetValues[i], targetFieldAnnotation, config)
 			if err != nil {
 				return nameOk, err
 			}
@@ -134,7 +135,7 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 		} else {
 			// |field|
 			// Field is not an array or component (normal singular field)
-			err = setField(inputField, targetValues[i], config)
+			err = setField(inputField, targetValues[i], targetFieldAnnotation, config)
 			if err != nil {
 				return nameOk, err
 			}
@@ -182,7 +183,7 @@ func parseSubstructure(inputString string, targetStruct interface{}, config *ast
 		inputField := inputFields[targetFieldAnnotation.FieldPos-1]
 
 		// Set field is value
-		err = setField(inputField, targetValues[i], config)
+		err = setField(inputField, targetValues[i], targetFieldAnnotation, config)
 		if err != nil {
 			return err
 		}
@@ -192,7 +193,7 @@ func parseSubstructure(inputString string, targetStruct interface{}, config *ast
 	return nil
 }
 
-func setField(value string, field reflect.Value, config *astmmodels.Configuration) (err error) {
+func setField(value string, field reflect.Value, annotation models.AstmFieldAnnotation, config *astmmodels.Configuration) (err error) {
 	// Ensure the field is settable
 	if !field.CanSet() {
 		// Field is not settable
@@ -244,7 +245,14 @@ func setField(value string, field reflect.Value, config *astmmodels.Configuratio
 			if err != nil {
 				return errmsg.LineParsing_ErrDataParsingError
 			}
-			field.Set(reflect.ValueOf(timeInLocation.UTC()))
+			if annotation.Attribute != astmconst.ATTRIBUTE_LONGDATE && config.KeepShortDateTimeZone {
+				// Keep the short date time zone
+				timeInLocation = timeInLocation.In(config.TimeLocation)
+			} else {
+				// Set the time to UTC
+				timeInLocation = timeInLocation.UTC()
+			}
+			field.Set(reflect.ValueOf(timeInLocation))
 			return nil
 		} else {
 			// Note: option to handle other struct types here

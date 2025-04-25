@@ -35,6 +35,7 @@ type Configuration struct {
 	Notation                   string
 	DefaultDecimalPrecision    int
 	RoundLastDecimal           bool
+	KeepShortDateTimeZone      bool
 	Delimiters                 Delimiters
 	TimeLocation               *time.Location
 }
@@ -50,6 +51,7 @@ var DefaultConfiguration = Configuration{
 	Notation:                   astmconst.NOTATION_STANDARD,
 	DefaultDecimalPrecision:    3,
 	RoundLastDecimal:           true,
+	KeepShortDateTimeZone:      true,
 	Delimiters:                 DefaultDelimiters,
 	TimeLocation:               nil,
 }
@@ -104,6 +106,9 @@ Standard notation will produce as many fields as there are in the source structu
 The default decimal precision is used for floating point numbers. If a field is not annotated with `length:N`, the default decimal precision is used. `-1` can be set to allow numbers to take any length required. This is only relevant for marshal.
 ## RoundLastDecimal
 If it is set to true, floating point numbers are rounded up or down (based on common rounding rules) at the last decimal place determined by either `DefaultDecimalPrecision` or `length:N` annotation. If it is set to false the excess decimals are truncated. This is only relevant for marshal.
+## KeepShortDateTimeZone
+As short dates are only year, month, day, representing the date as midnight of that day in the `time.Time`, time zone conversions can lead to the change of day (eg.: 23:00 the day before). Because logically the short date represents a whole day, it can be more important to preserve the actual date as is then to have the time in UTC. However `time.Time` (and most database representations) must have a time zone, so the only solution is to keep the original time zone unconverted.
+If this flag is set to true, the timezone is kept in local time for the short date format. If set to false, the time is converted to UTC just like long dates. This applies both for marshal and unmarshal, so with the same configuration the string format of the date will be intact.
 ## Delimiters
 Used for building the protocol's record structure. When the configuration is provided for marshal the default is automatically used if any of the delimiter's fields are empty. If all fields are set, the default can be overridden. Each field should contain exactly one character. Unmarshal automatically detects the delimiters in the header record. This is only relevant for marshal.
 ``` go

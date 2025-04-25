@@ -239,16 +239,19 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 			if annotation.Attribute == astmconst.ATTRIBUTE_LONGDATE {
 				timeFormat = "20060102150405"
 			}
+			// Check if the field is a time.Time
 			timeValue, ok := field.Interface().(time.Time)
 			if !ok {
 				return "", errmsg.LineBuilding_ErrInvalidDateFormat
 			}
+			// Return empty if the time is zero
 			if timeValue.IsZero() {
-				result = ""
-			} else {
-				// Format the date as a string in the config's timezone
-				result = timeValue.In(config.TimeLocation).Format(timeFormat)
+				return "", nil
 			}
+			// Convert the time to the config's timezone
+			timeInLocation := timeValue.In(config.TimeLocation)
+			// Format the date as a string
+			result = timeInLocation.Format(timeFormat)
 			return result, nil
 		} else {
 			// Note: option to handle other struct types here
