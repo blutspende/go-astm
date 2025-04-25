@@ -10,7 +10,7 @@ import (
 func SliceLines(input string, config *astmmodels.Configuration) (output []string, err error) {
 	// Check for empty input
 	if input == "" {
-		return nil, errmsg.Lining_ErrNotEnoughLines
+		return nil, errmsg.Lining_ErrEmptyInput
 	}
 
 	// A line separator has to be provided if auto-detect is disabled
@@ -33,21 +33,24 @@ func SliceLines(input string, config *astmmodels.Configuration) (output []string
 				crCnt++
 			}
 		}
+
 		if lfCnt == 0 && crCnt == 0 {
-			return nil, errmsg.Lining_ErrInvalidLinebreak
-		}
-		if lfCnt > 0 && crCnt > 0 && lfCnt != crCnt {
-			return nil, errmsg.Lining_ErrInvalidLinebreak
-		}
-
-		if lfCnt == 0 {
-			input = strings.ReplaceAll(input, astmconst.CR, astmconst.LF)
-
+			// Note: single line inputs are allowed, but it could indicate a problem
+			lines = append(lines, input)
 		} else {
-			input = strings.ReplaceAll(input, astmconst.CR, "")
+			if lfCnt > 0 && crCnt > 0 && lfCnt != crCnt {
+				// Mixed number of different line endings are not allowed
+				return nil, errmsg.Lining_ErrInvalidLinebreak
+			}
+			if lfCnt == 0 {
+				// Only CR line endings: replace with LF
+				input = strings.ReplaceAll(input, astmconst.CR, astmconst.LF)
+			} else {
+				// Equally mixed line endings: only keep LF
+				input = strings.ReplaceAll(input, astmconst.CR, "")
+			}
+			lines = strings.Split(input, astmconst.LF)
 		}
-
-		lines = strings.Split(input, astmconst.LF)
 	}
 
 	for i := range lines {

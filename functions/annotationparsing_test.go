@@ -100,7 +100,7 @@ func TestParseAstmFieldAnnotationString_InvalidAttribute(t *testing.T) {
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.Error(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute)
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
 }
 func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyParts(t *testing.T) {
 	// Arrange
@@ -108,15 +108,15 @@ func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyParts(t *testing
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.Error(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation)
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation.Error())
 }
 func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyPartsWithAttribute(t *testing.T) {
 	// Arrange
-	input := "4.1.3,something"
+	input := "4.1.3,required"
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.Error(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation)
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation.Error())
 }
 func TestParseAstmFieldAnnotationString_InvalidNumber(t *testing.T) {
 	// Arrange
@@ -124,7 +124,7 @@ func TestParseAstmFieldAnnotationString_InvalidNumber(t *testing.T) {
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.Error(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation)
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation.Error())
 }
 func TestParseAstmFieldAnnotationString_TooManyAttributes(t *testing.T) {
 	// Arrange
@@ -132,7 +132,7 @@ func TestParseAstmFieldAnnotationString_TooManyAttributes(t *testing.T) {
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.Error(t, err, errmsg.AnnotationParsing_ErrTooManyAttributes)
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrTooManyAttributes.Error())
 }
 func TestParseAstmFieldAnnotation_AnnotatedStruct(t *testing.T) {
 	// Arrange
@@ -210,7 +210,7 @@ func TestParseAstmFieldAnnotation_IllegalComponentArray(t *testing.T) {
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
 	// Assert
-	assert.Error(t, err, errmsg.AnnotationParsing_ErrIllegalComponentArray)
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrIllegalComponentArray.Error())
 }
 func TestParseAstmFieldAnnotation_IllegalComponentSubstructure(t *testing.T) {
 	// Arrange
@@ -219,7 +219,7 @@ func TestParseAstmFieldAnnotation_IllegalComponentSubstructure(t *testing.T) {
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
 	// Assert
-	assert.Error(t, err, errmsg.AnnotationParsing_ErrIllegalComponentSubstructure)
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrIllegalComponentSubstructure.Error())
 }
 func TestParseAstmFieldAnnotation_TimeLine(t *testing.T) {
 	// Arrange

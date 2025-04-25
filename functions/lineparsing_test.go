@@ -152,7 +152,7 @@ func TestParseLine_MissingRequiredComponent(t *testing.T) {
 	// Act
 	_, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
-	assert.Error(t, err, errmsg.LineParsing_ErrInputComponentsMissing)
+	assert.EqualError(t, err, errmsg.LineParsing_ErrInputComponentsMissing.Error())
 }
 
 func TestParseLine_MissingDataAtTheEnd(t *testing.T) {
@@ -200,7 +200,7 @@ func TestParseLine_EmptyInput(t *testing.T) {
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.False(t, nameOk)
-	assert.Error(t, err, errmsg.LineParsing_ErrEmptyInput)
+	assert.EqualError(t, err, errmsg.LineParsing_ErrEmptyInput.Error())
 }
 
 func TestParseLine_MandatoryFieldsMissing(t *testing.T) {
@@ -211,7 +211,7 @@ func TestParseLine_MandatoryFieldsMissing(t *testing.T) {
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.False(t, nameOk)
-	assert.Error(t, err, errmsg.LineParsing_ErrMandatoryInputFieldsMissing)
+	assert.EqualError(t, err, errmsg.LineParsing_ErrMandatoryInputFieldsMissing.Error())
 }
 
 func TestParseLine_MissingRequiredField(t *testing.T) {
@@ -222,7 +222,7 @@ func TestParseLine_MissingRequiredField(t *testing.T) {
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.True(t, nameOk)
-	assert.Error(t, err, errmsg.LineParsing_ErrRequiredInputFieldMissing)
+	assert.EqualError(t, err, errmsg.LineParsing_ErrRequiredInputFieldMissing.Error())
 }
 
 func TestParseLine_NotEnoughInputFields(t *testing.T) {
@@ -233,7 +233,7 @@ func TestParseLine_NotEnoughInputFields(t *testing.T) {
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.True(t, nameOk)
-	assert.Error(t, err, errmsg.LineParsing_ErrRequiredInputFieldMissing)
+	assert.EqualError(t, err, errmsg.LineParsing_ErrRequiredInputFieldMissing.Error())
 }
 
 func TestParseLine_SequenceNumberMismatch(t *testing.T) {
@@ -244,7 +244,7 @@ func TestParseLine_SequenceNumberMismatch(t *testing.T) {
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.True(t, nameOk)
-	assert.Error(t, err, errmsg.LineParsing_ErrSequenceNumberMismatch)
+	assert.EqualError(t, err, errmsg.LineParsing_ErrSequenceNumberMismatch.Error())
 }
 
 func TestParseLine_SequenceNumberMismatchWithoutEnforcing(t *testing.T) {
@@ -268,7 +268,7 @@ func TestParseLine_ReservedFieldRecord(t *testing.T) {
 	nameOk, err := ParseLine(input, &target, "T", 1, config)
 	// Assert
 	assert.True(t, nameOk)
-	assert.Error(t, err, errmsg.LineParsing_ErrReservedFieldPosReference)
+	assert.EqualError(t, err, errmsg.LineParsing_ErrReservedFieldPosReference.Error())
 }
 
 func TestParseLine_SubstructureRecord(t *testing.T) {

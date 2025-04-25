@@ -93,15 +93,7 @@ func TestSliceLines_Empty(t *testing.T) {
 	// Act
 	_, err := SliceLines(input, config)
 	// Assert
-	assert.Error(t, err, errmsg.Lining_ErrNotEnoughLines)
-}
-func TestSliceLines_OneLine(t *testing.T) {
-	// Arrange
-	input := "first"
-	// Act
-	_, err := SliceLines(input, config)
-	// Assert
-	assert.Error(t, err, errmsg.Lining_ErrNotEnoughLines)
+	assert.EqualError(t, err, errmsg.Lining_ErrEmptyInput.Error())
 }
 func TestSliceLines_Invalid(t *testing.T) {
 	// Arrange
@@ -109,7 +101,17 @@ func TestSliceLines_Invalid(t *testing.T) {
 	// Act
 	_, err := SliceLines(input, config)
 	// Assert
-	assert.Error(t, err, errmsg.Lining_ErrInvalidLinebreak)
+	assert.EqualError(t, err, errmsg.Lining_ErrInvalidLinebreak.Error())
+}
+func TestSliceLines_SingleLine(t *testing.T) {
+	// Arrange
+	input := "single line"
+	// Act
+	lines, err := SliceLines(input, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Len(t, lines, 1)
+	assert.Equal(t, "single line", lines[0])
 }
 
 // Explicit line separator config

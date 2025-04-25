@@ -342,7 +342,7 @@ func TestBuildLine_ReservedFieldRecord(t *testing.T) {
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
-	assert.Error(t, err, errmsg.LineBuilding_ErrReservedFieldPosReference)
+	assert.EqualError(t, err, errmsg.LineBuilding_ErrReservedFieldPosReference.Error())
 	assert.Equal(t, "", result)
 }
 func TestBuildLine_SparseFieldRecord(t *testing.T) {

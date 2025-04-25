@@ -497,7 +497,7 @@ func TestNullValuesShouldGiveQualifiedError(t *testing.T) {
 	err := astm.Unmarshal(nil, &message, config)
 	// Assert
 	assert.NotNil(t, err)
-	assert.Error(t, err, errmsg.Lining_ErrNotEnoughLines)
+	assert.EqualError(t, err, errmsg.Lining_ErrEmptyInput.Error())
 }
 
 func TestUnmarshalMultipleOrdersAndResultsForOnePatient(t *testing.T) {
