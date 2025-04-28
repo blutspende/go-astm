@@ -191,6 +191,12 @@ There are two separate types of structures:
 
 For both of these cases, predefined structures are provided in the `lis02a2` package. These structures are based on the ASTM standard and can be used as is, or as building blocks for custom implementation.
 
+### Attributes
+After the mandatory part of the annotation a number of optional attributes can be added, separated by commas. The attributes are used to modify the behaviour of the field or record. Some attributes can also have values, which are separated from the attribute name by a colon.
+``` go
+FieldOrRecord Type `astm:"?,attribute1,attribute2:value"`
+```
+
 ## Record structure
 Example:
 ``` go
@@ -213,7 +219,7 @@ type Record struct {
 }
 ```
 - `required`: By default fields can be empty for unmarshal. However, a required field will produce an error if missing.
-- `length:N`: This field is a fixed point number with N decimals. Excess decimals are either truncated or rounded during marshal.
+- `length:N`: This field is a fixed point number with N decimals. N has to be an integer >= -1. Excess decimals are either truncated or rounded during marshal.
 - `longdate`: By default dates are converted in short format `YYYYMMDD` in marshal, but with this attribute it can be set to long format: `YYYYMMDDHHMMSS`.
 
 ### Record field arrays
@@ -321,7 +327,7 @@ type Lis02a2Message {
 }
 ```
 - `optional`: By default all records are required for unmarshal, and will produce an error if missing. However, an optional record will just be skipped. This can also be used for composite and array structures (see below).
-- `subname:N`: Some records (eg: 'M' manufacturer info) can be more free form record types that the instrument can use in different formats. Therefore, it might have different structures with the same record name. To distinguish between them, the subname attribute can be used. Its string value will be matched with the 3rd field (the one after sequence number) to determine the type. This will be used to identify the record type in the message, or to signify the end of an array of that given type. This is only relevant for unmarshal.
+- `subname:N`: Some records (eg: 'M' manufacturer info) can be more free form record types. Therefore, it might have different structures with the same record name. To distinguish between them, the subname attribute can be used. Its string value will be matched with the 3rd field (the one after sequence number) to determine the type. This will be used to identify the record type in the message, or to signify the end of an array of that given type. This is only relevant for unmarshal.
 
 ### Message structure arrays
 Records can be defined as arrays, in which case they will be marshalled and unmarshalled as an array of repetitions of the records, each of them as a line in the message, with incrementing sequence numbers.

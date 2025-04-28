@@ -78,13 +78,10 @@ type TimeLine struct {
 type InvalidFieldAttribute struct {
 	First string `astm:"3,invalid"`
 }
-type NonIntegerFieldAttributeValueLine struct {
-	First float32 `astm:"3,length:one"`
-}
 type InvalidStructAttribute struct {
 	Record Line `astm:"R,invalid"`
 }
-type TooManyStructAttribute struct {
+type TooManyStructNameAttributeValues struct {
 	Record Line `astm:"R,subname:ONE:TWO"`
 }
 type SubnameAttribute struct {
@@ -297,4 +294,8 @@ type SubnameArrayMessage struct {
 type SubnameMultiArrayMessage struct {
 	Array1 []SubnameRecordType1 `astm:"R,subname:FIRST"`
 	Array2 []SubnameRecordType2 `astm:"R,subname:SECOND"`
+}
+type SubnameOptionalMessage struct {
+	Record1 SubnameRecordType1 `astm:"R,subname:FIRST,optional"`
+	Record2 SubnameRecordType2 `astm:"R,subname:SECOND"`
 }

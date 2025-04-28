@@ -86,7 +86,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				// Make sure there are enough input lines
 				if *lineIndex >= len(inputLines) {
 					// Skip if the structure is optional, error otherwise
-					if targetStructAnnotation.Attribute == astmconst.ATTRIBUTE_OPTIONAL {
+					if _, exists := targetStructAnnotation.Attributes[astmconst.ATTRIBUTE_OPTIONAL]; exists {
 						continue
 					} else {
 						return errmsg.StructureParsing_ErrInputLinesDepleted
@@ -105,7 +105,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				}
 				// If there is a type name mismatch but the target is optional it can be skipped, otherwise it's an error
 				if !nameOk {
-					if targetStructAnnotation.Attribute == astmconst.ATTRIBUTE_OPTIONAL {
+					if _, exists := targetStructAnnotation.Attributes[astmconst.ATTRIBUTE_OPTIONAL]; exists {
 						err = nil
 						*lineIndex--
 						continue

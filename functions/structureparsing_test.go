@@ -209,6 +209,24 @@ func TestParseStruct_SubnameMessage(t *testing.T) {
 	assert.Equal(t, 21, target.Record2.First)
 	assert.Equal(t, "r2 second", target.Record2.Second)
 }
+func TestParseStruct_SubnameOptionalMessage(t *testing.T) {
+	// Arrange
+	input := []string{
+		"R|1|SECOND|21|r2 second",
+	}
+	target := SubnameOptionalMessage{}
+	lineIndex := 0
+	// Act
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "", target.Record1.Subname)
+	assert.Equal(t, "", target.Record1.First)
+	assert.Equal(t, 0, target.Record1.Second)
+	assert.Equal(t, "SECOND", target.Record2.Subname)
+	assert.Equal(t, 21, target.Record2.First)
+	assert.Equal(t, "r2 second", target.Record2.Second)
+}
 func TestParseStruct_SubnameArrayMessage(t *testing.T) {
 	// Arrange
 	input := []string{

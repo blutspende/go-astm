@@ -21,10 +21,7 @@ func TestParseAstmFieldAnnotationString_SingleValue(t *testing.T) {
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, 0, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Equal(t, false, result.HasAttribute)
-	assert.Equal(t, "", result.Attribute)
-	assert.Equal(t, false, result.HasAttributeValue)
-	assert.Equal(t, 0, result.AttributeValue)
+	assert.Empty(t, result.Attributes)
 }
 func TestParseAstmFieldAnnotationString_Componented(t *testing.T) {
 	// Arrange
@@ -38,10 +35,7 @@ func TestParseAstmFieldAnnotationString_Componented(t *testing.T) {
 	assert.Equal(t, true, result.IsComponent)
 	assert.Equal(t, 1, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Equal(t, false, result.HasAttribute)
-	assert.Equal(t, "", result.Attribute)
-	assert.Equal(t, false, result.HasAttributeValue)
-	assert.Equal(t, 0, result.AttributeValue)
+	assert.Empty(t, result.Attributes)
 }
 func TestParseAstmFieldAnnotationString_Attributed(t *testing.T) {
 	// Arrange
@@ -55,10 +49,7 @@ func TestParseAstmFieldAnnotationString_Attributed(t *testing.T) {
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, 0, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, astmconst.ATTRIBUTE_REQUIRED, result.Attribute)
-	assert.Equal(t, false, result.HasAttributeValue)
-	assert.Equal(t, 0, result.AttributeValue)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_REQUIRED)
 }
 func TestParseAstmFieldAnnotationString_AttributedValue(t *testing.T) {
 	// Arrange
@@ -72,10 +63,8 @@ func TestParseAstmFieldAnnotationString_AttributedValue(t *testing.T) {
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, 0, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, astmconst.ATTRIBUTE_LENGTH, result.Attribute)
-	assert.Equal(t, true, result.HasAttributeValue)
-	assert.Equal(t, 2, result.AttributeValue)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
+	assert.Equal(t, "2", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
 }
 func TestParseAstmFieldAnnotationString_Complex(t *testing.T) {
 	// Arrange
@@ -89,10 +78,8 @@ func TestParseAstmFieldAnnotationString_Complex(t *testing.T) {
 	assert.Equal(t, true, result.IsComponent)
 	assert.Equal(t, 2, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, astmconst.ATTRIBUTE_LENGTH, result.Attribute)
-	assert.Equal(t, true, result.HasAttributeValue)
-	assert.Equal(t, 4, result.AttributeValue)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
+	assert.Equal(t, "4", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
 }
 func TestParseAstmFieldAnnotationString_InvalidAttribute(t *testing.T) {
 	// Arrange
@@ -101,6 +88,14 @@ func TestParseAstmFieldAnnotationString_InvalidAttribute(t *testing.T) {
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
 	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+}
+func TestParseAstmFieldAnnotationString_InvalidAttributeFormat(t *testing.T) {
+	// Arrange
+	input := "4.1,length:2:3"
+	// Act
+	_, err := parseAstmFieldAnnotationString(input)
+	// Assert
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttributeFormat.Error())
 }
 func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyParts(t *testing.T) {
 	// Arrange
@@ -126,13 +121,36 @@ func TestParseAstmFieldAnnotationString_InvalidNumber(t *testing.T) {
 	// Assert
 	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation.Error())
 }
-func TestParseAstmFieldAnnotationString_TooManyAttributes(t *testing.T) {
+func TestParseAstmFieldAnnotationString_MultipleAttributes(t *testing.T) {
 	// Arrange
-	input := "4,something,otherthing"
+	input := "4,required,longdate"
 	// Act
-	_, err := parseAstmFieldAnnotationString(input)
+	result, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrTooManyAttributes.Error())
+	assert.Nil(t, err)
+	assert.Equal(t, "4,required,longdate", result.Raw)
+	assert.Equal(t, 4, result.FieldPos)
+	assert.Equal(t, false, result.IsComponent)
+	assert.Equal(t, 0, result.ComponentPos)
+	assert.Equal(t, false, result.IsSubstructure)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_REQUIRED)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LONGDATE)
+}
+func TestParseAstmFieldAnnotationString_ValuedMultipleAttributes(t *testing.T) {
+	// Arrange
+	input := "4,length:3,required"
+	// Act
+	result, err := parseAstmFieldAnnotationString(input)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "4,length:3,required", result.Raw)
+	assert.Equal(t, 4, result.FieldPos)
+	assert.Equal(t, false, result.IsComponent)
+	assert.Equal(t, 0, result.ComponentPos)
+	assert.Equal(t, false, result.IsSubstructure)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
+	assert.Equal(t, "3", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_REQUIRED)
 }
 func TestParseAstmFieldAnnotation_AnnotatedStruct(t *testing.T) {
 	// Arrange
@@ -148,10 +166,8 @@ func TestParseAstmFieldAnnotation_AnnotatedStruct(t *testing.T) {
 	assert.Equal(t, true, result.IsComponent)
 	assert.Equal(t, 2, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, astmconst.ATTRIBUTE_LENGTH, result.Attribute)
-	assert.Equal(t, true, result.HasAttributeValue)
-	assert.Equal(t, 4, result.AttributeValue)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
+	assert.Equal(t, "4", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
 }
 func TestParseAstmFieldAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	// Arrange
@@ -166,10 +182,8 @@ func TestParseAstmFieldAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, astmconst.ATTRIBUTE_LENGTH, result.Attribute)
-	assert.Equal(t, true, result.HasAttributeValue)
-	assert.Equal(t, 4, result.AttributeValue)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
+	assert.Equal(t, "4", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
 }
 func TestParseAstmFieldAnnotation_Substructure(t *testing.T) {
 	// Arrange
@@ -184,8 +198,7 @@ func TestParseAstmFieldAnnotation_Substructure(t *testing.T) {
 	assert.Equal(t, false, result.IsArray)
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, true, result.IsSubstructure)
-	assert.Equal(t, false, result.HasAttribute)
-	assert.Equal(t, false, result.HasAttributeValue)
+	assert.Empty(t, result.Attributes)
 }
 func TestParseAstmFieldAnnotation_SubstructureArray(t *testing.T) {
 	// Arrange
@@ -200,8 +213,7 @@ func TestParseAstmFieldAnnotation_SubstructureArray(t *testing.T) {
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, true, result.IsSubstructure)
-	assert.Equal(t, false, result.HasAttribute)
-	assert.Equal(t, false, result.HasAttributeValue)
+	assert.Empty(t, result.Attributes)
 }
 func TestParseAstmFieldAnnotation_IllegalComponentArray(t *testing.T) {
 	// Arrange
@@ -234,21 +246,11 @@ func TestParseAstmFieldAnnotation_TimeLine(t *testing.T) {
 	assert.Equal(t, false, result.IsArray)
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Equal(t, false, result.HasAttribute)
-	assert.Equal(t, false, result.HasAttributeValue)
+	assert.Empty(t, result.Attributes)
 }
 func TestParseAstmFieldAnnotation_InvalidFieldAttribute(t *testing.T) {
 	// Arrange
 	var input InvalidFieldAttribute
-	field, _ := reflect.TypeOf(input).FieldByName("First")
-	// Act
-	_, err := ParseAstmFieldAnnotation(field)
-	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
-}
-func TestParseAstmFieldAnnotation_NonIntegerFieldAttributeValueLine(t *testing.T) {
-	// Arrange
-	var input NonIntegerFieldAttributeValueLine
 	field, _ := reflect.TypeOf(input).FieldByName("First")
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
@@ -269,8 +271,7 @@ func TestParseAstmStructAnnotation_SingleLineStruct(t *testing.T) {
 	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, false, result.IsArray)
 	assert.Equal(t, "L", result.StructName)
-	assert.Equal(t, false, result.HasAttribute)
-	assert.Equal(t, "", result.Attribute)
+	assert.Empty(t, result.Attributes)
 }
 func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	// Arrange
@@ -284,10 +285,7 @@ func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, "L", result.StructName)
-	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, astmconst.ATTRIBUTE_OPTIONAL, result.Attribute)
-	assert.Equal(t, false, result.HasAttributeValue)
-	assert.Equal(t, "", result.AttributeValue)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_OPTIONAL)
 }
 func TestParseAstmStructAnnotation_CompositeStruct(t *testing.T) {
 	// Arrange
@@ -301,8 +299,7 @@ func TestParseAstmStructAnnotation_CompositeStruct(t *testing.T) {
 	assert.Equal(t, true, result.IsComposite)
 	assert.Equal(t, false, result.IsArray)
 	assert.Equal(t, "", result.StructName)
-	assert.Equal(t, false, result.HasAttribute)
-	assert.Equal(t, "", result.Attribute)
+	assert.Empty(t, result.Attributes)
 }
 func TestParseAstmStructAnnotation_CompositeArrayStruct(t *testing.T) {
 	// Arrange
@@ -316,10 +313,7 @@ func TestParseAstmStructAnnotation_CompositeArrayStruct(t *testing.T) {
 	assert.Equal(t, true, result.IsComposite)
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, "", result.StructName)
-	assert.Equal(t, false, result.HasAttribute)
-	assert.Equal(t, "", result.Attribute)
-	assert.Equal(t, false, result.HasAttributeValue)
-	assert.Equal(t, "", result.AttributeValue)
+	assert.Empty(t, result.Attributes)
 }
 func TestParseAstmStructAnnotation_InvalidStructAttribute(t *testing.T) {
 	// Arrange
@@ -330,14 +324,14 @@ func TestParseAstmStructAnnotation_InvalidStructAttribute(t *testing.T) {
 	// Assert
 	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
 }
-func TestParseAstmStructAnnotation_TooManyStructAttribute(t *testing.T) {
+func TestParseAstmStructAnnotation_TooManyStructNameAttributeValues(t *testing.T) {
 	// Arrange
-	var input TooManyStructAttribute
+	var input TooManyStructNameAttributeValues
 	field, _ := reflect.TypeOf(input).FieldByName("Record")
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttributeFormat.Error())
 }
 func TestParseAstmStructAnnotation_SubnameAttribute(t *testing.T) {
 	// Arrange
@@ -351,10 +345,8 @@ func TestParseAstmStructAnnotation_SubnameAttribute(t *testing.T) {
 	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, false, result.IsArray)
 	assert.Equal(t, "R", result.StructName)
-	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, "subname", result.Attribute)
-	assert.Equal(t, true, result.HasAttributeValue)
-	assert.Equal(t, "SUBNAME", result.AttributeValue)
+	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_SUBNAME)
+	assert.Equal(t, "SUBNAME", result.Attributes[astmconst.ATTRIBUTE_SUBNAME])
 }
 
 // ProcessStructReflection tests

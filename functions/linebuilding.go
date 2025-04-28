@@ -222,8 +222,11 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		return result, nil
 	case reflect.Float32, reflect.Float64:
 		precision := config.DefaultDecimalPrecision
-		if annotation.Attribute == astmconst.ATTRIBUTE_LENGTH {
-			precision = annotation.AttributeValue
+		if value, exists := annotation.Attributes[astmconst.ATTRIBUTE_LENGTH]; exists {
+			precision, err = strconv.Atoi(value)
+			if err != nil {
+				return "", errmsg.LineBuilding_ErrInvalidLengthAttributeValue
+			}
 		}
 		result = strconv.FormatFloat(field.Float(), 'f', precision, field.Type().Bits())
 		if !config.RoundLastDecimal && precision >= 0 {
@@ -236,7 +239,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		// Check for time.Time type (it reflects as a Struct)
 		if field.Type() == reflect.TypeOf(time.Time{}) {
 			timeFormat := "20060102"
-			if annotation.Attribute == astmconst.ATTRIBUTE_LONGDATE {
+			if _, exists := annotation.Attributes[astmconst.ATTRIBUTE_LONGDATE]; exists {
 				timeFormat = "20060102150405"
 			}
 			// Check if the field is a time.Time

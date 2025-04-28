@@ -50,39 +50,21 @@ func ParseAstmFieldAnnotation(input reflect.StructField) (result models.AstmFiel
 func parseAstmFieldAnnotationString(input string) (result models.AstmFieldAnnotation, err error) {
 	result.Raw = input
 
-	// Separate attributes and the field definitions
-	mainParts := strings.Split(result.Raw, ",")
-	if len(mainParts) > 2 {
-		return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrTooManyAttributes
-	}
+	// Separate attributes and the field definition
+	fieldDef, attributes := splitByFirst(input, ",")
 
-	// If there is an attribute parse it
-	if len(mainParts) == 2 {
-		result.HasAttribute = true
-		// Parse attribute value if there is any
-		attributeParts := strings.Split(mainParts[1], ":")
-		// Check attribute value to be any of the allowed values
-		if !isValidFieldAttribute(attributeParts[0]) {
-			return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
-		}
-		// Save the attribute name
-		result.Attribute = attributeParts[0]
-		if len(attributeParts) > 2 {
-			// Attribute has too many parts
-			return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
-		} else if len(attributeParts) == 2 {
-			// Correct number of parts: save the attribute value
-			result.HasAttributeValue = true
-			// Note: for now only integer attribute values are allowed for fields
-			result.AttributeValue, err = strconv.Atoi(attributeParts[1])
-			if err != nil {
-				return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
-			}
-		}
+	// Parse and save attributes
+	result.Attributes, err = parseAttributes(attributes, []string{
+		astmconst.ATTRIBUTE_REQUIRED,
+		astmconst.ATTRIBUTE_LONGDATE,
+		astmconst.ATTRIBUTE_LENGTH,
+	})
+	if err != nil {
+		return models.AstmFieldAnnotation{}, err
 	}
 
 	// Split field and component (if any) and parse them
-	segments := strings.Split(mainParts[0], ".")
+	segments := strings.Split(fieldDef, ".")
 	if len(segments) > 2 {
 		return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation
 	}
@@ -117,40 +99,64 @@ func ParseAstmStructAnnotation(input reflect.StructField) (result models.AstmStr
 		return result, nil
 	}
 
-	// Separate attribute (if any) and the struct name
-	mainParts := strings.Split(result.Raw, ",")
-	if len(mainParts) > 2 {
-		return models.AstmStructAnnotation{}, errmsg.AnnotationParsing_ErrTooManyAttributes
-	}
+	// Separate attributes and the struct name, and save the name
+	attributes := ""
+	result.StructName, attributes = splitByFirst(raw, ",")
 
-	// If there is an attribute parse it
-	if len(mainParts) == 2 {
-		result.HasAttribute = true
-		// Parse attribute value if there is any
-		attributeParts := strings.Split(mainParts[1], ":")
-		// Check attribute value to be any of the allowed values
-		if !isValidStructAttribute(attributeParts[0]) {
-			return models.AstmStructAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
-		}
-		// Save the attribute name
-		result.Attribute = attributeParts[0]
-		if len(attributeParts) > 2 {
-			// Attribute has too many parts
-			return models.AstmStructAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
-		} else if len(attributeParts) == 2 {
-			// Correct number of parts: save the attribute value
-			result.HasAttributeValue = true
-			result.AttributeValue = attributeParts[1]
-		}
-	}
-
-	// Validate and save the struct name
-	if len(mainParts[0]) != 1 {
-		return models.AstmStructAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation
-	}
-	result.StructName = mainParts[0]
+	// Parse and save attributes
+	result.Attributes, err = parseAttributes(attributes, []string{
+		astmconst.ATTRIBUTE_OPTIONAL,
+		astmconst.ATTRIBUTE_SUBNAME,
+	})
 
 	return result, err
+}
+
+func parseAttributes(input string, valids []string) (result map[string]string, err error) {
+	// Initialize the result map
+	result = make(map[string]string)
+	// Check for empty input (if empty still return a usable empty map)
+	if input == "" {
+		return result, nil
+	}
+	// Split the input string by commas
+	attributes := strings.Split(input, ",")
+	// Iterate over the attributes and parse them
+	for _, attribute := range attributes {
+		// Split each attribute by the colon
+		attributeParts := strings.Split(attribute, ":")
+		if len(attributeParts) > 2 {
+			return nil, errmsg.AnnotationParsing_ErrInvalidAstmAttributeFormat
+		}
+		// Check if the attribute is valid
+		if !isInList(attributeParts[0], valids) {
+			return nil, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
+		}
+		// Save the attribute name and value (if present)
+		if len(attributeParts) == 2 {
+			result[attributeParts[0]] = attributeParts[1]
+		} else {
+			result[attributeParts[0]] = ""
+		}
+	}
+	// Return the result map and no error
+	return result, nil
+}
+
+func splitByFirst(input string, delimiter string) (before string, after string) {
+	index := strings.Index(input, delimiter) // Find the first occurrence of the comma
+	if index == -1 {
+		return input, "" // No comma, return whole string and empty second part
+	}
+	return input[:index], input[index+1:] // Split at the first comma
+}
+func isInList(target string, list []string) bool {
+	set := make(map[string]struct{})
+	for _, item := range list {
+		set[item] = struct{}{}
+	}
+	_, exists := set[target]
+	return exists
 }
 
 func ProcessStructReflection(inputStruct interface{}) (outputTypes []reflect.StructField, outputValues []reflect.Value, length int, err error) {
@@ -183,28 +189,4 @@ func ProcessStructReflection(inputStruct interface{}) (outputTypes []reflect.Str
 
 	// Return the results
 	return outputTypes, outputValues, length, nil
-}
-
-func isValidFieldAttribute(attribute string) bool {
-	validAttributes := []string{
-		astmconst.ATTRIBUTE_REQUIRED,
-		astmconst.ATTRIBUTE_LONGDATE,
-		astmconst.ATTRIBUTE_LENGTH,
-	}
-	return isInList(attribute, validAttributes)
-}
-func isValidStructAttribute(attribute string) bool {
-	validAttributes := []string{
-		astmconst.ATTRIBUTE_OPTIONAL,
-		astmconst.ATTRIBUTE_SUBNAME,
-	}
-	return isInList(attribute, validAttributes)
-}
-func isInList(target string, list []string) bool {
-	set := make(map[string]struct{})
-	for _, item := range list {
-		set[item] = struct{}{}
-	}
-	_, exists := set[target]
-	return exists
 }

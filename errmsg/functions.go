@@ -18,8 +18,8 @@ var (
 var (
 	AnnotationParsing_ErrMissingAstmAnnotation        = errors.New("astm annotation missing")
 	AnnotationParsing_ErrInvalidAstmAnnotation        = errors.New("invalid astm annotation")
-	AnnotationParsing_ErrTooManyAttributes            = errors.New("only one astm attribute is allowed")
 	AnnotationParsing_ErrInvalidAstmAttribute         = errors.New("invalid astm attribute")
+	AnnotationParsing_ErrInvalidAstmAttributeFormat   = errors.New("invalid astm attribute format")
 	AnnotationParsing_ErrInvalidInputStruct           = errors.New("invalid input struct")
 	AnnotationParsing_ErrIllegalComponentArray        = errors.New("component array is not allowed")
 	AnnotationParsing_ErrIllegalComponentSubstructure = errors.New("component substructure is not allowed")
@@ -51,7 +51,8 @@ var (
 
 // LineBuilding
 var (
-	LineBuilding_ErrInvalidDateFormat         = errors.New("invalid date format")
-	LineBuilding_ErrUsupportedDataType        = errors.New("unsupported data type")
-	LineBuilding_ErrReservedFieldPosReference = errors.New("field position 1 and 2 are reserved")
+	LineBuilding_ErrInvalidDateFormat           = errors.New("invalid date format")
+	LineBuilding_ErrUsupportedDataType          = errors.New("unsupported data type")
+	LineBuilding_ErrReservedFieldPosReference   = errors.New("field position 1 and 2 are reserved")
+	LineBuilding_ErrInvalidLengthAttributeValue = errors.New("invalid length attribute value")
 )
