@@ -360,7 +360,7 @@ func TestParseAstmStructAnnotation_SubnameAttribute(t *testing.T) {
 // ProcessStructReflection tests
 func TestProcessStructReflection_SimpleRecord(t *testing.T) {
 	// Arrange
-	input := SimpleRecord{}
+	input := ThreeFieldRecord{}
 	// Act
 	types, values, length, err := ProcessStructReflection(input)
 	// Assert
@@ -384,7 +384,7 @@ func TestProcessStructReflection_CompositeRecordStruct(t *testing.T) {
 }
 func TestProcessStructReflection_SimpleRecordPointer(t *testing.T) {
 	// Arrange
-	input := SimpleRecord{}
+	input := ThreeFieldRecord{}
 	// Act
 	_, _, length, err := ProcessStructReflection(&input)
 	// Assert

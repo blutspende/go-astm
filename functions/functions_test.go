@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"github.com/blutspende/go-astm/v2/models"
 	"github.com/blutspende/go-astm/v2/models/astmmodels"
 	"testing"
 	"time"
@@ -23,6 +24,13 @@ func TestMain(m *testing.M) {
 	teardown()
 	// Run all tests
 	m.Run()
+}
+
+// Structure annotation helper factory
+func createStructAnnotation(name string) models.AstmStructAnnotation {
+	return models.AstmStructAnnotation{
+		StructName: name,
+	}
 }
 
 // Common test structures
@@ -84,10 +92,16 @@ type SubnameAttribute struct {
 }
 
 // Single line records
-type SimpleRecord struct {
+type ThreeFieldRecord struct {
 	First  string `astm:"3"`
 	Second string `astm:"4"`
 	Third  string `astm:"5"`
+}
+type SimpleRecord struct {
+	First string `astm:"3"`
+}
+type SimpleRecordInt struct {
+	First int `astm:"3"`
 }
 type UnorderedRecord struct {
 	First  string `astm:"3"`
@@ -151,11 +165,21 @@ type RequiredComponentRecord struct {
 }
 type RecordType1 struct {
 	First  string `astm:"3"`
-	Second string `astm:"4"`
+	Second int    `astm:"4"`
 }
 type RecordType2 struct {
-	First  string `astm:"3"`
+	First  int    `astm:"3"`
 	Second string `astm:"4"`
+}
+type SubnameRecordType1 struct {
+	Subname string `astm:"3"`
+	First   string `astm:"4"`
+	Second  int    `astm:"5"`
+}
+type SubnameRecordType2 struct {
+	Subname string `astm:"3"`
+	First   int    `astm:"4"`
+	Second  string `astm:"5"`
 }
 type EnumString string
 type EnumRecord struct {
@@ -229,10 +253,10 @@ type MissingAnnotationRecord struct {
 
 // Structures
 type SingleRecordStruct struct {
-	FirstRecord SimpleRecord `astm:"R"`
+	FirstRecord ThreeFieldRecord `astm:"R"`
 }
 type RecordArrayStruct struct {
-	RecordArray []SimpleRecord `astm:"R"`
+	RecordArray []ThreeFieldRecord `astm:"R"`
 }
 type CompositeRecordStruct struct {
 	Record1 RecordType1 `astm:"F"`
@@ -245,20 +269,32 @@ type CompositeArrayMessage struct {
 	CompositeRecordArray []CompositeRecordStruct
 }
 type OptionalMessage struct {
-	First    RecordType1 `astm:"F"`
-	Optional RecordType2 `astm:"S,optional"`
-	Third    RecordType1 `astm:"T"`
+	First    SimpleRecord `astm:"F"`
+	Optional SimpleRecord `astm:"S,optional"`
+	Third    SimpleRecord `astm:"T"`
 }
 type OptionalArrayMessage struct {
-	First    RecordType1   `astm:"F"`
-	Optional []RecordType2 `astm:"A,optional"`
-	Last     RecordType1   `astm:"L"`
+	First    SimpleRecord   `astm:"F"`
+	Optional []SimpleRecord `astm:"A,optional"`
+	Last     SimpleRecord   `astm:"L"`
 }
 type OptionalArrayAtTheEndMessage struct {
-	First    RecordType1   `astm:"F"`
-	Optional []RecordType2 `astm:"A,optional"`
+	First    SimpleRecord   `astm:"F"`
+	Optional []SimpleRecord `astm:"A,optional"`
 }
 type OptionalAtTheEndMessage struct {
-	First    RecordType1 `astm:"F"`
-	Optional RecordType2 `astm:"O,optional"`
+	First    SimpleRecord `astm:"F"`
+	Optional SimpleRecord `astm:"O,optional"`
+}
+type SubnameMessage struct {
+	Record1 SubnameRecordType1 `astm:"R,subname:FIRST"`
+	Record2 SubnameRecordType2 `astm:"R,subname:SECOND"`
+}
+type SubnameArrayMessage struct {
+	Array   []SubnameRecordType1 `astm:"R,subname:FIRST"`
+	Record2 SubnameRecordType2   `astm:"R,subname:SECOND"`
+}
+type SubnameMultiArrayMessage struct {
+	Array1 []SubnameRecordType1 `astm:"R,subname:FIRST"`
+	Array2 []SubnameRecordType2 `astm:"R,subname:SECOND"`
 }

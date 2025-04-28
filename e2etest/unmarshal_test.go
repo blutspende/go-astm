@@ -590,6 +590,73 @@ func TestUnmarshalSliceOfOneRecordType(t *testing.T) {
 	assert.Equal(t, "MATRIX", message.ImageData[2].Field1)
 }
 
+type YumizenResultMessage struct {
+	Header       lis02a2.Header `astm:"H"`
+	OrderResults []YumizenPatientOrderResultMessage
+	Terminator   lis02a2.Terminator `astm:"L"`
+}
+type YumizenPatientOrderResultMessage struct {
+	Patient            lis02a2.Patient           `astm:"P"`
+	Comment            []lis02a2.Comment         `astm:"C,optional"`
+	CommentedOrder     lis02a2.Order             `astm:"O"`
+	Histograms         []YumizenStream           `astm:"M,subname:HISTOGRAM"`
+	Matrices           []YumizenStream           `astm:"M,subname:MATRIX"`
+	TraceabilityRecord YumizenTraceabilityRecord `astm:"M,subname:REAGENT"`
+	CommentedResults   []lis02a2.CommentedResult
+}
+type YumizenTraceabilityRecord struct {
+	MessageType       string   `astm:"3"`
+	TraceabilityNames []string `astm:"4"`
+	Traceability      []struct {
+		Name  string `astm:"1"`
+		Date1 string `astm:"2"`
+		Date2 string `astm:"3"`
+	} `astm:"5"`
+}
+type YumizenStream struct {
+	Field1      string `astm:"3"`
+	Field2      string `astm:"4"`
+	Field3      string `astm:"5"`
+	Stream1Type string `astm:"6.1"`
+	Stream1     string `astm:"6.2"`
+	Stream2Type string `astm:"7.1"`
+	Stream2     string `astm:"7.2"`
+}
+
+func TestYumizenMultiTypeManufacturerInfo(t *testing.T) {
+	// Arrange
+	messageString := "H|\\^&|||H550^909YAXH02732^1.2.1.4|||||||Q|LIS2-A2|20240912070504\n"
+	messageString += "P|1|||||||||||||||||||||||||||||||||||\n"
+	messageString += "O|1|PX449L||^^^DIF|R|20240912070343|||||||||CTRL^^CTRLLOW||||||||||F|||||\n"
+	messageString += "M|1|HISTOGRAM|RBC/PLT|PltAlongRes|FLOATLE-stream/deflate:base64\n"
+	messageString += "M|2|MATRIX|LMNE|LMNEResAbs|FLOATLE-stream/deflate:base64\n"
+	messageString += "M|3|REAGENT|CLEANER\\DILUENT\\LYSE|240415I1(^20240902000000^20241202\\423H1(^20240905000000^20250305\\411M11^20240828000000^20241028\n"
+	messageString += "R|1|^^^MCV^787-2|78.4|um3|73.5-83.5^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "R|2|^^^NEU#^751-8|1.39|10E3/uL|0.94-1.64^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "R|3|^^^NEU%^770-8|43.4|%|31.1-51.1^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "R|4|^^^RDW-CV^788-0|15.9|%|13.0-21.0^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "R|5|^^^RBC^789-8|2.35|10E6/uL|2.22-2.40^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "R|6|^^^MPV^32623-1|8.5|um3|6.6-10.6^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "R|7|^^^MON#^742-7|0.17|10E3/uL|0.00-0.42^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "R|8|^^^PLT^777-3|67|10E3/uL|55-73^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "R|9|^^^WBC^6690-2|3.22|10E3/uL|2.95-3.35^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||\n"
+	messageString += "L|1|N\n"
+	var message YumizenResultMessage
+	config.EnforceSequenceNumberCheck = false
+	// Act
+	err := astm.Unmarshal([]byte(messageString), &message, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Len(t, message.OrderResults, 1)
+	assert.Len(t, message.OrderResults[0].Histograms, 1)
+	assert.Len(t, message.OrderResults[0].Matrices, 1)
+	assert.Equal(t, "LMNEResAbs", message.OrderResults[0].Matrices[0].Field3)
+	assert.Equal(t, "240415I1(", message.OrderResults[0].TraceabilityRecord.Traceability[0].Name)
+	assert.Len(t, message.OrderResults[0].CommentedResults, 9)
+	// Teardown
+	teardown()
+}
+
 func TestEncodingVeryLongCharsets(t *testing.T) {
 	// This test is for a bug reported in which the decodes message couldn't exceed 4096 bytes
 	// Arrange

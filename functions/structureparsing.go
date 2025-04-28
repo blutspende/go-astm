@@ -57,7 +57,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 					}
 				} else {
 					// Non-composite target: parse the line into the new element
-					nameOk, err = ParseLine(inputLines[*lineIndex], elem.Addr().Interface(), targetStructAnnotation.StructName, seq, config)
+					nameOk, err = ParseLine(inputLines[*lineIndex], elem.Addr().Interface(), targetStructAnnotation, seq, config)
 					// Increment the line index
 					*lineIndex++
 				}
@@ -98,7 +98,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 					seq = sequenceNumber
 				}
 				// Parse the line and increment the line index
-				nameOk, err := ParseLine(inputLines[*lineIndex], targetValue, targetStructAnnotation.StructName, seq, config)
+				nameOk, err := ParseLine(inputLines[*lineIndex], targetValue, targetStructAnnotation, seq, config)
 				*lineIndex++
 				if err != nil {
 					return err

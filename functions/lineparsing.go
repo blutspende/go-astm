@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, sequenceNumber int, config *astmmodels.Configuration) (nameOk bool, err error) {
+func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation models.AstmStructAnnotation, sequenceNumber int, config *astmmodels.Configuration) (nameOk bool, err error) {
 	// Check for input line length
 	if len(inputLine) == 0 {
 		return false, errmsg.LineParsing_ErrEmptyInput
@@ -34,23 +34,36 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 	// Split the input with the field delimiter
 	inputFields := strings.Split(inputLine, config.Delimiters.Field)
 
-	// Check for validity with parent data
+	// Check for minimum number of input fields (first two fields are mandatory)
 	if len(inputFields) < 2 {
 		return false, errmsg.LineParsing_ErrMandatoryInputFieldsMissing
 	}
-	nameOk = inputFields[0] == lineTypeName
-	// Name checking is always enforced, but instead of error it is returned in the nameOk variable
-	if !nameOk {
-		return nameOk, nil
+
+	// Check for mach of name and subname
+	// Note: name checking is always enforced, but instead of error it is returned in the nameOk variable
+	if inputFields[0] != recordAnnotation.StructName {
+		return false, nil
 	}
+	if recordAnnotation.Attribute == astmconst.ATTRIBUTE_SUBNAME {
+		// If subname is given at least 3 fields are required
+		if len(inputFields) < 3 {
+			return false, errmsg.LineParsing_ErrMandatoryInputFieldsMissing
+		}
+		// Check for subname match
+		if inputFields[2] != recordAnnotation.AttributeValue {
+			return false, nil
+		}
+	}
+
+	// Check for validity of the sequence number (error only if enforced)
 	if inputFields[1] != strconv.Itoa(sequenceNumber) && inputLine[0] != 'H' && config.EnforceSequenceNumberCheck {
-		return nameOk, errmsg.LineParsing_ErrSequenceNumberMismatch
+		return true, errmsg.LineParsing_ErrSequenceNumberMismatch
 	}
 
 	// Process the target structure
 	targetTypes, targetValues, _, err := ProcessStructReflection(targetStruct)
 	if err != nil {
-		return nameOk, err
+		return true, err
 	}
 
 	// Iterate over the inputFields of the targetStruct struct
@@ -62,20 +75,20 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 				// If the annotation is missing, skip this field
 				continue
 			} else {
-				return nameOk, err
+				return true, err
 			}
 		}
 
 		// Check for fieldPos not being lower than 3 (first 2 are reserved for line name and sequence number)
 		if targetFieldAnnotation.FieldPos < 3 {
-			return nameOk, errmsg.LineParsing_ErrReservedFieldPosReference
+			return true, errmsg.LineParsing_ErrReservedFieldPosReference
 		}
 
 		// Not enough inputFields or empty inputField
 		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
 			// If the field is required it's an error, otherwise skip it
 			if targetFieldAnnotation.Attribute == astmconst.ATTRIBUTE_REQUIRED {
-				return nameOk, errmsg.LineParsing_ErrRequiredInputFieldMissing
+				return true, errmsg.LineParsing_ErrRequiredInputFieldMissing
 			} else {
 				continue
 			}
@@ -95,14 +108,14 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 					// Substructures (with components) in the array: use parseSubstructure
 					err = parseSubstructure(repeat, arrayValue.Index(j).Addr().Interface(), config)
 					if err != nil {
-						return nameOk, err
+						return true, err
 					}
 				} else {
 					// |value1\value2\value3|
 					// Simple values in the array
 					err = setField(repeat, arrayValue.Index(j), targetFieldAnnotation, config)
 					if err != nil {
-						return nameOk, err
+						return true, err
 					}
 				}
 
@@ -116,35 +129,35 @@ func ParseLine(inputLine string, targetStruct interface{}, lineTypeName string, 
 			if len(components) < targetFieldAnnotation.ComponentPos {
 				// Error if the component is required, skip otherwise
 				if targetFieldAnnotation.Attribute == astmconst.ATTRIBUTE_REQUIRED {
-					return nameOk, errmsg.LineParsing_ErrInputComponentsMissing
+					return true, errmsg.LineParsing_ErrInputComponentsMissing
 				} else {
 					continue
 				}
 			}
 			err = setField(components[targetFieldAnnotation.ComponentPos-1], targetValues[i], targetFieldAnnotation, config)
 			if err != nil {
-				return nameOk, err
+				return true, err
 			}
 		} else if targetFieldAnnotation.IsSubstructure {
 			// |comp1^comp2^comp3|
 			// If the field is a substructure use parseSubstructure to process it
 			err = parseSubstructure(inputField, targetValues[i].Addr().Interface(), config)
 			if err != nil {
-				return nameOk, err
+				return true, err
 			}
 		} else {
 			// |field|
 			// Field is not an array or component (normal singular field)
 			err = setField(inputField, targetValues[i], targetFieldAnnotation, config)
 			if err != nil {
-				return nameOk, err
+				return true, err
 			}
 		}
 		// Note: this could be a place to produce warnings about lost data
 		// if i == targetFieldCount-1 && len(inputFields) > targetFieldAnnotation.FieldPos
 	}
 	// Return no error if everything went well
-	return nameOk, nil
+	return true, nil
 }
 
 func parseSubstructure(inputString string, targetStruct interface{}, config *astmmodels.Configuration) (err error) {

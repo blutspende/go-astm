@@ -12,9 +12,9 @@ import (
 func TestParseLine_SimpleRecord(t *testing.T) {
 	// Arrange
 	input := "T|1|first|second|third"
-	target := SimpleRecord{}
+	target := ThreeFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -28,7 +28,7 @@ func TestParseLine_UnorderedRecord(t *testing.T) {
 	input := "T|1|first|second|third"
 	target := UnorderedRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -42,7 +42,7 @@ func TestParseLine_MultitypeRecord(t *testing.T) {
 	input := "T|1|string|3|3.14|3.14159265|20060102"
 	target := MultitypeRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -59,7 +59,7 @@ func TestParseLine_ComponentedRecord(t *testing.T) {
 	input := "T|1|first|second1^second2|third1^third2^third3"
 	target := ComponentedRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -76,7 +76,7 @@ func TestParseLine_ArrayRecord(t *testing.T) {
 	input := "T|1|first|second1\\second2\\second3"
 	target := ArrayRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -92,7 +92,7 @@ func TestParseLine_HeaderRecord(t *testing.T) {
 	input := "H|\\^&|first"
 	target := HeaderRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "H", 0, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("H"), 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -104,7 +104,7 @@ func TestParseLine_HeaderDelimiterChange(t *testing.T) {
 	input := "H/!*%/first/second1!second2/third1*third2"
 	target := HeaderDelimiterChange{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "H", 0, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("H"), 0, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -121,9 +121,9 @@ func TestParseLine_HeaderDelimiterChange(t *testing.T) {
 func TestParseLine_MissingData(t *testing.T) {
 	// Arrange
 	input := "T|1|first||third"
-	target := SimpleRecord{}
+	target := ThreeFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -137,7 +137,7 @@ func TestParseLine_MissingComponent(t *testing.T) {
 	input := "T|1|first^second"
 	target := RequiredComponentRecord{}
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "first", target.First)
@@ -150,7 +150,7 @@ func TestParseLine_MissingRequiredComponent(t *testing.T) {
 	input := "T|1|first"
 	target := RequiredComponentRecord{}
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.EqualError(t, err, errmsg.LineParsing_ErrInputComponentsMissing.Error())
 }
@@ -158,9 +158,9 @@ func TestParseLine_MissingRequiredComponent(t *testing.T) {
 func TestParseLine_MissingDataAtTheEnd(t *testing.T) {
 	// Arrange
 	input := "T|1|first"
-	target := SimpleRecord{}
+	target := ThreeFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -174,7 +174,7 @@ func TestParseLine_EnumRecord(t *testing.T) {
 	input := "T|1|enum"
 	target := EnumRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -184,9 +184,9 @@ func TestParseLine_EnumRecord(t *testing.T) {
 func TestParseLine_RecordTypeNameMismatch(t *testing.T) {
 	// Arrange
 	input := "W|1|first|second|third"
-	target := SimpleRecord{}
+	target := ThreeFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.False(t, nameOk)
@@ -195,9 +195,9 @@ func TestParseLine_RecordTypeNameMismatch(t *testing.T) {
 func TestParseLine_EmptyInput(t *testing.T) {
 	// Arrange
 	input := ""
-	target := SimpleRecord{}
+	target := ThreeFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.False(t, nameOk)
 	assert.EqualError(t, err, errmsg.LineParsing_ErrEmptyInput.Error())
@@ -206,9 +206,9 @@ func TestParseLine_EmptyInput(t *testing.T) {
 func TestParseLine_MandatoryFieldsMissing(t *testing.T) {
 	// Arrange
 	input := "T"
-	target := SimpleRecord{}
+	target := ThreeFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.False(t, nameOk)
 	assert.EqualError(t, err, errmsg.LineParsing_ErrMandatoryInputFieldsMissing.Error())
@@ -219,7 +219,7 @@ func TestParseLine_MissingRequiredField(t *testing.T) {
 	input := "T|1|first||third"
 	target := RequiredFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.True(t, nameOk)
 	assert.EqualError(t, err, errmsg.LineParsing_ErrRequiredInputFieldMissing.Error())
@@ -230,7 +230,7 @@ func TestParseLine_NotEnoughInputFields(t *testing.T) {
 	input := "T|1|first"
 	target := RequiredFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.True(t, nameOk)
 	assert.EqualError(t, err, errmsg.LineParsing_ErrRequiredInputFieldMissing.Error())
@@ -239,9 +239,9 @@ func TestParseLine_NotEnoughInputFields(t *testing.T) {
 func TestParseLine_SequenceNumberMismatch(t *testing.T) {
 	// Arrange
 	input := "T|2|first|second|third"
-	target := SimpleRecord{}
+	target := ThreeFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.True(t, nameOk)
 	assert.EqualError(t, err, errmsg.LineParsing_ErrSequenceNumberMismatch.Error())
@@ -250,10 +250,10 @@ func TestParseLine_SequenceNumberMismatch(t *testing.T) {
 func TestParseLine_SequenceNumberMismatchWithoutEnforcing(t *testing.T) {
 	// Arrange
 	input := "T|2|first|second|third"
-	target := SimpleRecord{}
+	target := ThreeFieldRecord{}
 	config.EnforceSequenceNumberCheck = false
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	// Teardown
@@ -265,7 +265,7 @@ func TestParseLine_ReservedFieldRecord(t *testing.T) {
 	input := "T|1"
 	target := ReservedFieldRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.True(t, nameOk)
 	assert.EqualError(t, err, errmsg.LineParsing_ErrReservedFieldPosReference.Error())
@@ -276,7 +276,7 @@ func TestParseLine_SubstructureRecord(t *testing.T) {
 	input := "T|1|first|firstComponent^secondComponent^thirdComponent|third"
 	target := SubstructureRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -292,7 +292,7 @@ func TestParseLine_SubstructureArrayRecord(t *testing.T) {
 	input := "T|1|first|r1c1^r1c2^r1c3\\r2c1^r2c2^r2c3|third"
 	target := SubstructureArrayRecord{}
 	// Act
-	nameOk, err := ParseLine(input, &target, "T", 1, config)
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.True(t, nameOk)
@@ -312,7 +312,7 @@ func TestParseLine_TimeLineTimeZone(t *testing.T) {
 	input := "T|1|20060306164429"
 	target := TimeRecord{}
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	expectedTime := time.Date(2006, 03, 06, 16, 44, 29, 0, config.TimeLocation).UTC()
@@ -324,7 +324,7 @@ func TestParseLine_WrongComponentOrder(t *testing.T) {
 	input := "T|1|first|comp1^comp2^comp3"
 	target := WrongComponentOrderRecord{}
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "first", target.First)
@@ -338,7 +338,7 @@ func TestParseLine_WrongComponentPlacement(t *testing.T) {
 	input := "T|1|field1|comp1^comp2|field2"
 	target := WrongComponentPlacementRecord{}
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "field1", target.Field1)
@@ -352,7 +352,7 @@ func TestParseLine_MissingAnnotation(t *testing.T) {
 	input := "T|1|field3|field4"
 	target := MissingAnnotationRecord{}
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.Equal(t, "field3", target.Field3)
@@ -365,7 +365,7 @@ func TestParseLine_ShortDateKeepTimeZone(t *testing.T) {
 	target := ShortDateRecord{}
 	config.KeepShortDateTimeZone = true
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	expectedTime := time.Date(2006, 03, 04, 0, 0, 0, 0, config.TimeLocation)
@@ -380,7 +380,7 @@ func TestParseLine_ShortDateDontKeepTimeZone(t *testing.T) {
 	target := ShortDateRecord{}
 	config.KeepShortDateTimeZone = false
 	// Act
-	_, err := ParseLine(input, &target, "T", 1, config)
+	_, err := ParseLine(input, &target, createStructAnnotation("T"), 1, config)
 	// Assert
 	assert.Nil(t, err)
 	expectedTime := time.Date(2006, 03, 04, 0, 0, 0, 0, config.TimeLocation).UTC()

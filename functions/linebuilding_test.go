@@ -12,7 +12,7 @@ import (
 
 func TestBuildLine_SimpleRecord(t *testing.T) {
 	// Arrange
-	source := SimpleRecord{
+	source := ThreeFieldRecord{
 		First:  "first",
 		Second: "second",
 		Third:  "third",
@@ -163,7 +163,7 @@ func TestBuildLine_UnorderedRecord(t *testing.T) {
 }
 func TestBuildLine_MissingData(t *testing.T) {
 	// Arrange
-	source := SimpleRecord{
+	source := ThreeFieldRecord{
 		First:  "first",
 		Second: "",
 		Third:  "third",
@@ -176,7 +176,7 @@ func TestBuildLine_MissingData(t *testing.T) {
 }
 func TestBuildLine_MissingDataAtEndStandardNotation(t *testing.T) {
 	// Arrange
-	source := SimpleRecord{
+	source := ThreeFieldRecord{
 		First:  "first",
 		Second: "",
 		Third:  "",
@@ -189,7 +189,7 @@ func TestBuildLine_MissingDataAtEndStandardNotation(t *testing.T) {
 }
 func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 	// Arrange
-	source := SimpleRecord{
+	source := ThreeFieldRecord{
 		First:  "first",
 		Second: "",
 		Third:  "",
@@ -219,7 +219,7 @@ func TestBuildLine_MissingDataAtEndWithComponentsShortNotation(t *testing.T) {
 }
 func TestBuildLine_DifferentHeaderAndSequence(t *testing.T) {
 	// Arrange
-	source := SimpleRecord{
+	source := ThreeFieldRecord{
 		First:  "first",
 		Second: "second",
 		Third:  "third",
