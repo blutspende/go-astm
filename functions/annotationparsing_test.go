@@ -237,6 +237,24 @@ func TestParseAstmFieldAnnotation_TimeLine(t *testing.T) {
 	assert.Equal(t, false, result.HasAttribute)
 	assert.Equal(t, false, result.HasAttributeValue)
 }
+func TestParseAstmFieldAnnotation_InvalidFieldAttribute(t *testing.T) {
+	// Arrange
+	var input InvalidFieldAttribute
+	field, _ := reflect.TypeOf(input).FieldByName("First")
+	// Act
+	_, err := ParseAstmFieldAnnotation(field)
+	// Assert
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+}
+func TestParseAstmFieldAnnotation_NonIntegerFieldAttributeValueLine(t *testing.T) {
+	// Arrange
+	var input NonIntegerFieldAttributeValueLine
+	field, _ := reflect.TypeOf(input).FieldByName("First")
+	// Act
+	_, err := ParseAstmFieldAnnotation(field)
+	// Assert
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+}
 
 // Struct annotation tests
 func TestParseAstmStructAnnotation_SingleLineStruct(t *testing.T) {
@@ -262,12 +280,14 @@ func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	result, err := ParseAstmStructAnnotation(field)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "L,required", result.Raw)
+	assert.Equal(t, "L,optional", result.Raw)
 	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, "L", result.StructName)
 	assert.Equal(t, true, result.HasAttribute)
-	assert.Equal(t, astmconst.ATTRIBUTE_REQUIRED, result.Attribute)
+	assert.Equal(t, astmconst.ATTRIBUTE_OPTIONAL, result.Attribute)
+	assert.Equal(t, false, result.HasAttributeValue)
+	assert.Equal(t, "", result.AttributeValue)
 }
 func TestParseAstmStructAnnotation_CompositeStruct(t *testing.T) {
 	// Arrange
@@ -284,7 +304,6 @@ func TestParseAstmStructAnnotation_CompositeStruct(t *testing.T) {
 	assert.Equal(t, false, result.HasAttribute)
 	assert.Equal(t, "", result.Attribute)
 }
-
 func TestParseAstmStructAnnotation_CompositeArrayStruct(t *testing.T) {
 	// Arrange
 	var input CompositeArrayStruct
@@ -299,6 +318,43 @@ func TestParseAstmStructAnnotation_CompositeArrayStruct(t *testing.T) {
 	assert.Equal(t, "", result.StructName)
 	assert.Equal(t, false, result.HasAttribute)
 	assert.Equal(t, "", result.Attribute)
+	assert.Equal(t, false, result.HasAttributeValue)
+	assert.Equal(t, "", result.AttributeValue)
+}
+func TestParseAstmStructAnnotation_InvalidStructAttribute(t *testing.T) {
+	// Arrange
+	var input InvalidStructAttribute
+	field, _ := reflect.TypeOf(input).FieldByName("Record")
+	// Act
+	_, err := ParseAstmFieldAnnotation(field)
+	// Assert
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+}
+func TestParseAstmStructAnnotation_TooManyStructAttribute(t *testing.T) {
+	// Arrange
+	var input TooManyStructAttribute
+	field, _ := reflect.TypeOf(input).FieldByName("Record")
+	// Act
+	_, err := ParseAstmFieldAnnotation(field)
+	// Assert
+	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+}
+func TestParseAstmStructAnnotation_SubnameAttribute(t *testing.T) {
+	// Arrange
+	var input SubnameAttribute
+	field, _ := reflect.TypeOf(input).FieldByName("Record")
+	// Act
+	result, err := ParseAstmStructAnnotation(field)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "R,subname:SUBNAME", result.Raw)
+	assert.Equal(t, false, result.IsComposite)
+	assert.Equal(t, false, result.IsArray)
+	assert.Equal(t, "R", result.StructName)
+	assert.Equal(t, true, result.HasAttribute)
+	assert.Equal(t, "subname", result.Attribute)
+	assert.Equal(t, true, result.HasAttributeValue)
+	assert.Equal(t, "SUBNAME", result.AttributeValue)
 }
 
 // ProcessStructReflection tests

@@ -41,7 +41,7 @@ type SingleLineStruct struct {
 	Lines Line `astm:"L"`
 }
 type AnnotatedArrayStruct struct {
-	Lines []Line `astm:"L,required"`
+	Lines []Line `astm:"L,optional"`
 }
 type CompositeStruct struct {
 	Composite AnnotatedArrayStruct
@@ -65,6 +65,22 @@ type SubstructuredLine struct {
 }
 type TimeLine struct {
 	Time time.Time `astm:"3"`
+}
+
+type InvalidFieldAttribute struct {
+	First string `astm:"3,invalid"`
+}
+type NonIntegerFieldAttributeValueLine struct {
+	First float32 `astm:"3,length:one"`
+}
+type InvalidStructAttribute struct {
+	Record Line `astm:"R,invalid"`
+}
+type TooManyStructAttribute struct {
+	Record Line `astm:"R,subname:ONE:TWO"`
+}
+type SubnameAttribute struct {
+	Record Line `astm:"R,subname:SUBNAME"`
 }
 
 // Single line records

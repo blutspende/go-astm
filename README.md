@@ -316,17 +316,19 @@ Additionally to the record name, there is one attribute that can be used in mess
 type Lis02a2Message {
     MessageHeader lis02a2.Header     `astm:"H"`
     Record        RecordType         `astm:"R,optional"`
+    Record        RecordType         `astm:"R,subname:N"`
     Terminator    lis02a2.Terminator `astm:"L"`
 }
 ```
 - `optional`: By default all records are required for unmarshal, and will produce an error if missing. However, an optional record will just be skipped. This can also be used for composite and array structures (see below).
+- `subname:N`: Some records (eg: 'M' manufacturer info) can be more free form record types that the instrument can use in different formats. Therefore, it might have different structures with the same record name. To distinguish between them, the subname attribute can be used. Its string value will be matched with the 3rd field (the one after sequence number) to determine the type. This will be used to identify the record type in the message, or to signify the end of an array of that given type. This is only relevant for unmarshal.
 
 ### Message structure arrays
 Records can be defined as arrays, in which case they will be marshalled and unmarshalled as an array of repetitions of the records, each of them as a line in the message, with incrementing sequence numbers.
 ``` go
 type Lis02a2Message {
     MessageHeader lis02a2.Header     `astm:"H"`
-    Record        []RecordType       `astm:"R,optional"`
+    Record        []RecordType       `astm:"R"`
     Terminator    lis02a2.Terminator `astm:"L"`
 }
 ```

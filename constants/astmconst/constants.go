@@ -4,8 +4,9 @@ package astmconst
 
 const ATTRIBUTE_REQUIRED string = "required" // field-annotation: by default all fields are optinal
 const ATTRIBUTE_OPTIONAL string = "optional" // record-annotation: by default all records are mandatory
-const ATTRIBUTE_LONGDATE string = "longdate" // Indicating that the date should be formatted as longdate (output only)
+const ATTRIBUTE_LONGDATE string = "longdate" // Indicating that the date should be formatted as date and time (output only)
 const ATTRIBUTE_LENGTH string = "length"     // used for specifying the decimal length of float fields - astm:"1,length:2" (output only)
+const ATTRIBUTE_SUBNAME string = "subname"   // used for specifying a subname for a record - astm:"M,subname:MATRIX"
 
 // Public functions parameters
 

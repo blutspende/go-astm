@@ -14,10 +14,12 @@ type AstmFieldAnnotation struct {
 	AttributeValue    int
 }
 type AstmStructAnnotation struct {
-	Raw          string
-	StructName   string
-	IsComposite  bool
-	IsArray      bool
-	HasAttribute bool
-	Attribute    string
+	Raw               string
+	StructName        string
+	IsComposite       bool
+	IsArray           bool
+	HasAttribute      bool
+	Attribute         string
+	HasAttributeValue bool
+	AttributeValue    string
 }

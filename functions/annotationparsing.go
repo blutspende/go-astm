@@ -61,20 +61,24 @@ func parseAstmFieldAnnotationString(input string) (result models.AstmFieldAnnota
 		result.HasAttribute = true
 		// Parse attribute value if there is any
 		attributeParts := strings.Split(mainParts[1], ":")
+		// Check attribute value to be any of the allowed values
+		if !isValidFieldAttribute(attributeParts[0]) {
+			return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
+		}
+		// Save the attribute name
+		result.Attribute = attributeParts[0]
 		if len(attributeParts) > 2 {
+			// Attribute has too many parts
 			return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
 		} else if len(attributeParts) == 2 {
+			// Correct number of parts: save the attribute value
 			result.HasAttributeValue = true
+			// Note: for now only integer attribute values are allowed for fields
 			result.AttributeValue, err = strconv.Atoi(attributeParts[1])
 			if err != nil {
 				return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
 			}
 		}
-		// Check attribute value to be any of the allowed values
-		if !isValidAttribute(attributeParts[0]) {
-			return models.AstmFieldAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
-		}
-		result.Attribute = attributeParts[0]
 	}
 
 	// Split field and component (if any) and parse them
@@ -118,14 +122,26 @@ func ParseAstmStructAnnotation(input reflect.StructField) (result models.AstmStr
 	if len(mainParts) > 2 {
 		return models.AstmStructAnnotation{}, errmsg.AnnotationParsing_ErrTooManyAttributes
 	}
+
 	// If there is an attribute parse it
 	if len(mainParts) == 2 {
 		result.HasAttribute = true
+		// Parse attribute value if there is any
+		attributeParts := strings.Split(mainParts[1], ":")
 		// Check attribute value to be any of the allowed values
-		if !isValidAttribute(mainParts[1]) {
+		if !isValidStructAttribute(attributeParts[0]) {
 			return models.AstmStructAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
 		}
-		result.Attribute = mainParts[1]
+		// Save the attribute name
+		result.Attribute = attributeParts[0]
+		if len(attributeParts) > 2 {
+			// Attribute has too many parts
+			return models.AstmStructAnnotation{}, errmsg.AnnotationParsing_ErrInvalidAstmAttribute
+		} else if len(attributeParts) == 2 {
+			// Correct number of parts: save the attribute value
+			result.HasAttributeValue = true
+			result.AttributeValue = attributeParts[1]
+		}
 	}
 
 	// Validate and save the struct name
@@ -169,12 +185,18 @@ func ProcessStructReflection(inputStruct interface{}) (outputTypes []reflect.Str
 	return outputTypes, outputValues, length, nil
 }
 
-func isValidAttribute(attribute string) bool {
+func isValidFieldAttribute(attribute string) bool {
 	validAttributes := []string{
 		astmconst.ATTRIBUTE_REQUIRED,
-		astmconst.ATTRIBUTE_OPTIONAL,
 		astmconst.ATTRIBUTE_LONGDATE,
 		astmconst.ATTRIBUTE_LENGTH,
+	}
+	return isInList(attribute, validAttributes)
+}
+func isValidStructAttribute(attribute string) bool {
+	validAttributes := []string{
+		astmconst.ATTRIBUTE_OPTIONAL,
+		astmconst.ATTRIBUTE_SUBNAME,
 	}
 	return isInList(attribute, validAttributes)
 }
