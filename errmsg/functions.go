@@ -34,12 +34,11 @@ var (
 	LineParsing_ErrSequenceNumberMismatch      = errors.New("sequence number mismatch")
 	LineParsing_ErrRequiredInputFieldMissing   = errors.New("required input field missing")
 	LineParsing_ErrInputComponentsMissing      = errors.New("input components missing")
-
-	LineParsing_ErrNonSettableField          = errors.New("field is not settable")
-	LineParsing_ErrDataParsingError          = errors.New("data parsing error")
-	LineParsing_ErrInvalidDateFormat         = errors.New("invalid date format")
-	LineParsing_ErrUsupportedDataType        = errors.New("unsupported data type")
-	LineParsing_ErrReservedFieldPosReference = errors.New("field position 1 and 2 are reserved")
+	LineParsing_ErrNonSettableField            = errors.New("field is not settable")
+	LineParsing_ErrDataParsingError            = errors.New("data parsing error")
+	LineParsing_ErrInvalidDateFormat           = errors.New("invalid date format")
+	LineParsing_ErrUsupportedDataType          = errors.New("unsupported data type")
+	LineParsing_ErrReservedFieldPosReference   = errors.New("field position 1 and 2 are reserved")
 )
 
 // StructureParsing

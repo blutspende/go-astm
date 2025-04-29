@@ -8,16 +8,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.0.0] - 2025-04-25
 
 ### Added
-- Record substructure support
+- Field substructure support
 - Pointer field value support
-- Configuration parameter
+- Various configuration parameter
 - Unit tests for modular functions
 - All charmap encoding support
+- Record subname support
+- Multi attribute support
 
 ### Changed
 - Modular redesign
 - Message format structures, namings, annotations
 - Component array handling
+- Configuration input to public functions
+- Public constants
 - Package names
 - Readme details
 

@@ -97,9 +97,6 @@ type ThreeFieldRecord struct {
 type SimpleRecord struct {
 	First string `astm:"3"`
 }
-type SimpleRecordInt struct {
-	First int `astm:"3"`
-}
 type UnorderedRecord struct {
 	First  string `astm:"3"`
 	Third  string `astm:"5"`
@@ -246,6 +243,9 @@ type MissingAnnotationRecord struct {
 	Field3  string `astm:"3"`
 	Missing string
 	Field4  string `astm:"4"`
+}
+type InvalidAttributeValueRecord struct {
+	First float64 `astm:"3,length:one"`
 }
 
 // Structures

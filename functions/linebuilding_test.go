@@ -548,3 +548,14 @@ func TestBuildLine_ShortDateDontKeepTimeZone(t *testing.T) {
 	// Teardown
 	teardown()
 }
+
+func TestBuildLine_InvalidAttributeValue(t *testing.T) {
+	// Arrange
+	source := InvalidAttributeValueRecord{
+		First: 3.14159,
+	}
+	// Act
+	_, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.EqualError(t, err, errmsg.LineBuilding_ErrInvalidLengthAttributeValue.Error())
+}
