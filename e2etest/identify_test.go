@@ -1,8 +1,8 @@
 package e2e
 
 import (
-	"github.com/blutspende/go-astm/v2"
-	"github.com/blutspende/go-astm/v2/constants/astmconst"
+	"github.com/blutspende/go-astm/v3"
+	"github.com/blutspende/go-astm/v3/constants/astmconst"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

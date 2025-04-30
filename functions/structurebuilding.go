@@ -1,9 +1,9 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v2/constants"
-	"github.com/blutspende/go-astm/v2/errmsg"
-	"github.com/blutspende/go-astm/v2/models/astmmodels"
+	"github.com/blutspende/go-astm/v3/constants"
+	"github.com/blutspende/go-astm/v3/errmsg"
+	"github.com/blutspende/go-astm/v3/models/astmmodels"
 )
 
 func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config *astmmodels.Configuration) (result []string, err error) {

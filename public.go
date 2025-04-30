@@ -1,9 +1,9 @@
 package astm
 
 import (
-	"github.com/blutspende/go-astm/v2/constants/astmconst"
-	"github.com/blutspende/go-astm/v2/functions"
-	"github.com/blutspende/go-astm/v2/models/astmmodels"
+	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/functions"
+	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"regexp"
 	"time"
 )

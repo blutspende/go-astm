@@ -2,12 +2,12 @@ package e2e
 
 import (
 	"fmt"
-	"github.com/blutspende/go-astm/v2/constants/astmconst"
-	"github.com/blutspende/go-astm/v2/models/messageformat/lis02a2"
+	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
 	"testing"
 	"time"
 
-	"github.com/blutspende/go-astm/v2"
+	"github.com/blutspende/go-astm/v3"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/encoding/charmap"
 )

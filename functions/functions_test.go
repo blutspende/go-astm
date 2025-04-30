@@ -1,8 +1,8 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v2/models"
-	"github.com/blutspende/go-astm/v2/models/astmmodels"
+	"github.com/blutspende/go-astm/v3/models"
+	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"testing"
 	"time"
 )

@@ -2,10 +2,10 @@ package functions
 
 import (
 	"errors"
-	"github.com/blutspende/go-astm/v2/constants/astmconst"
-	"github.com/blutspende/go-astm/v2/errmsg"
-	"github.com/blutspende/go-astm/v2/models"
-	"github.com/blutspende/go-astm/v2/models/astmmodels"
+	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/errmsg"
+	"github.com/blutspende/go-astm/v3/models"
+	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"reflect"
 	"strconv"
 	"strings"

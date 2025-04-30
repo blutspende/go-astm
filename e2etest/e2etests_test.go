@@ -2,8 +2,8 @@ package e2e
 
 import (
 	"bytes"
-	"github.com/blutspende/go-astm/v2/constants/astmconst"
-	"github.com/blutspende/go-astm/v2/models/astmmodels"
+	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 	"testing"

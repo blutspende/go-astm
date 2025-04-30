@@ -1,7 +1,7 @@
 package astmmodels
 
 import (
-	"github.com/blutspende/go-astm/v2/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/constants/astmconst"
 	"time"
 )
 
