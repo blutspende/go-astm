@@ -3,7 +3,7 @@ package functions
 import (
 	"bytes"
 	"fmt"
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	encodingconst "github.com/blutspende/go-astm/v3/enums/encoding"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"golang.org/x/text/encoding/charmap"
@@ -48,23 +48,23 @@ func ConvertArrayFromUtf8ToEncoding(input []string, config *astmmodels.Configura
 
 func findCharmapForEncoding(encoding string) (*charmap.Charmap, error) {
 	switch encoding {
-	case astmconst.ENCODING_UTF8:
+	case encodingconst.UTF8:
 		return nil, nil
-	case astmconst.ENCODING_ASCII:
+	case encodingconst.ASCII:
 		return nil, nil
-	case astmconst.ENCODING_WINDOWS1250:
+	case encodingconst.Windows1250:
 		return charmap.Windows1250, nil
-	case astmconst.ENCODING_WINDOWS1251:
+	case encodingconst.Windows1251:
 		return charmap.Windows1251, nil
-	case astmconst.ENCODING_WINDOWS1252:
+	case encodingconst.Windows1252:
 		return charmap.Windows1252, nil
-	case astmconst.ENCODING_DOS852:
+	case encodingconst.DOS852:
 		return charmap.CodePage852, nil
-	case astmconst.ENCODING_DOS855:
+	case encodingconst.DOS855:
 		return charmap.CodePage855, nil
-	case astmconst.ENCODING_DOS866:
+	case encodingconst.DOS866:
 		return charmap.CodePage866, nil
-	case astmconst.ENCODING_ISO8859_1:
+	case encodingconst.ISO8859_1:
 		return charmap.ISO8859_1, nil
 	case "IBM037":
 		return charmap.CodePage037, nil

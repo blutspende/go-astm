@@ -2,7 +2,7 @@ package functions
 
 import (
 	"errors"
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/constants"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/blutspende/go-astm/v3/models"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
@@ -44,7 +44,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 	if inputFields[0] != recordAnnotation.StructName {
 		return false, nil
 	}
-	if subname, exists := recordAnnotation.Attributes[astmconst.ATTRIBUTE_SUBNAME]; exists {
+	if subname, exists := recordAnnotation.Attributes[constants.AttributeSubname]; exists {
 		// If subname is given at least 3 fields are required
 		if len(inputFields) < 3 {
 			return false, errmsg.LineParsing_ErrMandatoryInputFieldsMissing
@@ -87,7 +87,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 		// Not enough inputFields or empty inputField
 		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
 			// If the field is required it's an error, otherwise skip it
-			if _, exists := targetFieldAnnotation.Attributes[astmconst.ATTRIBUTE_REQUIRED]; exists {
+			if _, exists := targetFieldAnnotation.Attributes[constants.AttributeRequired]; exists {
 				return true, errmsg.LineParsing_ErrRequiredInputFieldMissing
 			} else {
 				continue
@@ -128,7 +128,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 			// Not enough components in the inputField
 			if len(components) < targetFieldAnnotation.ComponentPos {
 				// Error if the component is required, skip otherwise
-				if _, exists := targetFieldAnnotation.Attributes[astmconst.ATTRIBUTE_REQUIRED]; exists {
+				if _, exists := targetFieldAnnotation.Attributes[constants.AttributeRequired]; exists {
 					return true, errmsg.LineParsing_ErrInputComponentsMissing
 				} else {
 					continue
@@ -186,7 +186,7 @@ func parseSubstructure(inputString string, targetStruct interface{}, config *ast
 		// Not enough inputFields or empty inputField
 		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
 			// If the field is required it's an error, otherwise skip it
-			if _, exists := targetFieldAnnotation.Attributes[astmconst.ATTRIBUTE_REQUIRED]; exists {
+			if _, exists := targetFieldAnnotation.Attributes[constants.AttributeRequired]; exists {
 				return errmsg.LineParsing_ErrRequiredInputFieldMissing
 			} else {
 				continue
@@ -258,7 +258,7 @@ func setField(value string, field reflect.Value, annotation models.AstmFieldAnno
 			if err != nil {
 				return errmsg.LineParsing_ErrDataParsingError
 			}
-			if _, exists := annotation.Attributes[astmconst.ATTRIBUTE_LONGDATE]; !exists && config.KeepShortDateTimeZone {
+			if _, exists := annotation.Attributes[constants.AttributeLongdate]; !exists && config.KeepShortDateTimeZone {
 				// Keep the short date time zone
 				timeInLocation = timeInLocation.In(config.TimeLocation)
 			} else {

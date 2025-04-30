@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/enums/lineseparator"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -118,7 +118,7 @@ func TestSliceLines_SingleLine(t *testing.T) {
 func TestSliceLines_ExplicitCr(t *testing.T) {
 	// Arrange
 	input := "first\r\nsecond"
-	config.LineSeparator = astmconst.CR
+	config.LineSeparator = lineseparator.CR
 	config.AutoDetectLineSeparator = false
 	// Act
 	lines, err := SliceLines(input, config)
@@ -143,7 +143,7 @@ func TestBuildLines_Default(t *testing.T) {
 func TestBuildLines_ExplicitLFCR(t *testing.T) {
 	// Arrange
 	input := []string{"first", "second"}
-	config.LineSeparator = astmconst.LFCR
+	config.LineSeparator = lineseparator.LFCR
 	config.AutoDetectLineSeparator = false
 	// Act
 	output := BuildLines(input, config)

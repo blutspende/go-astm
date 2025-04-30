@@ -2,7 +2,8 @@ package functions
 
 import (
 	"errors"
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/constants"
+	notationconst "github.com/blutspende/go-astm/v3/enums/notation"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/blutspende/go-astm/v3/models"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
@@ -180,7 +181,7 @@ func constructResult(fieldMap map[int]string, delimiter string, notation string)
 	lastIndex := 0
 	for key := range fieldMap {
 		// In short notation only non-empty fields are included at the end
-		if key > lastIndex && (!(notation == astmconst.NOTATION_SHORT) || fieldMap[key] != "") {
+		if key > lastIndex && (!(notation == notationconst.Short) || fieldMap[key] != "") {
 			lastIndex = key
 		}
 	}
@@ -222,7 +223,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		return result, nil
 	case reflect.Float32, reflect.Float64:
 		precision := config.DefaultDecimalPrecision
-		if value, exists := annotation.Attributes[astmconst.ATTRIBUTE_LENGTH]; exists {
+		if value, exists := annotation.Attributes[constants.AttributeLength]; exists {
 			precision, err = strconv.Atoi(value)
 			if err != nil {
 				return "", errmsg.LineBuilding_ErrInvalidLengthAttributeValue
@@ -239,7 +240,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		// Check for time.Time type (it reflects as a Struct)
 		if field.Type() == reflect.TypeOf(time.Time{}) {
 			timeFormat := "20060102"
-			if _, exists := annotation.Attributes[astmconst.ATTRIBUTE_LONGDATE]; exists {
+			if _, exists := annotation.Attributes[constants.AttributeLongdate]; exists {
 				timeFormat = "20060102150405"
 			}
 			// Check if the field is a time.Time

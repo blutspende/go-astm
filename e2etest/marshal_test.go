@@ -2,14 +2,15 @@ package e2e
 
 import (
 	"fmt"
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
-	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
-	"testing"
-	"time"
-
 	"github.com/blutspende/go-astm/v3"
+	"github.com/blutspende/go-astm/v3/enums/encoding"
+	"github.com/blutspende/go-astm/v3/enums/notation"
+	"github.com/blutspende/go-astm/v3/enums/timezone"
+	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/encoding/charmap"
+	"testing"
+	"time"
 )
 
 type MissingComponentMessage struct {
@@ -245,7 +246,7 @@ func TestGermanLanguageDecoder_Windows1252(t *testing.T) {
 	var record GermanLanguageDecoderMessage
 	record.Patient.FirstName = "Högendäg"
 	record.Patient.LastName = "Nügendiß"
-	config.Encoding = astmconst.ENCODING_WINDOWS1252
+	config.Encoding = encoding.Windows1252
 	// Act
 	lines, err := astm.Marshal(record, config)
 	// Assert
@@ -261,7 +262,7 @@ func TestGermanLanguageDecoder_ISO8859_1(t *testing.T) {
 	var record GermanLanguageDecoderMessage
 	record.Patient.FirstName = "Högendäg"
 	record.Patient.LastName = "Nügendiß"
-	config.Encoding = astmconst.ENCODING_ISO8859_1
+	config.Encoding = encoding.ISO8859_1
 	// Act
 	lines, err := astm.Marshal(record, config)
 	// Assert
@@ -276,8 +277,8 @@ func TestGermanLanguageDecoder_ISO8859_1(t *testing.T) {
 func TestMarshalOnlyEmptyHeader(t *testing.T) {
 	// Arrange
 	var message HeaderMessage
-	config.Encoding = astmconst.ENCODING_ASCII
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Encoding = encoding.ASCII
+	config.Notation = notation.Short
 	// Act
 	lines, err := astm.Marshal(message, config)
 	// Assert
@@ -375,7 +376,7 @@ func TestMarshalMultipleOrder(t *testing.T) {
 			TerminatorCode: "N",
 		},
 	}
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Notation = notation.Short
 	// Act
 	lines, err := astm.Marshal(msg, config)
 	// Assert
@@ -434,8 +435,8 @@ func TestShorthandOnStandardMessage(t *testing.T) {
 			TerminatorCode: "N",
 		},
 	}
-	config.Encoding = astmconst.ENCODING_ASCII
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Encoding = encoding.ASCII
+	config.Notation = notation.Short
 	// Act
 	lines, err := astm.Marshal(msg, config)
 	// Assert
@@ -491,8 +492,8 @@ func TestEmbeddedStructsAndArrays(t *testing.T) {
 			TerminatorCode: "N",
 		},
 	}
-	config.Encoding = astmconst.ENCODING_UTF8
-	config.TimeZone = astmconst.TIMEZONE_UTC
+	config.Encoding = encoding.UTF8
+	config.TimeZone = timezone.UTC
 	// Act
 	lines, err := astm.Marshal(message, config)
 	// Assert
@@ -522,9 +523,9 @@ func TestEmbeddedStructsAndArraysShortNotation(t *testing.T) {
 			TerminatorCode: "N",
 		},
 	}
-	config.Encoding = astmconst.ENCODING_UTF8
-	config.TimeZone = astmconst.TIMEZONE_UTC
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Encoding = encoding.UTF8
+	config.TimeZone = timezone.UTC
+	config.Notation = notation.Short
 	// Act
 	lines, err := astm.Marshal(message, config)
 	// Assert
@@ -576,9 +577,9 @@ func TestCustomDecimalLengthAnnotation(t *testing.T) {
 			},
 		},
 	}
-	config.Encoding = astmconst.ENCODING_UTF8
-	config.TimeZone = astmconst.TIMEZONE_UTC
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Encoding = encoding.UTF8
+	config.TimeZone = timezone.UTC
+	config.Notation = notation.Short
 	// Act
 	lines, err := astm.Marshal(message, config)
 	// Assert

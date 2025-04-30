@@ -2,7 +2,8 @@ package e2e
 
 import (
 	"github.com/blutspende/go-astm/v3"
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/enums/encoding"
+	"github.com/blutspende/go-astm/v3/enums/messagetype"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -17,7 +18,7 @@ func TestIdentifyOrderMessage(t *testing.T) {
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDER, messageType)
+	assert.Equal(t, messagetype.Order, messageType)
 }
 
 func TestIdentifyOrderMessageWithMultiHeader(t *testing.T) {
@@ -35,12 +36,12 @@ func TestIdentifyOrderMessageWithMultiHeader(t *testing.T) {
 	message += "P|1||||^|||||||||||||||||||||||||||||\n"
 	message += "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
 	message += "L|1|N\n"
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_ORDER, messageType)
+	assert.Equal(t, messagetype.Order, messageType)
 	// Teardown
 	teardown()
 }
@@ -54,12 +55,12 @@ Q|3|VALI200303||ALL
 Q|4|VALI200304||ALL
 Q|5|VALI200305||ALL
 L|1|N`
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_QUERY, messageType)
+	assert.Equal(t, messagetype.Query, messageType)
 	// Teardown
 	teardown()
 }
@@ -81,12 +82,12 @@ H|\\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
 Q|1|VALI200301||ALL
 Q|5|VALI200305||ALL
 L|1|N`
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_QUERY, messageType)
+	assert.Equal(t, messagetype.Query, messageType)
 	// Teardown
 	teardown()
 }
@@ -99,12 +100,12 @@ O|1|VAL99999903||^^^Pool_Cell|R||||||||||^||||||||||F||||||
 R|1|^^^Pool_Cell 1|0^0^8.8|||||F||Immucor||20200226153444|5030100389|
 R|2|^^^Pool_Cell|Negative|||||F||immucor||20200226153444|5030100389|
 L|1|N`
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
 	// Teardown
 	teardown()
 }
@@ -127,12 +128,12 @@ O|1|VAL99999903||^^^Pool_Cell|R||||||||||^||||||||||F||||||
 R|1|^^^Pool_Cell 1|0^0^8.8|||||F||Immucor||20200226153444|5030100389|
 R|2|^^^Pool_Cell|Negative|||||F||immucor||20200226153444|5030100389|
 L|1|N`
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
 	// Teardown
 	teardown()
 }
@@ -148,12 +149,12 @@ Q|5|VALI200305||ALL
 L|1|N
 
 `
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_QUERY, messageType)
+	assert.Equal(t, messagetype.Query, messageType)
 	// Teardown
 	teardown()
 }
@@ -178,12 +179,12 @@ func TestIdentifyHPORCOROCOROC(t *testing.T) {
 	message += "R|1|^^^cellA1^PR07C^Serumgegenprobe: A1,B,O (5052)^|\n"
 	message += "C|1|ID-DiaCell A1^^06012.49.1^20230821\\^^^|\n"
 	message += "L|1|N\n"
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
 	// Teardown
 	teardown()
 }
@@ -200,12 +201,12 @@ R|2|^^^NEU#^751-8|0.00|10E3/uL|1.60 - 7.00^REFERENCE_RANGE|LL||W||LABOR^^USER|20
 R|3|^^^NEU%^770-8|12.5|%|40.0 - 73.0^REFERENCE_RANGE|L||W||LABOR^^USER|20240906090745||
 R|4|^^^RDW-CV^788-0|23.0|%|11.0 - 17.0^REFERENCE_RANGE|H||F||LABOR^^USER|20240906090745||
 L|1|N`
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
 	// Teardown
 	teardown()
 }
@@ -241,12 +242,12 @@ R|18|^^^HCT^4544-3|18.4|%|17.2-19.0^REFERENCE_RANGE|N||F||LABOR^^USER|2024091207
 R|19|^^^EOS#^711-2|0.27|10E3/uL|0.00-0.28^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||
 R|20|^^^EOS%^713-8|8.4|%|0.0-9.0^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||
 L|1|N`
-	config.Encoding = astmconst.ENCODING_UTF8
+	config.Encoding = encoding.UTF8
 	// Act
 	messageType, err := astm.IdentifyMessage([]byte(message), config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, astmconst.MESSAGETYPE_RESULT, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
 	// Teardown
 	teardown()
 }

@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/constants"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/blutspende/go-astm/v3/models"
 	"reflect"
@@ -55,9 +55,9 @@ func parseAstmFieldAnnotationString(input string) (result models.AstmFieldAnnota
 
 	// Parse and save attributes
 	result.Attributes, err = parseAttributes(attributes, []string{
-		astmconst.ATTRIBUTE_REQUIRED,
-		astmconst.ATTRIBUTE_LONGDATE,
-		astmconst.ATTRIBUTE_LENGTH,
+		constants.AttributeRequired,
+		constants.AttributeLongdate,
+		constants.AttributeLength,
 	})
 	if err != nil {
 		return models.AstmFieldAnnotation{}, err
@@ -105,8 +105,8 @@ func ParseAstmStructAnnotation(input reflect.StructField) (result models.AstmStr
 
 	// Parse and save attributes
 	result.Attributes, err = parseAttributes(attributes, []string{
-		astmconst.ATTRIBUTE_OPTIONAL,
-		astmconst.ATTRIBUTE_SUBNAME,
+		constants.AttributeOptional,
+		constants.AttributeSubname,
 	})
 
 	return result, err

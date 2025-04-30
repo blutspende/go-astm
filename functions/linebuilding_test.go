@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/enums/notation"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -194,7 +194,7 @@ func TestBuildLine_MissingDataAtEndShortNotation(t *testing.T) {
 		Second: "",
 		Third:  "",
 	}
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Notation = notation.Short
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
@@ -208,7 +208,7 @@ func TestBuildLine_MissingDataAtEndWithComponentsShortNotation(t *testing.T) {
 	source := ComponentedRecord{
 		First: "first",
 	}
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Notation = notation.Short
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
@@ -316,7 +316,7 @@ func TestBuildLine_ComponentedRecordShortNotation(t *testing.T) {
 		ThirdComp2:  "third2",
 		ThirdComp3:  "third3",
 	}
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Notation = notation.Short
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert
@@ -394,7 +394,7 @@ func TestBuildLine_SubstructureRecordMissingDataShortNotation(t *testing.T) {
 			FirstComponent: "firstComponent",
 		},
 	}
-	config.Notation = astmconst.NOTATION_SHORT
+	config.Notation = notation.Short
 	// Act
 	result, err := BuildLine(source, "T", 1, config)
 	// Assert

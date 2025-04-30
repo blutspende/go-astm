@@ -3,7 +3,6 @@ package functions
 import (
 	"errors"
 	"github.com/blutspende/go-astm/v3/constants"
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"reflect"
@@ -11,7 +10,7 @@ import (
 
 func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, sequenceNumber int, depth int, config *astmmodels.Configuration) (err error) {
 	// Check for maximum depth
-	if depth >= constants.MAX_DEPTH {
+	if depth >= constants.MaxDepth {
 		return errmsg.StructureParsing_ErrMaxDepthReached
 	}
 	// Check for enough input lines
@@ -86,7 +85,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				// Make sure there are enough input lines
 				if *lineIndex >= len(inputLines) {
 					// Skip if the structure is optional, error otherwise
-					if _, exists := targetStructAnnotation.Attributes[astmconst.ATTRIBUTE_OPTIONAL]; exists {
+					if _, exists := targetStructAnnotation.Attributes[constants.AttributeOptional]; exists {
 						continue
 					} else {
 						return errmsg.StructureParsing_ErrInputLinesDepleted
@@ -105,7 +104,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 				}
 				// If there is a type name mismatch but the target is optional it can be skipped, otherwise it's an error
 				if !nameOk {
-					if _, exists := targetStructAnnotation.Attributes[astmconst.ATTRIBUTE_OPTIONAL]; exists {
+					if _, exists := targetStructAnnotation.Attributes[constants.AttributeOptional]; exists {
 						err = nil
 						*lineIndex--
 						continue

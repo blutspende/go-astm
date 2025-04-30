@@ -1,7 +1,10 @@
 package astmmodels
 
 import (
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/enums/encoding"
+	"github.com/blutspende/go-astm/v3/enums/lineseparator"
+	"github.com/blutspende/go-astm/v3/enums/notation"
+	"github.com/blutspende/go-astm/v3/enums/timezone"
 	"time"
 )
 
@@ -21,12 +24,12 @@ type Configuration struct {
 }
 
 var DefaultConfiguration = Configuration{
-	Encoding:                   astmconst.ENCODING_ISO8859_1,
-	LineSeparator:              astmconst.LF,
+	Encoding:                   encoding.ISO8859_1,
+	LineSeparator:              lineseparator.LF,
 	AutoDetectLineSeparator:    true,
-	TimeZone:                   astmconst.TIMEZONE_EUROPE_BERLIN,
+	TimeZone:                   timezone.EuropeBerlin,
 	EnforceSequenceNumberCheck: true,
-	Notation:                   astmconst.NOTATION_STANDARD,
+	Notation:                   notation.Standard,
 	DefaultDecimalPrecision:    3,
 	RoundLastDecimal:           true,
 	KeepShortDateTimeZone:      true,

@@ -1,7 +1,8 @@
 package e2e
 
 import (
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/enums/encoding"
+	"github.com/blutspende/go-astm/v3/enums/timezone"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/blutspende/go-astm/v3/functions"
 	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
@@ -312,7 +313,7 @@ func TestComponentAccessOnTime(t *testing.T) {
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
 	assert.Nil(t, err)
-	location, err := time.LoadLocation(string(astmconst.TIMEZONE_EUROPE_BERLIN))
+	location, err := time.LoadLocation(timezone.EuropeBerlin)
 	expDate1, err := time.ParseInLocation("20060102", "20240131", location)
 	expDate2 := time.Time{}
 	assert.Len(t, message.Comment.Reagents, 2)
@@ -339,7 +340,7 @@ func TestGermanLanguage_Windows1252(t *testing.T) {
 	messageString += "P|1||1010868845||König^#$§?/+öäüß||19400607|M||||||||||||||||||||||||^\n"
 	messageString += "L|1|N\n"
 	var message MessageGermanLanguageTest
-	config.Encoding = astmconst.ENCODING_WINDOWS1252
+	config.Encoding = encoding.Windows1252
 	encodedMessageString := helperEncode(charmap.Windows1252, []byte(messageString))
 	// Act
 	err := astm.Unmarshal([]byte(encodedMessageString), &message, config)
@@ -357,7 +358,7 @@ func TestGermanLanguage_ISO8859_1(t *testing.T) {
 	messageString += "P|1||1010868845||König^#$§?/+öäüß||19400607|M||||||||||||||||||||||||^\n"
 	messageString += "L|1|N\n"
 	var message MessageGermanLanguageTest
-	config.Encoding = astmconst.ENCODING_ISO8859_1
+	config.Encoding = encoding.ISO8859_1
 	encodedMessageString := helperEncode(charmap.ISO8859_1, []byte(messageString))
 	// Act
 	err := astm.Unmarshal([]byte(encodedMessageString), &message, config)
@@ -374,7 +375,7 @@ func TestTransmissionWithoutLTerminator(t *testing.T) {
 	messageString := "H|\\^&|||\r"
 	messageString += "P|1||DIA-27-079-5-1\r"
 	var message lis02a2.StandardPOCRMessage
-	config.Encoding = astmconst.ENCODING_WINDOWS1252
+	config.Encoding = encoding.Windows1252
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
@@ -664,7 +665,7 @@ func TestEncodingVeryLongCharsets(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		veryLongMessage = append(veryLongMessage, []byte("Ich bin ein sehr langer Text")...)
 	}
-	config.Encoding = astmconst.ENCODING_WINDOWS1252
+	config.Encoding = encoding.Windows1252
 	// Act
 	encoded, err := functions.ConvertFromEncodingToUtf8(veryLongMessage, &config)
 	// Assert

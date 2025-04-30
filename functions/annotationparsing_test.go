@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v3/constants/astmconst"
+	"github.com/blutspende/go-astm/v3/constants"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/stretchr/testify/assert"
 	"reflect"
@@ -49,7 +49,7 @@ func TestParseAstmFieldAnnotationString_Attributed(t *testing.T) {
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, 0, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_REQUIRED)
+	assert.Contains(t, result.Attributes, constants.AttributeRequired)
 }
 func TestParseAstmFieldAnnotationString_AttributedValue(t *testing.T) {
 	// Arrange
@@ -63,8 +63,8 @@ func TestParseAstmFieldAnnotationString_AttributedValue(t *testing.T) {
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, 0, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
-	assert.Equal(t, "2", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
+	assert.Contains(t, result.Attributes, constants.AttributeLength)
+	assert.Equal(t, "2", result.Attributes[constants.AttributeLength])
 }
 func TestParseAstmFieldAnnotationString_Complex(t *testing.T) {
 	// Arrange
@@ -78,8 +78,8 @@ func TestParseAstmFieldAnnotationString_Complex(t *testing.T) {
 	assert.Equal(t, true, result.IsComponent)
 	assert.Equal(t, 2, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
-	assert.Equal(t, "4", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
+	assert.Contains(t, result.Attributes, constants.AttributeLength)
+	assert.Equal(t, "4", result.Attributes[constants.AttributeLength])
 }
 func TestParseAstmFieldAnnotationString_InvalidAttribute(t *testing.T) {
 	// Arrange
@@ -133,8 +133,8 @@ func TestParseAstmFieldAnnotationString_MultipleAttributes(t *testing.T) {
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, 0, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_REQUIRED)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LONGDATE)
+	assert.Contains(t, result.Attributes, constants.AttributeRequired)
+	assert.Contains(t, result.Attributes, constants.AttributeLongdate)
 }
 func TestParseAstmFieldAnnotationString_ValuedMultipleAttributes(t *testing.T) {
 	// Arrange
@@ -148,9 +148,9 @@ func TestParseAstmFieldAnnotationString_ValuedMultipleAttributes(t *testing.T) {
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, 0, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
-	assert.Equal(t, "3", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_REQUIRED)
+	assert.Contains(t, result.Attributes, constants.AttributeLength)
+	assert.Equal(t, "3", result.Attributes[constants.AttributeLength])
+	assert.Contains(t, result.Attributes, constants.AttributeRequired)
 }
 func TestParseAstmFieldAnnotation_AnnotatedStruct(t *testing.T) {
 	// Arrange
@@ -166,8 +166,8 @@ func TestParseAstmFieldAnnotation_AnnotatedStruct(t *testing.T) {
 	assert.Equal(t, true, result.IsComponent)
 	assert.Equal(t, 2, result.ComponentPos)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
-	assert.Equal(t, "4", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
+	assert.Contains(t, result.Attributes, constants.AttributeLength)
+	assert.Equal(t, "4", result.Attributes[constants.AttributeLength])
 }
 func TestParseAstmFieldAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	// Arrange
@@ -182,8 +182,8 @@ func TestParseAstmFieldAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, false, result.IsComponent)
 	assert.Equal(t, false, result.IsSubstructure)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_LENGTH)
-	assert.Equal(t, "4", result.Attributes[astmconst.ATTRIBUTE_LENGTH])
+	assert.Contains(t, result.Attributes, constants.AttributeLength)
+	assert.Equal(t, "4", result.Attributes[constants.AttributeLength])
 }
 func TestParseAstmFieldAnnotation_Substructure(t *testing.T) {
 	// Arrange
@@ -285,7 +285,7 @@ func TestParseAstmStructAnnotation_AnnotatedArrayStruct(t *testing.T) {
 	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, true, result.IsArray)
 	assert.Equal(t, "L", result.StructName)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_OPTIONAL)
+	assert.Contains(t, result.Attributes, constants.AttributeOptional)
 }
 func TestParseAstmStructAnnotation_CompositeStruct(t *testing.T) {
 	// Arrange
@@ -345,8 +345,8 @@ func TestParseAstmStructAnnotation_SubnameAttribute(t *testing.T) {
 	assert.Equal(t, false, result.IsComposite)
 	assert.Equal(t, false, result.IsArray)
 	assert.Equal(t, "R", result.StructName)
-	assert.Contains(t, result.Attributes, astmconst.ATTRIBUTE_SUBNAME)
-	assert.Equal(t, "SUBNAME", result.Attributes[astmconst.ATTRIBUTE_SUBNAME])
+	assert.Contains(t, result.Attributes, constants.AttributeSubname)
+	assert.Equal(t, "SUBNAME", result.Attributes[constants.AttributeSubname])
 }
 
 // ProcessStructReflection tests

@@ -2,7 +2,7 @@
 Library for handling the ASTM protocol in Go.
 
 ###### Install
-`go get github.com/blutspende/go-astm/v3`
+`go get github.com/blutspende/go-astm`
 
 # Features
   - Marshalling and unmarshalling of ASTM messages
