@@ -15,14 +15,14 @@ import (
 func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation models.AstmStructAnnotation, sequenceNumber int, config *astmmodels.Configuration) (nameOk bool, err error) {
 	// Check for input line length
 	if len(inputLine) == 0 {
-		return false, errmsg.LineParsing_ErrEmptyInput
+		return false, errmsg.ErrLineParsingEmptyInput
 	}
 
 	// Handle header special case
 	if inputLine[0] == 'H' {
 		// Check if the inputLine is long enough to contain delimiters
 		if len(inputLine) < 5 {
-			return false, errmsg.LineParsing_ErrHeaderTooShort
+			return false, errmsg.ErrLineParsingHeaderTooShort
 		}
 		// Override delimiters
 		config.Delimiters.Field = string(inputLine[1])
@@ -36,7 +36,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 
 	// Check for minimum number of input fields (first two fields are mandatory)
 	if len(inputFields) < 2 {
-		return false, errmsg.LineParsing_ErrMandatoryInputFieldsMissing
+		return false, errmsg.ErrLineParsingMandatoryInputFieldsMissing
 	}
 
 	// Check for mach of name and subname
@@ -47,7 +47,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 	if subname, exists := recordAnnotation.Attributes[constants.AttributeSubname]; exists {
 		// If subname is given at least 3 fields are required
 		if len(inputFields) < 3 {
-			return false, errmsg.LineParsing_ErrMandatoryInputFieldsMissing
+			return false, errmsg.ErrLineParsingMandatoryInputFieldsMissing
 		}
 		// Check for subname match
 		if inputFields[2] != subname {
@@ -57,7 +57,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 
 	// Check for validity of the sequence number (error only if enforced)
 	if inputFields[1] != strconv.Itoa(sequenceNumber) && inputLine[0] != 'H' && config.EnforceSequenceNumberCheck {
-		return true, errmsg.LineParsing_ErrSequenceNumberMismatch
+		return true, errmsg.ErrLineParsingSequenceNumberMismatch
 	}
 
 	// Process the target structure
@@ -71,7 +71,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 		// Parse the targetStruct field targetFieldAnnotation
 		targetFieldAnnotation, err := ParseAstmFieldAnnotation(targetType)
 		if err != nil {
-			if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+			if errors.Is(err, errmsg.ErrAnnotationParsingMissingAstmAnnotation) {
 				// If the annotation is missing, skip this field
 				continue
 			} else {
@@ -81,14 +81,14 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 
 		// Check for fieldPos not being lower than 3 (first 2 are reserved for line name and sequence number)
 		if targetFieldAnnotation.FieldPos < 3 {
-			return true, errmsg.LineParsing_ErrReservedFieldPosReference
+			return true, errmsg.ErrLineParsingReservedFieldPosReference
 		}
 
 		// Not enough inputFields or empty inputField
 		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
 			// If the field is required it's an error, otherwise skip it
 			if _, exists := targetFieldAnnotation.Attributes[constants.AttributeRequired]; exists {
-				return true, errmsg.LineParsing_ErrRequiredInputFieldMissing
+				return true, errmsg.ErrLineParsingRequiredInputFieldMissing
 			} else {
 				continue
 			}
@@ -129,7 +129,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 			if len(components) < targetFieldAnnotation.ComponentPos {
 				// Error if the component is required, skip otherwise
 				if _, exists := targetFieldAnnotation.Attributes[constants.AttributeRequired]; exists {
-					return true, errmsg.LineParsing_ErrInputComponentsMissing
+					return true, errmsg.ErrLineParsingInputComponentsMissing
 				} else {
 					continue
 				}
@@ -175,7 +175,7 @@ func parseSubstructure(inputString string, targetStruct interface{}, config *ast
 		// Parse the targetStruct field targetFieldAnnotation
 		targetFieldAnnotation, err := ParseAstmFieldAnnotation(targetType)
 		if err != nil {
-			if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+			if errors.Is(err, errmsg.ErrAnnotationParsingMissingAstmAnnotation) {
 				// If the annotation is missing, skip this field
 				continue
 			} else {
@@ -187,7 +187,7 @@ func parseSubstructure(inputString string, targetStruct interface{}, config *ast
 		if len(inputFields) < targetFieldAnnotation.FieldPos || inputFields[targetFieldAnnotation.FieldPos-1] == "" {
 			// If the field is required it's an error, otherwise skip it
 			if _, exists := targetFieldAnnotation.Attributes[constants.AttributeRequired]; exists {
-				return errmsg.LineParsing_ErrRequiredInputFieldMissing
+				return errmsg.ErrLineParsingRequiredInputFieldMissing
 			} else {
 				continue
 			}
@@ -210,7 +210,7 @@ func setField(value string, field reflect.Value, annotation models.AstmFieldAnno
 	// Ensure the field is settable
 	if !field.CanSet() {
 		// Field is not settable
-		return errmsg.LineParsing_ErrNonSettableField
+		return errmsg.ErrLineParsingNonSettableField
 	}
 	// Set the field value
 	switch field.Kind() {
@@ -224,21 +224,21 @@ func setField(value string, field reflect.Value, annotation models.AstmFieldAnno
 	case reflect.Int:
 		num, err := strconv.Atoi(value)
 		if err != nil {
-			return errmsg.LineParsing_ErrDataParsingError
+			return errmsg.ErrLineParsingDataParsingError
 		}
 		field.Set(reflect.ValueOf(num))
 		return nil
 	case reflect.Float32:
 		num, err := strconv.ParseFloat(value, 32)
 		if err != nil {
-			return errmsg.LineParsing_ErrDataParsingError
+			return errmsg.ErrLineParsingDataParsingError
 		}
 		field.Set(reflect.ValueOf(float32(num)))
 		return nil
 	case reflect.Float64:
 		num, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return errmsg.LineParsing_ErrDataParsingError
+			return errmsg.ErrLineParsingDataParsingError
 		}
 		field.Set(reflect.ValueOf(num))
 		return nil
@@ -252,11 +252,11 @@ func setField(value string, field reflect.Value, annotation models.AstmFieldAnno
 			case 14:
 				timeFormat = "20060102150405" // YYYYMMDDHHMMSS
 			default:
-				return errmsg.LineParsing_ErrInvalidDateFormat
+				return errmsg.ErrLineParsingInvalidDateFormat
 			}
 			timeInLocation, err := time.ParseInLocation(timeFormat, value, config.TimeLocation)
 			if err != nil {
-				return errmsg.LineParsing_ErrDataParsingError
+				return errmsg.ErrLineParsingDataParsingError
 			}
 			if _, exists := annotation.Attributes[constants.AttributeLongdate]; !exists && config.KeepShortDateTimeZone {
 				// Keep the short date time zone
@@ -272,5 +272,5 @@ func setField(value string, field reflect.Value, annotation models.AstmFieldAnno
 		}
 	}
 	// Return error if no type match was found (each successful parsing returns nil)
-	return errmsg.LineParsing_ErrUsupportedDataType
+	return errmsg.ErrLineParsingUnsupportedDataType
 }

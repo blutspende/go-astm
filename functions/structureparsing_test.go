@@ -176,7 +176,7 @@ func TestParseStruct_UnexpectedLineTypeError(t *testing.T) {
 	// Act
 	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
-	assert.EqualError(t, err, errmsg.LineParsing_ErrLineTypeNameMismatch.Error())
+	assert.EqualError(t, err, errmsg.ErrLineParsingLineTypeNameMismatch.Error())
 }
 func TestParseStruct_LinesDepletedError(t *testing.T) {
 	// Arrange
@@ -188,7 +188,7 @@ func TestParseStruct_LinesDepletedError(t *testing.T) {
 	// Act
 	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
-	assert.EqualError(t, err, errmsg.StructureParsing_ErrInputLinesDepleted.Error())
+	assert.EqualError(t, err, errmsg.ErrStructureParsingInputLinesDepleted.Error())
 }
 func TestParseStruct_SubnameMessage(t *testing.T) {
 	// Arrange

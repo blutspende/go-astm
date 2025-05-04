@@ -9,7 +9,7 @@ import (
 func BuildStruct(sourceStruct interface{}, sequenceNumber int, depth int, config *astmmodels.Configuration) (result []string, err error) {
 	// Check for maximum depth
 	if depth >= constants.MaxDepth {
-		return nil, errmsg.StructureParsing_ErrMaxDepthReached
+		return nil, errmsg.ErrStructureParsingMaxDepthReached
 	}
 
 	// Process the source structure

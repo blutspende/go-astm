@@ -43,7 +43,7 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 		// Parse the sourceStruct field sourceFieldAnnotation
 		sourceFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
 		if err != nil {
-			if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+			if errors.Is(err, errmsg.ErrAnnotationParsingMissingAstmAnnotation) {
 				// If the annotation is missing, skip this field
 				continue
 			} else {
@@ -53,7 +53,7 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 
 		// Check for fieldPos not being lower than 3 (first 2 are reserved for line name and sequence number)
 		if sourceFieldAnnotation.FieldPos < 3 {
-			return "", errmsg.LineBuilding_ErrReservedFieldPosReference
+			return "", errmsg.ErrLineBuildingReservedFieldPosReference
 		}
 
 		fieldValueString := ""
@@ -92,7 +92,7 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 				// Parse the targetStruct field targetFieldAnnotation
 				currentFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[j])
 				if err != nil {
-					if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+					if errors.Is(err, errmsg.ErrAnnotationParsingMissingAstmAnnotation) {
 						// If the annotation is missing, skip this field
 						continue
 					} else {
@@ -153,7 +153,7 @@ func buildSubstructure(sourceStruct interface{}, config *astmmodels.Configuratio
 		// Parse the sourceStruct field sourceFieldAnnotation
 		sourceFieldAnnotation, err := ParseAstmFieldAnnotation(sourceTypes[i])
 		if err != nil {
-			if errors.Is(err, errmsg.AnnotationParsing_ErrMissingAstmAnnotation) {
+			if errors.Is(err, errmsg.ErrAnnotationParsingMissingAstmAnnotation) {
 				// If the annotation is missing, skip this field
 				continue
 			} else {
@@ -215,7 +215,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		if field.Type().ConvertibleTo(reflect.TypeOf("")) {
 			result = field.String()
 		} else {
-			return "", errmsg.LineBuilding_ErrUsupportedDataType
+			return "", errmsg.ErrLineBuildingUsupportedDataType
 		}
 		return result, nil
 	case reflect.Int:
@@ -226,7 +226,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		if value, exists := annotation.Attributes[constants.AttributeLength]; exists {
 			precision, err = strconv.Atoi(value)
 			if err != nil {
-				return "", errmsg.LineBuilding_ErrInvalidLengthAttributeValue
+				return "", errmsg.ErrLineBuildingInvalidLengthAttributeValue
 			}
 		}
 		result = strconv.FormatFloat(field.Float(), 'f', precision, field.Type().Bits())
@@ -246,7 +246,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 			// Check if the field is a time.Time
 			timeValue, ok := field.Interface().(time.Time)
 			if !ok {
-				return "", errmsg.LineBuilding_ErrInvalidDateFormat
+				return "", errmsg.ErrLineBuildingInvalidDateFormat
 			}
 			// Return empty if the time is zero
 			if timeValue.IsZero() {
@@ -262,7 +262,7 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 		}
 	}
 	// Return error if no type match was found (each successful conversion returns with nil)
-	return "", errmsg.LineBuilding_ErrUsupportedDataType
+	return "", errmsg.ErrLineBuildingUsupportedDataType
 }
 
 func contains(slice []int, item int) bool {

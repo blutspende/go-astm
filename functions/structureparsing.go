@@ -11,11 +11,11 @@ import (
 func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, sequenceNumber int, depth int, config *astmmodels.Configuration) (err error) {
 	// Check for maximum depth
 	if depth >= constants.MaxDepth {
-		return errmsg.StructureParsing_ErrMaxDepthReached
+		return errmsg.ErrStructureParsingMaxDepthReached
 	}
 	// Check for enough input lines
 	if *lineIndex >= len(inputLines) {
-		return errmsg.StructureParsing_ErrInputLinesDepleted
+		return errmsg.ErrStructureParsingInputLinesDepleted
 	}
 
 	// Process the target structure
@@ -51,7 +51,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 					err = ParseStruct(inputLines, elem.Addr().Interface(), lineIndex, seq, depth+1, config)
 					// If the error is a line type name mismatch, it means the end of the array
 					// Note: here an error is used to communicate the end of the array, it is not a real error
-					if errors.Is(err, errmsg.StructureParsing_ErrLineTypeNameMismatch) {
+					if errors.Is(err, errmsg.ErrStructureParsingLineTypeNameMismatch) {
 						nameOk = false
 					}
 				} else {
@@ -88,7 +88,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 					if _, exists := targetStructAnnotation.Attributes[constants.AttributeOptional]; exists {
 						continue
 					} else {
-						return errmsg.StructureParsing_ErrInputLinesDepleted
+						return errmsg.ErrStructureParsingInputLinesDepleted
 					}
 				}
 				// Determine sequence number: first element inherits from the parent call, the rest is 1
@@ -109,7 +109,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 						*lineIndex--
 						continue
 					} else {
-						return errmsg.StructureParsing_ErrLineTypeNameMismatch
+						return errmsg.ErrStructureParsingLineTypeNameMismatch
 					}
 				}
 			}

@@ -87,7 +87,7 @@ func TestParseAstmFieldAnnotationString_InvalidAttribute(t *testing.T) {
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingInvalidAstmAttribute.Error())
 }
 func TestParseAstmFieldAnnotationString_InvalidAttributeFormat(t *testing.T) {
 	// Arrange
@@ -95,7 +95,7 @@ func TestParseAstmFieldAnnotationString_InvalidAttributeFormat(t *testing.T) {
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttributeFormat.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingInvalidAstmAttributeFormat.Error())
 }
 func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyParts(t *testing.T) {
 	// Arrange
@@ -103,7 +103,7 @@ func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyParts(t *testing
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingInvalidAstmAnnotation.Error())
 }
 func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyPartsWithAttribute(t *testing.T) {
 	// Arrange
@@ -111,7 +111,7 @@ func TestParseAstmFieldAnnotationString_InvalidAnnotationTooManyPartsWithAttribu
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingInvalidAstmAnnotation.Error())
 }
 func TestParseAstmFieldAnnotationString_InvalidNumber(t *testing.T) {
 	// Arrange
@@ -119,7 +119,7 @@ func TestParseAstmFieldAnnotationString_InvalidNumber(t *testing.T) {
 	// Act
 	_, err := parseAstmFieldAnnotationString(input)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAnnotation.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingInvalidAstmAnnotation.Error())
 }
 func TestParseAstmFieldAnnotationString_MultipleAttributes(t *testing.T) {
 	// Arrange
@@ -222,7 +222,7 @@ func TestParseAstmFieldAnnotation_IllegalComponentArray(t *testing.T) {
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrIllegalComponentArray.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingIllegalComponentArray.Error())
 }
 func TestParseAstmFieldAnnotation_IllegalComponentSubstructure(t *testing.T) {
 	// Arrange
@@ -231,7 +231,7 @@ func TestParseAstmFieldAnnotation_IllegalComponentSubstructure(t *testing.T) {
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrIllegalComponentSubstructure.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingIllegalComponentSubstructure.Error())
 }
 func TestParseAstmFieldAnnotation_TimeLine(t *testing.T) {
 	// Arrange
@@ -255,7 +255,7 @@ func TestParseAstmFieldAnnotation_InvalidFieldAttribute(t *testing.T) {
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingInvalidAstmAttribute.Error())
 }
 
 // Struct annotation tests
@@ -322,7 +322,7 @@ func TestParseAstmStructAnnotation_InvalidStructAttribute(t *testing.T) {
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttribute.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingInvalidAstmAttribute.Error())
 }
 func TestParseAstmStructAnnotation_TooManyStructNameAttributeValues(t *testing.T) {
 	// Arrange
@@ -331,7 +331,7 @@ func TestParseAstmStructAnnotation_TooManyStructNameAttributeValues(t *testing.T
 	// Act
 	_, err := ParseAstmFieldAnnotation(field)
 	// Assert
-	assert.EqualError(t, err, errmsg.AnnotationParsing_ErrInvalidAstmAttributeFormat.Error())
+	assert.EqualError(t, err, errmsg.ErrAnnotationParsingInvalidAstmAttributeFormat.Error())
 }
 func TestParseAstmStructAnnotation_SubnameAttribute(t *testing.T) {
 	// Arrange

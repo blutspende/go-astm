@@ -10,12 +10,12 @@ import (
 func SliceLines(input string, config *astmmodels.Configuration) (output []string, err error) {
 	// Check for empty input
 	if input == "" {
-		return nil, errmsg.Lining_ErrEmptyInput
+		return nil, errmsg.ErrLineProcessingEmptyInput
 	}
 
 	// A line separator has to be provided if auto-detect is disabled
 	if !config.AutoDetectLineSeparator && config.LineSeparator == "" {
-		return nil, errmsg.Lining_ErrNoLineSeparator
+		return nil, errmsg.ErrLineProcessingNoLineSeparator
 	}
 
 	var lines []string
@@ -40,7 +40,7 @@ func SliceLines(input string, config *astmmodels.Configuration) (output []string
 		} else {
 			if lfCnt > 0 && crCnt > 0 && lfCnt != crCnt {
 				// Mixed number of different line endings are not allowed
-				return nil, errmsg.Lining_ErrInvalidLinebreak
+				return nil, errmsg.ErrLineProcessingInvalidLinebreak
 			}
 			if lfCnt == 0 {
 				// Only CR line endings: replace with LF

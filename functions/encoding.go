@@ -155,7 +155,7 @@ func findCharmapForEncoding(encoding string) (*charmap.Charmap, error) {
 	case "Windows-1258":
 		return charmap.Windows1258, nil
 	default:
-		return nil, fmt.Errorf(errmsg.Encoding_MsgInvalidEncoding, encoding)
+		return nil, fmt.Errorf("%s: %w", encoding, errmsg.ErrEncodingInvalidEncoding)
 	}
 }
 

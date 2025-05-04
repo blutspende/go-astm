@@ -43,12 +43,12 @@ type Configuration struct {
 It can also be omitted, in case the default is used:
 ``` go
 var DefaultConfiguration = Configuration{
-	Encoding:                   astmconst.ENCODING_ISO8859_1,
-	LineSeparator:              astmconst.LF,
+	Encoding:                   encoding.ISO8859_1,
+	LineSeparator:              lineseparator.LF,
 	AutoDetectLineSeparator:    true,
-	TimeZone:                   astmconst.TIMEZONE_EUROPE_BERLIN,
+	TimeZone:                   timezone.EuropeBerlin,
 	EnforceSequenceNumberCheck: true,
-	Notation:                   astmconst.NOTATION_STANDARD,
+	Notation:                   notation.Standard,
 	DefaultDecimalPrecision:    3,
 	RoundLastDecimal:           true,
 	KeepShortDateTimeZone:      true,
@@ -65,41 +65,41 @@ var DefaultDelimiters = Delimiters{
 ## Encoding
 Character encoding for reading and writing bytes. Options are all charmaps supported by `golang.org/x/text/encoding/charmap`, but a subset is provided for convenience.
 ``` go
-astmconst.ENCODING_UTF8
-astmconst.ENCODING_ASCII
-astmconst.ENCODING_WINDOWS1250
-astmconst.ENCODING_WINDOWS1251
-astmconst.ENCODING_WINDOWS1252
-astmconst.ENCODING_DOS852
-astmconst.ENCODING_DOS855
-astmconst.ENCODING_DOS866
-astmconst.ENCODING_ISO8859_1
+encoding.UTF8
+encoding.ASCII
+encoding.Windows1250
+encoding.Windows1251
+encoding.Windows1252
+encoding.DOS852
+encoding.DOS855
+encoding.DOS866
+encoding.ISO8859_1
 ```
 ## LineSeparator
 Line separator can be auto-detected, or set manually. If `AutoDetectLineSeparator` is set to true, this can be ignored. A few constants are provided for convenience, but any string is valid. This is only relevant for unmarshal.
 ``` go
-astmconst.LF
-astmconst.CR
-astmconst.LFCR
-astmconst.CRLF
+lineseparator.LF
+lineseparator.CR
+lineseparator.LFCR
+lineseparator.CRLF
 ```
 ## AutoDetectLineSeparator
 If set to true, the line separator is detected automatically. If set to false, the line separator set in `LineSeparator` is used. This is only relevant for unmarshal.
 ## TimeZone
 The timezone is used for date/time conversion. The timezone is set in the format "Region/City", e.g. "Europe/Berlin". Any string can be valid, but a few is provided for convenience as constants.
 ``` go
-astmconst.TIMEZONE_UTC
-astmconst.TIMEZONE_EUROPE_BERLIN
-astmconst.TIMEZONE_EUROPE_BUDAPEST
-astmconst.TIMEZONE_EUROPE_LONDON
+timezone.UTC
+timezone.EuropeBerlin
+timezone.EuropeBudapest
+timezone.EuropeLondon
 ```
 ## EnforceSequenceNumberCheck
 In unmarshal, the sequence number (second field in every line) is checked for validity. If set to true, an error is returned if the sequence number is incorrect. If set to false, it is ignored. This is only relevant for unmarshal.
 ## Notation
 The notation is only used marshal. The notation is set to one of the following:
 ``` go
-astmconst.NOTATION_STANDARD
-astmconst.NOTATION_SHORT
+notation.Standard
+notation.Short
 ```
 Standard notation will produce as many fields as there are in the source structure, while short notation will omit empty fields at the end of a line. This is only relevant for marshal.
 ## DefaultDecimalPrecision
@@ -129,10 +129,10 @@ Identifying the type of message without decoding it. There are 3 valid types of 
 ``` go
 type MessageType
 
-MESSAGETYPE_UNKOWN
-MESSAGETYPE_QUERY 
-MESSAGETYPE_ORDERS_ONLY
-MESSAGETYPE_ORDERS_AND_RESULTS
+messagetype.Unidentified
+messagetype.Query
+messagetype.Order
+messagetype.Result
 ```
 It can be used for example as follows:
 ``` go
@@ -141,13 +141,13 @@ if err != nil {
     log.Fatal(err)
 }
 switch (messageType) {
-	case astmconst.MESSAGETYPE_UNKOWN:
+	case messagetype.Unidentified:
 	  ...
-	case astmconst.MESSAGETYPE_QUERY:
+	case messagetype.Query:
 	  ...
-	case astmconst.MESSAGETYPE_ORDERS_ONLY:
+	case messagetype.Order:
 	  ...
-	case astmconst.MESSAGETYPE_ORDERS_AND_RESULTS:
+	case messagetype.Result:
 	  ...
 }
 ```
@@ -221,6 +221,12 @@ type Record struct {
 - `required`: By default fields can be empty for unmarshal. However, a required field will produce an error if missing.
 - `length:N`: This field is a fixed point number with N decimals. N has to be an integer >= -1. Excess decimals are either truncated or rounded during marshal.
 - `longdate`: By default dates are converted in short format `YYYYMMDD` in marshal, but with this attribute it can be set to long format: `YYYYMMDDHHMMSS`.
+These attributes can also be used in combination, listing them comma separated:
+``` go
+type Record struct {
+    Field2 float32 `astm:"3,required,length:3"`
+}
+```
 
 ### Record field arrays
 If a field is defined with an array type, it will be marshalled and unmarshalled as an array of repetitions within the field, with the repetition delimiter.
@@ -328,6 +334,12 @@ type Lis02a2Message {
 ```
 - `optional`: By default all records are required for unmarshal, and will produce an error if missing. However, an optional record will just be skipped. This can also be used for composite and array structures (see below).
 - `subname:N`: Some records (eg: 'M' manufacturer info) can be more free form record types. Therefore, it might have different structures with the same record name. To distinguish between them, the subname attribute can be used. Its string value will be matched with the 3rd field (the one after sequence number) to determine the type. This will be used to identify the record type in the message, or to signify the end of an array of that given type. This is only relevant for unmarshal.
+These attributes can also be used in combination, listing them comma separated:
+``` go
+type Lis02a2Message {
+    Record RecordType `astm:"R,subname:SUBNAME,optional"`
+}
+```
 
 ### Message structure arrays
 Records can be defined as arrays, in which case they will be marshalled and unmarshalled as an array of repetitions of the records, each of them as a line in the message, with incrementing sequence numbers.

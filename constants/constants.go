@@ -1,7 +1,7 @@
 package constants
 
 // Maximum recurtion depth for struct parsing and building
-const MaxDepth int = 44
+const MaxDepth int = 42
 
 // Attributes for annotations
 const AttributeRequired string = "required" // field-annotation: by default all fields are optinal
