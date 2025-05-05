@@ -3,9 +3,9 @@ package functions
 import (
 	"bytes"
 	"fmt"
-	encodingconst "github.com/blutspende/go-astm/v3/enums/encoding"
-	"github.com/blutspende/go-astm/v3/errmsg"
-	"github.com/blutspende/go-astm/v3/models/astmmodels"
+	encodingconst "github.com/blutspende/go-astm/enums/encoding"
+	"github.com/blutspende/go-astm/errmsg"
+	"github.com/blutspende/go-astm/models/astmmodels"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 	"io"

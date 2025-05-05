@@ -1,15 +1,15 @@
 package e2e
 
 import (
-	"github.com/blutspende/go-astm/v3/enums/encoding"
-	"github.com/blutspende/go-astm/v3/enums/timezone"
-	"github.com/blutspende/go-astm/v3/errmsg"
-	"github.com/blutspende/go-astm/v3/functions"
-	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
+	"github.com/blutspende/go-astm/enums/encoding"
+	"github.com/blutspende/go-astm/enums/timezone"
+	"github.com/blutspende/go-astm/errmsg"
+	"github.com/blutspende/go-astm/functions"
+	"github.com/blutspende/go-astm/models/messageformat/lis02a2"
 	"testing"
 	"time"
 
-	"github.com/blutspende/go-astm/v3"
+	"github.com/blutspende/go-astm"
 	"github.com/stretchr/testify/assert"
 
 	"golang.org/x/text/encoding/charmap"

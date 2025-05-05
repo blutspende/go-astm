@@ -2,11 +2,11 @@ package functions
 
 import (
 	"errors"
-	"github.com/blutspende/go-astm/v3/constants"
-	notationconst "github.com/blutspende/go-astm/v3/enums/notation"
-	"github.com/blutspende/go-astm/v3/errmsg"
-	"github.com/blutspende/go-astm/v3/models"
-	"github.com/blutspende/go-astm/v3/models/astmmodels"
+	"github.com/blutspende/go-astm/constants"
+	notationconst "github.com/blutspende/go-astm/enums/notation"
+	"github.com/blutspende/go-astm/errmsg"
+	"github.com/blutspende/go-astm/models"
+	"github.com/blutspende/go-astm/models/astmmodels"
 	"math"
 	"reflect"
 	"strconv"

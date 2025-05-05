@@ -2,8 +2,8 @@ package e2e
 
 import (
 	"bytes"
-	"github.com/blutspende/go-astm/v3/enums/encoding"
-	"github.com/blutspende/go-astm/v3/models/astmmodels"
+	"github.com/blutspende/go-astm/enums/encoding"
+	"github.com/blutspende/go-astm/models/astmmodels"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 	"testing"

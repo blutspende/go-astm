@@ -2,11 +2,11 @@ package e2e
 
 import (
 	"fmt"
-	"github.com/blutspende/go-astm/v3"
-	"github.com/blutspende/go-astm/v3/enums/encoding"
-	"github.com/blutspende/go-astm/v3/enums/notation"
-	"github.com/blutspende/go-astm/v3/enums/timezone"
-	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
+	"github.com/blutspende/go-astm"
+	"github.com/blutspende/go-astm/enums/encoding"
+	"github.com/blutspende/go-astm/enums/notation"
+	"github.com/blutspende/go-astm/enums/timezone"
+	"github.com/blutspende/go-astm/models/messageformat/lis02a2"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/encoding/charmap"
 	"testing"

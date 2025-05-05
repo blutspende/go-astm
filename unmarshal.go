@@ -1,8 +1,8 @@
 package astm
 
 import (
-	"github.com/blutspende/go-astm/v3/functions"
-	"github.com/blutspende/go-astm/v3/models/astmmodels"
+	"github.com/blutspende/go-astm/functions"
+	"github.com/blutspende/go-astm/models/astmmodels"
 )
 
 func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...astmmodels.Configuration) (err error) {

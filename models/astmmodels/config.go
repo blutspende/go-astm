@@ -1,10 +1,10 @@
 package astmmodels
 
 import (
-	"github.com/blutspende/go-astm/v3/enums/encoding"
-	"github.com/blutspende/go-astm/v3/enums/lineseparator"
-	"github.com/blutspende/go-astm/v3/enums/notation"
-	"github.com/blutspende/go-astm/v3/enums/timezone"
+	"github.com/blutspende/go-astm/enums/encoding"
+	"github.com/blutspende/go-astm/enums/lineseparator"
+	"github.com/blutspende/go-astm/enums/notation"
+	"github.com/blutspende/go-astm/enums/timezone"
 	"time"
 )
 

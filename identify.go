@@ -1,9 +1,9 @@
 package astm
 
 import (
-	"github.com/blutspende/go-astm/v3/enums/messagetype"
-	"github.com/blutspende/go-astm/v3/functions"
-	"github.com/blutspende/go-astm/v3/models/astmmodels"
+	"github.com/blutspende/go-astm/enums/messagetype"
+	"github.com/blutspende/go-astm/functions"
+	"github.com/blutspende/go-astm/models/astmmodels"
 	"regexp"
 )
 

@@ -1,8 +1,8 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v3/enums/lineseparator"
-	"github.com/blutspende/go-astm/v3/errmsg"
+	"github.com/blutspende/go-astm/enums/lineseparator"
+	"github.com/blutspende/go-astm/errmsg"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
