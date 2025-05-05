@@ -1,125 +1,146 @@
-package astm
+package e2e
 
 import (
-	"testing"
-
+	"github.com/blutspende/go-astm/v3"
+	"github.com/blutspende/go-astm/v3/enums/encoding"
+	"github.com/blutspende/go-astm/v3/enums/messagetype"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestIdentifyOrderMessage(t *testing.T) {
-
-	astm := "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
-	astm = astm + "P|1||||^|||||||||||||||||||||||||||||\n"
-	astm = astm + "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
-	astm = astm + "L|1|N\n"
-
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
+	// Arrange
+	message := "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
+	message += "P|1||||^|||||||||||||||||||||||||||||\n"
+	message += "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
+	message += "L|1|N\n"
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, MessageTypeOrdersOnly, messageType)
+	assert.Equal(t, messagetype.Order, messageType)
 }
 
 func TestIdentifyOrderMessageWithMultiHeader(t *testing.T) {
-
-	astm := "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
-	astm = astm + "P|1||||^|||||||||||||||||||||||||||||\n"
-	astm = astm + "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
-	astm = astm + "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
-	astm = astm + "P|1||||^|||||||||||||||||||||||||||||\n"
-	astm = astm + "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
-	astm = astm + "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
-	astm = astm + "P|1||||^|||||||||||||||||||||||||||||\n"
-	astm = astm + "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
-	astm = astm + "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
-	astm = astm + "P|1||||^|||||||||||||||||||||||||||||\n"
-	astm = astm + "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
-	astm = astm + "L|1|N\n"
-
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
+	// Arrange
+	message := "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
+	message += "P|1||||^|||||||||||||||||||||||||||||\n"
+	message += "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
+	message += "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
+	message += "P|1||||^|||||||||||||||||||||||||||||\n"
+	message += "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
+	message += "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
+	message += "P|1||||^|||||||||||||||||||||||||||||\n"
+	message += "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
+	message += "H|\\^&|||LIS|||||NEO|||LIS2A2|20220928182311\n"
+	message += "P|1||||^|||||||||||||||||||||||||||||\n"
+	message += "O|1|idk1||^^^Pool_Cell||||R|||N||||Blood^Product|||||||||||||||\n"
+	message += "L|1|N\n"
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, MessageTypeOrdersOnly, messageType)
+	assert.Equal(t, messagetype.Order, messageType)
+	// Teardown
+	teardown()
 }
 
 func TestIdentifyQuery(t *testing.T) {
-
-	astm := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
+	// Arrange
+	message := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
 Q|1|VALI200301||ALL
 Q|2|VALI200302||ALL
 Q|3|VALI200303||ALL
 Q|4|VALI200304||ALL
 Q|5|VALI200305||ALL
 L|1|N`
-
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, MessageTypeQuery, messageType)
+	assert.Equal(t, messagetype.Query, messageType)
+	// Teardown
+	teardown()
 }
 
 func TestIdentifyQueryWithMultiHeader(t *testing.T) {
-	astm := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
+	// Arrange
+	message := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
 Q|1|VALI200301||ALL
 Q|2|VALI200302||ALL
 Q|3|VALI200303||ALL
 Q|4|VALI200304||ALL
 Q|5|VALI200305||ALL
-H|\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
+H|\\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
 Q|1|VALI200301||ALL
 Q|2|VALI200302||ALL
 Q|3|VALI200303||ALL
 Q|4|VALI200304||ALL
-H|\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
+H|\\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
 Q|1|VALI200301||ALL
 Q|5|VALI200305||ALL
 L|1|N`
-
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, MessageTypeQuery, messageType)
+	assert.Equal(t, messagetype.Query, messageType)
+	// Teardown
+	teardown()
 }
 
 func TestIdentifyOrderAndResult(t *testing.T) {
-
-	astm := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302131145
+	// Arrange
+	message := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302131145
 P|1||||^^^^|||U|||||||||||||||||Main||||||||||
 O|1|VAL99999903||^^^Pool_Cell|R||||||||||^||||||||||F||||||
 R|1|^^^Pool_Cell 1|0^0^8.8|||||F||Immucor||20200226153444|5030100389|
 R|2|^^^Pool_Cell|Negative|||||F||immucor||20200226153444|5030100389|
 L|1|N`
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
-
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, MessageTypeOrdersAndResults, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
+	// Teardown
+	teardown()
 }
 
 func TestIdentifyOrderAndResultWithMultiHeader(t *testing.T) {
-	astm := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302131145
+	// Arrange
+	message := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302131145
 P|1||||^^^^|||U|||||||||||||||||Main||||||||||
 O|1|VAL99999903||^^^Pool_Cell|R||||||||||^||||||||||F||||||
 R|1|^^^Pool_Cell 1|0^0^8.8|||||F||Immucor||20200226153444|5030100389|
 R|2|^^^Pool_Cell|Negative|||||F||immucor||20200226153444|5030100389|
-H|\^&|||RVT|||||LIS|||LIS2-A2|20200302131145
+H|\\^&|||RVT|||||LIS|||LIS2-A2|20200302131145
 P|1||||^^^^|||U|||||||||||||||||Main||||||||||
 O|1|VAL99999903||^^^Pool_Cell|R||||||||||^||||||||||F||||||
 R|1|^^^Pool_Cell 1|0^0^8.8|||||F||Immucor||20200226153444|5030100389|
 R|2|^^^Pool_Cell|Negative|||||F||immucor||20200226153444|5030100389|
-H|\^&|||RVT|||||LIS|||LIS2-A2|20200302131145
+H|\\^&|||RVT|||||LIS|||LIS2-A2|20200302131145
 P|1||||^^^^|||U|||||||||||||||||Main||||||||||
 O|1|VAL99999903||^^^Pool_Cell|R||||||||||^||||||||||F||||||
 R|1|^^^Pool_Cell 1|0^0^8.8|||||F||Immucor||20200226153444|5030100389|
 R|2|^^^Pool_Cell|Negative|||||F||immucor||20200226153444|5030100389|
 L|1|N`
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
-
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, MessageTypeOrdersAndResults, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
+	// Teardown
+	teardown()
 }
 
 func TestIdentifyWithEmptyLines(t *testing.T) {
-
-	astm := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
+	// Arrange
+	message := `H|\^&|||RVT|||||LIS|||LIS2-A2|20200302132021
 Q|1|VALI200301||ALL
 Q|2|VALI200302||ALL
 
@@ -128,62 +149,71 @@ Q|5|VALI200305||ALL
 L|1|N
 
 `
-
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, MessageTypeQuery, messageType)
+	assert.Equal(t, messagetype.Query, messageType)
+	// Teardown
+	teardown()
 }
 
-// -----------------------------------------------------------------------------------
-// The bug was that this Transmission contains one "P" and then mutlitple orders
-// Default Multi Message Was not processing those corerctly
-// -----------------------------------------------------------------------------------
 func TestIdentifyHPORCOROCOROC(t *testing.T) {
-	data := ""
-
-	data = data + "H|\\^&|||Bio-Rad|IH v5.1||||||||20230805142035\n"
-	data = data + "P|1||AA5E2ACC29||^|||||||||||||||||||||||||||^\n"
-	data = data + "O|1||AA5E2ACC29^^^\\^^^|F\n"
-	data = data + "R|1|^^^AntiA^MO01A^Blutgruppe: ABO/D  (5048)^|\n"
-	data = data + "C|1|ID-Diluent 2^^05761.04.41^20250228\\^^^|\n"
-	data = data + "R|2|^^^AntiB^MO01A^Blutgruppe: ABO/D  (5048)^|\n"
-	data = data + "O|2||AA5E2ACC29^^^\\^^^|^^^MO10^^33619^|\n"
-	data = data + "R|1|^^^AntiA^MO10^Blutgruppe Best�tigung: A,B,D (5005)^|\n"
-	data = data + "C|1|ID-Diluent 2^^05761.04.41^20250228\\^^^|\n"
-	data = data + "R|2|^^^AntiB^MO10^Blutgruppe Best�tigung: A,B,D (5005)^|\n"
-	data = data + "C|1|ID-Diluent 2^^05761.04.41^20250228\\^^^|\n"
-	data = data + "O|3||AA5E2ACC29^^^\\^^^|^^^PR07C^^33619^|\n"
-	data = data + "R|1|^^^cellA1^PR07C^Serumgegenprobe: A1,B,O (5052)^|\n"
-	data = data + "C|1|ID-DiaCell A1^^06012.49.1^20230821\\^^^|\n"
-	data = data + "L|1|N\n"
-
-	messageType, err := IdentifyMessage([]byte(data), EncodingUTF8)
+	// Note: This test is based on a bug report when
+	// transmission contains one "P" and then multiple orders
+	// Default Multi Message was not processing correctly
+	// Arrange
+	message := "H|\\^&|||Bio-Rad|IH v5.1||||||||20230805142035\n"
+	message += "P|1||AA5E2ACC29||^|||||||||||||||||||||||||||^\n"
+	message += "O|1||AA5E2ACC29^^^\\^^^|F\n"
+	message += "R|1|^^^AntiA^MO01A^Blutgruppe: ABO/D  (5048)^|\n"
+	message += "C|1|ID-Diluent 2^^05761.04.41^20250228\\^^^|\n"
+	message += "R|2|^^^AntiB^MO01A^Blutgruppe: ABO/D  (5048)^|\n"
+	message += "O|2||AA5E2ACC29^^^\\^^^|^^^MO10^^33619^|\n"
+	message += "R|1|^^^AntiA^MO10^Blutgruppe Best�tigung: A,B,D (5005)^|\n"
+	message += "C|1|ID-Diluent 2^^05761.04.41^20250228\\^^^|\n"
+	message += "R|2|^^^AntiB^MO10^Blutgruppe Best�tigung: A,B,D (5005)^|\n"
+	message += "C|1|ID-Diluent 2^^05761.04.41^20250228\\^^^|\n"
+	message += "O|3||AA5E2ACC29^^^\\^^^|^^^PR07C^^33619^|\n"
+	message += "R|1|^^^cellA1^PR07C^Serumgegenprobe: A1,B,O (5052)^|\n"
+	message += "C|1|ID-DiaCell A1^^06012.49.1^20230821\\^^^|\n"
+	message += "L|1|N\n"
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-
-	assert.Equal(t, MessageTypeOrdersAndResults, messageType)
-
+	assert.Equal(t, messagetype.Result, messageType)
+	// Teardown
+	teardown()
 }
 
 func TestIdentifyOrderAndMultipleResultsWithManufacturerDefinedField(t *testing.T) {
-	astm := `H|\^&|||H550^909YAXH02732^1.2.1.4|||||||P|LIS2-A2|20240906090907
+	// Arrange
+	message := `H|\^&|||H550^909YAXH02732^1.2.1.4|||||||P|LIS2-A2|20240906090907
 P|1|||||||||||||||||||||||||||||||||||
 O|1|70424906396^^013148^6||^^^DIF|R|20240906090745|||||||||BLOOD||||||||||F|||||
-C|1|I|NON_COMPLIANT_DATA^WBC^ABNORMAL_DIFFERENTIA\NON_COMPLIANT_DATA^RBC^RBC_DBL\NON_COMPLIANT_DATA^RBC^ABNORMAL_MCH\NON_COMPLIANT_DATA^PLT^PC_MODE\NON_COMPLIANT_DATA^PLT^SEP_RBC_PLT\SUSPECTED_PATHOLOGY^^ANEMIA\SUSPECTED_PATHOLOGY^^LEUKOPENB9IA\SUSPECTED_PATHOLOGY^^LYMPHOPENIA\SUSPECTED_PATHOLOGY^^LARGE_IMMATURE_CELLS\SUSPECTED_PATHOLOGY^^EXTREM_NEUTROPENIA|I
+C|1|I|NON_COMPLIANT_message^WBC^ABNORMAL_DIFFERENTIA\NON_COMPLIANT_message^RBC^RBC_DBL\NON_COMPLIANT_message^RBC^ABNORMAL_MCH\NON_COMPLIANT_message^PLT^PC_MODE\NON_COMPLIANT_message^PLT^SEP_RBC_PLT\SUSPECTED_PATHOLOGY^^ANEMIA\SUSPECTED_PATHOLOGY^^LEUKOPENB9IA\SUSPECTED_PATHOLOGY^^LYMPHOPENIA\SUSPECTED_PATHOLOGY^^LARGE_IMMATURE_CELLS\SUSPECTED_PATHOLOGY^^EXTREM_NEUTROPENIA|I
 M|1|REAGENT|CLEANER\DILUENT\LYSE|240415I1(^20240902000000^20241202\240423H1(^20240905000000^20250305\240411M11^20240828000000^20241028
 R|1|^^^MCV^787-2|56.1|um3|80.0 - 96.0^REFERENCE_RANGE|L||W||LABOR^^USER|20240906090745||
 R|2|^^^NEU#^751-8|0.00|10E3/uL|1.60 - 7.00^REFERENCE_RANGE|LL||W||LABOR^^USER|20240906090745||
 R|3|^^^NEU%^770-8|12.5|%|40.0 - 73.0^REFERENCE_RANGE|L||W||LABOR^^USER|20240906090745||
 R|4|^^^RDW-CV^788-0|23.0|%|11.0 - 17.0^REFERENCE_RANGE|H||F||LABOR^^USER|20240906090745||
 L|1|N`
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
-
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, MessageTypeOrdersAndResults, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
+	// Teardown
+	teardown()
 }
 
 func TestIdentifyOrderAndMultipleResultsWithMultipleManufacturerDefinedField(t *testing.T) {
-	astm := `H|\^&|||H550^909YAXH02732^1.2.1.4|||||||Q|LIS2-A2|20240912070504
+	// Arrange
+	message := `H|\^&|||H550^909YAXH02732^1.2.1.4|||||||Q|LIS2-A2|20240912070504
 P|1|||||||||||||||||||||||||||||||||||
 O|1|SAMPLECODE||^^^DIF|R|20240912070343|||||||||CTRL^^CTRLLOW||||||||||F|||||
 M|1|HISTOGRAM|RBC/PLT|RbcAlongRes|FLOATLE-stream/deflate:base64^ZV+UPhH/dfBm3vuue/z+n6fHzyG4XyaZfbL8Cw3DNM0jAplGGny6P0G+7ZK2NtcHva6TE8yaLJtpib72B4x7cgUv11WW1OelZr0W9mqcosxlnjWWnak1qq2GyzGW5FMO2MSVm/JDsb1WZmuPYwdsJiL8SOWP3yAYw5ZoXSW46asmO8sx16sQunLFL6yI1epSOYaFfPlKuZSidF81VtSqJKtixTzqrRarDJdy9TyjnXFyhSsV6lNe1UvnDIRVIrVGsTVXb67A3YNvYtdibsetwovzXgNXI/zG8OGOaMd9jXAtuG2PbsT9gfAd+J+tJMMdHrKmbeT5mXTuYq5e1fcp8O1lfH3Puwk5i78beg92P/QV2CnsA+0vsr7CHZq9/zDeMvRf7G+wR7H3Y+7G/wz6AfRD7B+wx7EPYE9iHsY9gZ7GPYh/DPo49hT2N/Qv2DPZZ7F85xhBX6CLcoRT/JS4ZpLYnSOjJ2cK17XPO69S3pLLpds1RXiD18p3AtJtrplume+BFJXC/dFUpMLxHlmxHOtcI8kra7Dvh77Buw87Buxb8K+GTsf24u9ELsAuxC7CPsW7FuxF2Hfhn07tg/bj30HdjH2ndiLse/CXoK9FHsZdgl2APtu7FLse7DLsO/FLsc2sS1shS3Yy7Hvw74fuwL7AewHsR/CrsSuwq7Gfhg7iP0I9qPTj2KuwQ9hPYT2Kvxl6D/RT209jPYq/Ffg47jP089jrsF7BrsNdjb8B+EXsj9kvYNvYm7JexX8GuxX4V+zXs17E3Y2/BjmC/gV2H/Sb2Vuy32I5K9usov+vFP1HPvgaxZxqY821JuhuZt1Gmi5qYu0kCZTHmj0lkxTbWsE1S6+OsIy5G9B3W8u75d8B/8ImW/znnveJk6qLUTYPOft4LbiqmIEWpY/ZdYRg/0QK89omI7SPNadTwEKUg3VUwt9yLntpH4aon10kA7z3498n+D7FM2wfYZO0890jI6wf5z2015+D9Dn1EOd7Hufb2cem1aR82wtoULKlXPrmmF9WfqWBmk3fUIJaqU41VENrdbn6LyTA1Ssz7uA8nS56tz1cOvmUg6d0tfKaVz3vb6G/bpd1K3r+EOturi+9ufbRM/oe+Jk6pz7lK9z65x7OG7+3qCu+2+K/kPmBTI+vzGw==
@@ -212,8 +242,12 @@ R|18|^^^HCT^4544-3|18.4|%|17.2-19.0^REFERENCE_RANGE|N||F||LABOR^^USER|2024091207
 R|19|^^^EOS#^711-2|0.27|10E3/uL|0.00-0.28^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||
 R|20|^^^EOS%^713-8|8.4|%|0.0-9.0^REFERENCE_RANGE|N||F||LABOR^^USER|20240912070343||
 L|1|N`
-	messageType, err := IdentifyMessage([]byte(astm), EncodingUTF8)
-
+	config.Encoding = encoding.UTF8
+	// Act
+	messageType, err := astm.IdentifyMessage([]byte(message), config)
+	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, MessageTypeOrdersAndResults, messageType)
+	assert.Equal(t, messagetype.Result, messageType)
+	// Teardown
+	teardown()
 }

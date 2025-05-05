@@ -1,122 +1,52 @@
 package astm
 
 import (
-	"fmt"
+	"github.com/blutspende/go-astm/v3/enums/messagetype"
+	"github.com/blutspende/go-astm/v3/functions"
+	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"regexp"
-	"strings"
-
-	"golang.org/x/text/encoding/charmap"
 )
 
-type MessageType int
-
-const MessageTypeUnkown MessageType = -1
-const MessageTypeQuery MessageType = 1
-const MessageTypeOrdersOnly MessageType = 2
-const MessageTypeOrdersAndResults MessageType = 3
-
-func IdentifyMessage(messageEncoded []byte, enc Encoding) (MessageType, error) {
-
-	messageBytes, err := utilityConvertByteArrayToUTF(messageEncoded, enc)
+func IdentifyMessage(messageData []byte, configuration ...astmmodels.Configuration) (messageType string, err error) {
+	// Load configuration
+	config, err := loadConfiguration(configuration...)
 	if err != nil {
-		return MessageTypeUnkown, err
+		return "", err
 	}
-
-	bufferedInputLinesWithEmptyLines := strings.Split(string(messageBytes), string([]byte{0x0A})) // copy
-	if len(bufferedInputLinesWithEmptyLines) <= 1 {                                               // if it was not possible to break with non-standard 0x0a line-break try 0d (standard)
-		bufferedInputLinesWithEmptyLines = strings.Split(string(messageBytes), string([]byte{0x0D}))
+	// Convert encoding to UTF8
+	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, config)
+	if err != nil {
+		return "", err
 	}
-	// strip the remaining 0A and 0D Linefeed at the end
-	for i := 0; i < len(bufferedInputLinesWithEmptyLines); i++ {
-		// 0d,0a then again as there have been files observed which had 0a0d (0d0a would be normal)
-		bufferedInputLinesWithEmptyLines[i] = strings.Trim(bufferedInputLinesWithEmptyLines[i], string([]byte{0x0A}))
-		bufferedInputLinesWithEmptyLines[i] = strings.Trim(bufferedInputLinesWithEmptyLines[i], string([]byte{0x0D}))
-		bufferedInputLinesWithEmptyLines[i] = strings.Trim(bufferedInputLinesWithEmptyLines[i], string([]byte{0x0A}))
-		bufferedInputLinesWithEmptyLines[i] = strings.Trim(bufferedInputLinesWithEmptyLines[i], string([]byte{0x0D}))
+	// Split the message data into lines
+	lines, err := functions.SliceLines(utf8Data, config)
+	if err != nil {
+		return "", err
 	}
-
-	// remove empty lines
-	bufferedInputLines := []string{}
-	for i := range bufferedInputLinesWithEmptyLines {
-		if strings.Trim(bufferedInputLinesWithEmptyLines[i], " ") != "" {
-			bufferedInputLines = append(bufferedInputLines, strings.TrimSpace(bufferedInputLinesWithEmptyLines[i]))
+	// Extract the first characters from each line
+	firstChars := ""
+	for _, line := range lines {
+		if len(line) > 0 {
+			firstChars += string(line[0])
 		}
 	}
-
-	genome := ""
-	for _, line := range bufferedInputLines {
-		if len(line) > 1 {
-			genome = genome + string(line[0])
-		}
-	}
-
+	// TODO: verify these regexes to be correct
+	// Set up the possible message types regexes
 	expressionQuery := "^(HQ+)+L?$"
 	expressionOrder := "^(H(PM?C?M?OM?C?M?)+)+L?$"
 	expressionOrderAndResult := "^(H(PM*C?M*OM*C?M*(RM*C?M*)+)+)+L?$"
 	expressionManyOrderAndResult := "^(H(PM*C?M*(OM*C?M*(RM*C?M*)+)*)+)L?$"
-
-	if match, _ := regexp.MatchString(expressionQuery, genome); match {
-		return MessageTypeQuery, nil
+	// Check the first characters against the regexes and return the message type
+	switch {
+	case regexp.MustCompile(expressionQuery).MatchString(firstChars):
+		return messagetype.Query, nil
+	case regexp.MustCompile(expressionOrder).MatchString(firstChars):
+		return messagetype.Order, nil
+	case regexp.MustCompile(expressionOrderAndResult).MatchString(firstChars):
+		return messagetype.Result, nil
+	case regexp.MustCompile(expressionManyOrderAndResult).MatchString(firstChars):
+		return messagetype.Result, nil
 	}
-
-	if match, _ := regexp.MatchString(expressionOrder, genome); match {
-		return MessageTypeOrdersOnly, nil
-	}
-
-	if match, _ := regexp.MatchString(expressionOrderAndResult, genome); match {
-		return MessageTypeOrdersAndResults, nil
-	}
-
-	if match, _ := regexp.MatchString(expressionManyOrderAndResult, genome); match {
-		return MessageTypeOrdersAndResults, nil
-	}
-
-	return MessageTypeUnkown, nil
-}
-
-func utilityConvertByteArrayToUTF(messageData []byte, fromEncoding Encoding) (string, error) {
-
-	var (
-		messageBytes []byte
-		err          error
-	)
-
-	switch fromEncoding {
-	case EncodingUTF8:
-		messageBytes = messageData
-	case EncodingASCII:
-		messageBytes = messageData
-	case EncodingDOS866:
-		if messageBytes, err = EncodeCharsetToUTF8From(charmap.CodePage866, messageData); err != nil {
-			return "", err
-		}
-	case EncodingDOS855:
-		if messageBytes, err = EncodeCharsetToUTF8From(charmap.CodePage855, messageData); err != nil {
-			return "", err
-		}
-	case EncodingDOS852:
-		if messageBytes, err = EncodeCharsetToUTF8From(charmap.CodePage852, messageData); err != nil {
-			return "", err
-		}
-	case EncodingWindows1250:
-		if messageBytes, err = EncodeCharsetToUTF8From(charmap.Windows1250, messageData); err != nil {
-			return "", err
-		}
-	case EncodingWindows1251:
-		if messageBytes, err = EncodeCharsetToUTF8From(charmap.Windows1251, messageData); err != nil {
-			return "", err
-		}
-	case EncodingWindows1252:
-		if messageBytes, err = EncodeCharsetToUTF8From(charmap.Windows1252, messageData); err != nil {
-			return "", err
-		}
-	case EncodingISO8859_1:
-		if messageBytes, err = EncodeCharsetToUTF8From(charmap.ISO8859_1, messageData); err != nil {
-			return "", err
-		}
-	default:
-		return "", fmt.Errorf("invalid Codepage Id='%d' - %w", fromEncoding, err)
-	}
-
-	return string(messageBytes), nil
+	// If no match was found return unknown
+	return messagetype.Unidentified, err
 }
