@@ -1,6 +1,5 @@
 # go-astm
 Library for handling the ASTM protocol in Go.
-
 ###### Install
 `go get github.com/blutspende/go-astm/v3`
 
