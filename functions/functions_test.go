@@ -265,6 +265,10 @@ type CompositeMessage struct {
 type CompositeArrayMessage struct {
 	CompositeRecordArray []CompositeRecordStruct
 }
+type CompositeArrayAndSingleRecordMessage struct {
+	CompositeRecordArray []CompositeRecordStruct
+	Ending               SimpleRecord `astm:"E"`
+}
 type OptionalMessage struct {
 	First    SimpleRecord `astm:"F"`
 	Optional SimpleRecord `astm:"S,optional"`

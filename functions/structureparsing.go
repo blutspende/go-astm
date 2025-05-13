@@ -2,6 +2,7 @@ package functions
 
 import (
 	"errors"
+	"fmt"
 	"github.com/blutspende/go-astm/v3/constants"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
@@ -109,7 +110,7 @@ func ParseStruct(inputLines []string, targetStruct interface{}, lineIndex *int, 
 						*lineIndex--
 						continue
 					} else {
-						return errmsg.ErrStructureParsingLineTypeNameMismatch
+						return fmt.Errorf("%w @ln %d", errmsg.ErrStructureParsingLineTypeNameMismatch, *lineIndex)
 					}
 				}
 			}
