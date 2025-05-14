@@ -1,8 +1,8 @@
 package astm
 
 import (
+	"github.com/blutspende/bloodlab-common/timezone"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
-	"time"
 )
 
 func loadConfiguration(configuration ...astmmodels.Configuration) (config *astmmodels.Configuration, err error) {
@@ -17,7 +17,7 @@ func loadConfiguration(configuration ...astmmodels.Configuration) (config *astmm
 		config.Delimiters.Escape == "" {
 		config.Delimiters = astmmodels.DefaultDelimiters
 	}
-	config.TimeLocation, err = time.LoadLocation(config.TimeZone)
+	config.TimeLocation, err = timezone.GetLocation(config.TimeZone)
 	if err != nil {
 		return nil, err
 	}

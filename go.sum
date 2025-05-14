@@ -1,5 +1,13 @@
 github.com/blutspende/bloodlab-common v0.0.0-20250512090108-a07bb3c9e833 h1:C+eXSaYhdX9LOqyiSVqVjR7kyFfNqVzO7p/STQF58oA=
 github.com/blutspende/bloodlab-common v0.0.0-20250512090108-a07bb3c9e833/go.mod h1:qGfDEOuwNrl0WbVV6rPPIrfHUMLZ1z5Ry7/a02Qdjjc=
+github.com/blutspende/bloodlab-common v0.0.0-20250513094114-21a971ae6bb9 h1:IF90KS9zb6z8+lolMSgtVAdjt+vKiQx//5Sb6XQpwbU=
+github.com/blutspende/bloodlab-common v0.0.0-20250513094114-21a971ae6bb9/go.mod h1:0KzDqIw3QvL8syKVehqLUcRjEk8HXIOV761puQxoza8=
+github.com/blutspende/bloodlab-common v0.0.0-20250514093820-32789d036241 h1:SS6Vgv9WL6Li29U8U+pXYaHnisnt4Wm9wBcbt856BUM=
+github.com/blutspende/bloodlab-common v0.0.0-20250514093820-32789d036241/go.mod h1:0KzDqIw3QvL8syKVehqLUcRjEk8HXIOV761puQxoza8=
+github.com/blutspende/bloodlab-common v0.0.0-20250514094651-b31d78b40e47 h1:WGACyqQOOcHvUA39eTalXxc3VIxiv6Ptga/Y9fy+rtQ=
+github.com/blutspende/bloodlab-common v0.0.0-20250514094651-b31d78b40e47/go.mod h1:0KzDqIw3QvL8syKVehqLUcRjEk8HXIOV761puQxoza8=
+github.com/blutspende/bloodlab-common v0.0.0-20250514100023-70dcdb64e1ef h1:vyLQOWdBzRFIUumpnawDoiqs1eDKOS1CLE2/BN8MVqk=
+github.com/blutspende/bloodlab-common v0.0.0-20250514100023-70dcdb64e1ef/go.mod h1:0KzDqIw3QvL8syKVehqLUcRjEk8HXIOV761puQxoza8=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

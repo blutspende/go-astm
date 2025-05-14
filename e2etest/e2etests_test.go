@@ -2,12 +2,12 @@ package e2e
 
 import (
 	"bytes"
-	"github.com/blutspende/go-astm/v3/enums/encoding"
+	"github.com/blutspende/bloodlab-common/encoding"
+	"github.com/blutspende/bloodlab-common/timezone"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 	"testing"
-	"time"
 )
 
 // Configuration struct for tests
@@ -18,7 +18,7 @@ func teardown() {
 	config = astmmodels.DefaultConfiguration
 	config.Encoding = encoding.UTF8
 	config.Delimiters = astmmodels.DefaultDelimiters
-	config.TimeLocation, _ = time.LoadLocation(config.TimeZone)
+	config.TimeLocation, _ = timezone.GetLocation(config.TimeZone)
 }
 
 // Setup default config and run all tests

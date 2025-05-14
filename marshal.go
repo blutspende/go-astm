@@ -1,6 +1,7 @@
 package astm
 
 import (
+	"github.com/blutspende/bloodlab-common/encoding"
 	"github.com/blutspende/go-astm/v3/functions"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 )
@@ -17,7 +18,7 @@ func Marshal(sourceStruct interface{}, configuration ...astmmodels.Configuration
 		return nil, err
 	}
 	// Convert UTF8 string array to encoding
-	result, err = functions.ConvertArrayFromUtf8ToEncoding(lines, config)
+	result, err = encoding.ConvertArrayFromUtf8ToEncoding(lines, config.Encoding)
 	if err != nil {
 		return nil, err
 	}

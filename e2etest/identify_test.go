@@ -1,9 +1,9 @@
 package e2e
 
 import (
+	"github.com/blutspende/bloodlab-common/encoding"
+	"github.com/blutspende/bloodlab-common/messagetype"
 	"github.com/blutspende/go-astm/v3"
-	"github.com/blutspende/go-astm/v3/enums/encoding"
-	"github.com/blutspende/go-astm/v3/enums/messagetype"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

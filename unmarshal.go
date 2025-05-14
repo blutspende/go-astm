@@ -1,6 +1,7 @@
 package astm
 
 import (
+	"github.com/blutspende/bloodlab-common/encoding"
 	"github.com/blutspende/go-astm/v3/functions"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 )
@@ -12,7 +13,7 @@ func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...as
 		return err
 	}
 	// Convert encoding to UTF8
-	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, config)
+	utf8Data, err := encoding.ConvertFromEncodingToUtf8(messageData, config.Encoding)
 	if err != nil {
 		return err
 	}

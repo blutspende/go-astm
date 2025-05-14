@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/blutspende/bloodlab-common v0.0.0-20250512090108-a07bb3c9e833 // indirect
+	github.com/blutspende/bloodlab-common v0.0.0-20250514100023-70dcdb64e1ef // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

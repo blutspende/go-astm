@@ -1,18 +1,15 @@
 package e2e
 
 import (
-	"github.com/blutspende/go-astm/v3/enums/encoding"
-	"github.com/blutspende/go-astm/v3/enums/timezone"
+	"github.com/blutspende/bloodlab-common/encoding"
+	"github.com/blutspende/bloodlab-common/timezone"
+	"github.com/blutspende/go-astm/v3"
 	"github.com/blutspende/go-astm/v3/errmsg"
-	"github.com/blutspende/go-astm/v3/functions"
 	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/encoding/charmap"
 	"testing"
 	"time"
-
-	"github.com/blutspende/go-astm/v3"
-	"github.com/stretchr/testify/assert"
-
-	"golang.org/x/text/encoding/charmap"
 )
 
 type ComponentedRecord struct {
@@ -313,7 +310,7 @@ func TestComponentAccessOnTime(t *testing.T) {
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
 	assert.Nil(t, err)
-	location, err := time.LoadLocation(timezone.EuropeBerlin)
+	location, err := timezone.GetLocation(timezone.EuropeBerlin)
 	expDate1, err := time.ParseInLocation("20060102", "20240131", location)
 	expDate2 := time.Time{}
 	assert.Len(t, message.Comment.Reagents, 2)
@@ -667,7 +664,7 @@ func TestEncodingVeryLongCharsets(t *testing.T) {
 	}
 	config.Encoding = encoding.Windows1252
 	// Act
-	encoded, err := functions.ConvertFromEncodingToUtf8(veryLongMessage, &config)
+	encoded, err := encoding.ConvertFromEncodingToUtf8(veryLongMessage, config.Encoding)
 	// Assert
 	assert.Nil(t, err)
 	// in this case the encoding should equal the original: no special characters
