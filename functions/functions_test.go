@@ -1,7 +1,6 @@
 package functions
 
 import (
-	"github.com/blutspende/bloodlab-common/timezone"
 	"github.com/blutspende/go-astm/v3/models"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"testing"
@@ -16,7 +15,7 @@ func teardown() {
 	config = &astmmodels.Configuration{}
 	*config = astmmodels.DefaultConfiguration
 	config.Delimiters = astmmodels.DefaultDelimiters
-	config.TimeLocation, _ = timezone.GetLocation(config.TimeZone)
+	config.TimeLocation, _ = config.TimeZone.GetLocation()
 }
 
 // Setup mock data for every test

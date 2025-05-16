@@ -310,7 +310,7 @@ func TestComponentAccessOnTime(t *testing.T) {
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
 	assert.Nil(t, err)
-	location, err := timezone.GetLocation(timezone.EuropeBerlin)
+	location, err := timezone.EuropeBerlin.GetLocation()
 	expDate1, err := time.ParseInLocation("20060102", "20240131", location)
 	expDate2 := time.Time{}
 	assert.Len(t, message.Comment.Reagents, 2)

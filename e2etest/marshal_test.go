@@ -155,7 +155,7 @@ func TestTimeLocalization(t *testing.T) {
 	// Note: Test provides current time as UTC and expects the converter to stream as Berlin-Time
 	// Arrange
 	var msg HeaderMessage
-	europeBerlin, err := timezone.GetLocation(timezone.EuropeBerlin)
+	europeBerlin, err := timezone.EuropeBerlin.GetLocation()
 	testTime := time.Now()
 	timeInBerlin := time.Now().In(europeBerlin)
 	msg.Header.DateAndTime = testTime.UTC()

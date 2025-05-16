@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.1.0] - 2025-05-16
+
+### Added
+- bloodlab-common package
+
+### Changed
+- Enums and functions now in bloodlab-common package removed
+
+### Fixed
+
 ## [3.0.0] - 2025-04-30
 
 ### Added

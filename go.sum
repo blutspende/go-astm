@@ -1,5 +1,7 @@
 github.com/blutspende/bloodlab-common v0.0.0-20250515075328-1961256385dc h1:HDF+hCCQqG7wt0KLExhJUt/pmT5WZ1EUw5Ha86nW+fs=
 github.com/blutspende/bloodlab-common v0.0.0-20250515075328-1961256385dc/go.mod h1:0KzDqIw3QvL8syKVehqLUcRjEk8HXIOV761puQxoza8=
+github.com/blutspende/bloodlab-common v1.0.0 h1:OEBggB7JP8aZPJQkE1jSDzJWSv5RWkO/PYC7CTwMaxM=
+github.com/blutspende/bloodlab-common v1.0.0/go.mod h1:0KzDqIw3QvL8syKVehqLUcRjEk8HXIOV761puQxoza8=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

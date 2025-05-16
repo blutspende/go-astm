@@ -1,9 +1,9 @@
 module github.com/blutspende/go-astm/v3
 
-go 1.24.2
+go 1.24.3
 
 require (
-	github.com/blutspende/bloodlab-common v0.0.0-20250515075328-1961256385dc
+	github.com/blutspende/bloodlab-common v1.0.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/text v0.25.0
 )
