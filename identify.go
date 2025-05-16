@@ -1,20 +1,21 @@
 package astm
 
 import (
-	"github.com/blutspende/go-astm/v3/enums/messagetype"
+	"github.com/blutspende/bloodlab-common/encoding"
+	"github.com/blutspende/bloodlab-common/messagetype"
 	"github.com/blutspende/go-astm/v3/functions"
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"regexp"
 )
 
-func IdentifyMessage(messageData []byte, configuration ...astmmodels.Configuration) (messageType string, err error) {
+func IdentifyMessage(messageData []byte, configuration ...astmmodels.Configuration) (messageType messagetype.MessageType, err error) {
 	// Load configuration
 	config, err := loadConfiguration(configuration...)
 	if err != nil {
 		return "", err
 	}
 	// Convert encoding to UTF8
-	utf8Data, err := functions.ConvertFromEncodingToUtf8(messageData, config)
+	utf8Data, err := encoding.ConvertFromEncodingToUtf8(messageData, config.Encoding)
 	if err != nil {
 		return "", err
 	}

@@ -2,10 +2,10 @@ package e2e
 
 import (
 	"fmt"
+	"github.com/blutspende/bloodlab-common/encoding"
+	"github.com/blutspende/bloodlab-common/timezone"
 	"github.com/blutspende/go-astm/v3"
-	"github.com/blutspende/go-astm/v3/enums/encoding"
 	"github.com/blutspende/go-astm/v3/enums/notation"
-	"github.com/blutspende/go-astm/v3/enums/timezone"
 	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/encoding/charmap"
@@ -155,7 +155,7 @@ func TestTimeLocalization(t *testing.T) {
 	// Note: Test provides current time as UTC and expects the converter to stream as Berlin-Time
 	// Arrange
 	var msg HeaderMessage
-	europeBerlin, err := time.LoadLocation("Europe/Berlin")
+	europeBerlin, err := timezone.EuropeBerlin.GetLocation()
 	testTime := time.Now()
 	timeInBerlin := time.Now().In(europeBerlin)
 	msg.Header.DateAndTime = testTime.UTC()

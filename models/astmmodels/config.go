@@ -1,19 +1,19 @@
 package astmmodels
 
 import (
-	"github.com/blutspende/go-astm/v3/enums/encoding"
+	"github.com/blutspende/bloodlab-common/encoding"
+	"github.com/blutspende/bloodlab-common/timezone"
 	"github.com/blutspende/go-astm/v3/enums/lineseparator"
 	"github.com/blutspende/go-astm/v3/enums/notation"
-	"github.com/blutspende/go-astm/v3/enums/timezone"
 	"time"
 )
 
 // Configuration struct for the whole process
 type Configuration struct {
-	Encoding                   string
+	Encoding                   encoding.Encoding
 	LineSeparator              string
 	AutoDetectLineSeparator    bool
-	TimeZone                   string
+	TimeZone                   timezone.TimeZone
 	EnforceSequenceNumberCheck bool
 	Notation                   string
 	DefaultDecimalPrecision    int

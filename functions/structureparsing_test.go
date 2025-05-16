@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"errors"
 	"github.com/blutspende/go-astm/v3/errmsg"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -176,7 +177,33 @@ func TestParseStruct_UnexpectedLineTypeError(t *testing.T) {
 	// Act
 	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
 	// Assert
-	assert.EqualError(t, err, errmsg.ErrLineParsingLineTypeNameMismatch.Error())
+	assert.True(t, errors.Is(err, errmsg.ErrStructureParsingLineTypeNameMismatch))
+}
+func TestParseStruct_EndOfCompositeArray(t *testing.T) {
+	// Arrange
+	input := []string{
+		"F|1|str|1",
+		"S|1|1|str",
+		"F|2|str|1",
+		"S|1|1|str",
+		"E|1|end",
+	}
+	target := CompositeArrayAndSingleRecordMessage{}
+	lineIndex := 0
+	// Act
+	err := ParseStruct(input, &target, &lineIndex, 1, 0, config)
+	// Assert
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "str", target.CompositeRecordArray[0].Record1.First)
+	assert.Equal(t, 1, target.CompositeRecordArray[0].Record1.Second)
+	assert.Equal(t, 1, target.CompositeRecordArray[0].Record2.First)
+	assert.Equal(t, "str", target.CompositeRecordArray[0].Record2.Second)
+	assert.Equal(t, "str", target.CompositeRecordArray[1].Record1.First)
+	assert.Equal(t, 1, target.CompositeRecordArray[1].Record1.Second)
+	assert.Equal(t, 1, target.CompositeRecordArray[1].Record2.First)
+	assert.Equal(t, "str", target.CompositeRecordArray[1].Record2.Second)
+	assert.Equal(t, "end", target.Ending.First)
 }
 func TestParseStruct_LinesDepletedError(t *testing.T) {
 	// Arrange

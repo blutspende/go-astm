@@ -1,16 +1,14 @@
 # go-astm
 Library for handling the ASTM protocol in Go.
-
 ###### Install
 `go get github.com/blutspende/go-astm/v3`
 
 # Features
   - Marshalling and unmarshalling of ASTM messages
   - Baseline message structures for LIS02-A2
-  - Encoding from-to raw byte arrays
-  - Timezone conversion
   - Custom delimiters automatically identified (defaults are \^&)
   - Line breaks automatically identified (default is \n)
+  - Encoding from-to raw bytes and automatic timezone conversions are included using blooblab-common
 
 3 functions are provided:
 - `Marshal`: Converts a Go structure to an array of byte arrays
@@ -19,7 +17,7 @@ Library for handling the ASTM protocol in Go.
 ``` go
 func Marshal(sourceStruct interface{}, configuration ...models.Configuration) (result [][]byte, err error) 
 func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...models.Configuration) (err error)
-func IdentifyMessage(messageData []byte, configuration ...models.Configuration) (messageType astmconst.MessageType, err error) 
+func IdentifyMessage(messageData []byte, configuration ...models.Configuration) (messageType messagetype.MessageType, err error) 
 ```
 
 # Setting up configuration
@@ -27,10 +25,10 @@ For all three functions a configuration structure can be provided to determine b
 
 ``` go
 type Configuration struct {
-	Encoding                   string
+	Encoding                   encoding.Encoding
 	LineSeparator              string
 	AutoDetectLineSeparator    bool
-	TimeZone                   string
+	TimeZone                   timezone.TimeZone
 	EnforceSequenceNumberCheck bool
 	Notation                   string
 	DefaultDecimalPrecision    int
@@ -63,18 +61,7 @@ var DefaultDelimiters = Delimiters{
 }
 ```
 ## Encoding
-Character encoding for reading and writing bytes. Options are all charmaps supported by `golang.org/x/text/encoding/charmap`, but a subset is provided for convenience.
-``` go
-encoding.UTF8
-encoding.ASCII
-encoding.Windows1250
-encoding.Windows1251
-encoding.Windows1252
-encoding.DOS852
-encoding.DOS855
-encoding.DOS866
-encoding.ISO8859_1
-```
+Character encoding for reading and writing bytes. Options are all enum constants from `github.com/blutspende/bloodlab-common/encoding`.
 ## LineSeparator
 Line separator can be auto-detected, or set manually. If `AutoDetectLineSeparator` is set to true, this can be ignored. A few constants are provided for convenience, but any string is valid. This is only relevant for unmarshal.
 ``` go
@@ -86,13 +73,7 @@ lineseparator.CRLF
 ## AutoDetectLineSeparator
 If set to true, the line separator is detected automatically. If set to false, the line separator set in `LineSeparator` is used. This is only relevant for unmarshal.
 ## TimeZone
-The timezone is used for date/time conversion. The timezone is set in the format "Region/City", e.g. "Europe/Berlin". Any string can be valid, but a few is provided for convenience as constants.
-``` go
-timezone.UTC
-timezone.EuropeBerlin
-timezone.EuropeBudapest
-timezone.EuropeLondon
-```
+The timezone is used for date/time conversion. Options are all enum constants from `github.com/blutspende/bloodlab-common/timezone`.
 ## EnforceSequenceNumberCheck
 In unmarshal, the sequence number (second field in every line) is checked for validity. If set to true, an error is returned if the sequence number is incorrect. If set to false, it is ignored. This is only relevant for unmarshal.
 ## Notation
@@ -125,15 +106,7 @@ For internal use only. Should be ignored.
 # Usage of the library functions
 
 ## Identifying a message: IdentifyMessage
-Identifying the type of message without decoding it. There are 3 valid types of messages and one unknown, for which the following constants are provided:
-``` go
-type MessageType
-
-messagetype.Unidentified
-messagetype.Query
-messagetype.Order
-messagetype.Result
-```
+Identifying the type of message without decoding it. Return values are options from `github.com/blutspende/bloodlab-common/messagetype` enum definitions. Currently, there are 3 valid types and unidentified as possible return values.
 It can be used for example as follows:
 ``` go
 messageType, err := astm.IdentifyMessage([]byte(astm), config)

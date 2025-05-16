@@ -15,7 +15,7 @@ func teardown() {
 	config = &astmmodels.Configuration{}
 	*config = astmmodels.DefaultConfiguration
 	config.Delimiters = astmmodels.DefaultDelimiters
-	config.TimeLocation, _ = time.LoadLocation(config.TimeZone)
+	config.TimeLocation, _ = config.TimeZone.GetLocation()
 }
 
 // Setup mock data for every test
@@ -264,6 +264,10 @@ type CompositeMessage struct {
 }
 type CompositeArrayMessage struct {
 	CompositeRecordArray []CompositeRecordStruct
+}
+type CompositeArrayAndSingleRecordMessage struct {
+	CompositeRecordArray []CompositeRecordStruct
+	Ending               SimpleRecord `astm:"E"`
 }
 type OptionalMessage struct {
 	First    SimpleRecord `astm:"F"`
