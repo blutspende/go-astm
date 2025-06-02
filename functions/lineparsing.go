@@ -284,18 +284,19 @@ func setField(value string, field reflect.Value, annotation models.AstmFieldAnno
 }
 
 func splitStringWithEscape(input string, delimiter string, escape string) (result []string) {
-	delim := delimiter[0]
-	esc := escape[0]
+	delimiterRune := rune(delimiter[0])
+	escapeRune := rune(escape[0])
+	inputRunes := []rune(input)
 	start := 0
-	for i := 0; i < len(input); i++ {
-		if input[i] == delim {
-			result = append(result, input[start:i])
+	for i := 0; i < len(inputRunes); i++ {
+		if inputRunes[i] == delimiterRune {
+			result = append(result, string(inputRunes[start:i]))
 			start = i + 1
 		}
-		if i == len(input)-1 {
-			result = append(result, input[start:i+1])
+		if i == len(inputRunes)-1 {
+			result = append(result, string(inputRunes[start:i+1]))
 		}
-		if input[i] == esc {
+		if inputRunes[i] == escapeRune {
 			i++
 			continue
 		}
@@ -305,15 +306,16 @@ func splitStringWithEscape(input string, delimiter string, escape string) (resul
 
 func filterStringEscapeChars(input string, escape string) string {
 	var builder strings.Builder
-	esc := escape[0]
-	for i := 0; i < len(input); i++ {
-		if input[i] == esc {
+	escapeRune := rune(escape[0])
+	inputRunes := []rune(input)
+	for i := 0; i < len(inputRunes); i++ {
+		if inputRunes[i] == escapeRune {
 			i++
-			if i < len(input) {
-				builder.WriteRune(rune(input[i]))
+			if i < len(inputRunes) {
+				builder.WriteRune(inputRunes[i])
 			}
 		} else {
-			builder.WriteRune(rune(input[i]))
+			builder.WriteRune(inputRunes[i])
 		}
 	}
 	return builder.String()

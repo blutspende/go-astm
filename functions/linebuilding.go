@@ -9,7 +9,9 @@ import (
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 	"math"
 	"reflect"
+	"slices"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -81,7 +83,7 @@ func BuildLine(sourceStruct interface{}, lineTypeName string, sequenceNumber int
 				}
 			}
 		} else if sourceFieldAnnotation.IsComponent {
-			if contains(processedComponentFields, sourceFieldAnnotation.FieldPos) {
+			if slices.Contains(processedComponentFields, sourceFieldAnnotation.FieldPos) {
 				// If the field is already processed, skip it
 				continue
 			}
@@ -213,7 +215,11 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 	switch field.Kind() {
 	case reflect.String:
 		if field.Type().ConvertibleTo(reflect.TypeOf("")) {
-			result = field.String()
+			if config.EscapeOutputStrings {
+				result = buildStringEscapeChars(field.String(), config)
+			} else {
+				result = field.String()
+			}
 		} else {
 			return "", errmsg.ErrLineBuildingUsupportedDataType
 		}
@@ -265,11 +271,17 @@ func convertField(field reflect.Value, annotation models.AstmFieldAnnotation, co
 	return "", errmsg.ErrLineBuildingUsupportedDataType
 }
 
-func contains(slice []int, item int) bool {
-	for _, v := range slice {
-		if v == item {
-			return true
+func buildStringEscapeChars(input string, config *astmmodels.Configuration) string {
+	var builder strings.Builder
+	inputRunes := []rune(input)
+	for i := 0; i < len(inputRunes); i++ {
+		if inputRunes[i] == rune(config.Delimiters.Field[0]) ||
+			inputRunes[i] == rune(config.Delimiters.Repeat[0]) ||
+			inputRunes[i] == rune(config.Delimiters.Component[0]) ||
+			inputRunes[i] == rune(config.Delimiters.Escape[0]) {
+			builder.WriteRune(rune(config.Delimiters.Escape[0]))
 		}
+		builder.WriteRune(inputRunes[i])
 	}
-	return false
+	return builder.String()
 }

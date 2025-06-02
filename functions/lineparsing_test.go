@@ -432,6 +432,18 @@ func TestSplitStringWithEscape_EmptyInput(t *testing.T) {
 	assert.Len(t, result, 0)
 }
 
+func TestSplitStringWithEscape_Unicode(t *testing.T) {
+	// Arrange
+	input := "first|őáúäö&||third"
+	// Act
+	result := splitStringWithEscape(input, config.Delimiters.Field, config.Delimiters.Escape)
+	// Assert
+	assert.Len(t, result, 3)
+	assert.Equal(t, "first", result[0])
+	assert.Equal(t, "őáúäö&|", result[1])
+	assert.Equal(t, "third", result[2])
+}
+
 func TestFilterEscapeChars_Delimiters(t *testing.T) {
 	// Arrange
 	input := "escaped&| and&^ and&&"
@@ -467,4 +479,13 @@ func TestFilterEscapeChars_Empty(t *testing.T) {
 	result := filterStringEscapeChars(input, config.Delimiters.Escape)
 	// Assert
 	assert.Equal(t, "", result)
+}
+
+func TestFilterEscapeChars_Unicode(t *testing.T) {
+	// Arrange
+	input := "őáúäö&|"
+	// Act
+	result := filterStringEscapeChars(input, config.Delimiters.Escape)
+	// Assert
+	assert.Equal(t, "őáúäö|", result)
 }

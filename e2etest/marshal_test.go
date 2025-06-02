@@ -588,3 +588,33 @@ func TestCustomDecimalLengthAnnotation(t *testing.T) {
 	// Teardown
 	teardown()
 }
+
+type SimpleResultMessage struct {
+	Header     lis02a2.Header     `astm:"H"`
+	Result     lis02a2.Result     `astm:"R"`
+	Terminator lis02a2.Terminator `astm:"L"`
+}
+
+func TestEscapedCharactersMessageMarshal(t *testing.T) {
+	// Arrange
+	message := SimpleResultMessage{
+		Result: lis02a2.Result{
+			UniversalTestID: lis02a2.ExtendedUniversalTestID{
+				ManufacturersTestType: "ABOD|Full&Interp",
+			},
+			DataMeasurementValue:     "B Pos",
+			ResultStatus:             "F",
+			OperatorIDPerformed:      "brentp",
+			InstrumentIdentification: "M0002",
+		},
+	}
+	config.Notation = notation.Short
+	config.EscapeOutputStrings = true
+	// Act
+	lines, err := astm.Marshal(message, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "R|1|^^^ABOD&|Full&&Interp|B Pos|||||F||brentp|||M0002", string(lines[1]))
+	// Teardown
+	teardown()
+}

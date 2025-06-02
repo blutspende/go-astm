@@ -559,3 +559,21 @@ func TestBuildLine_InvalidAttributeValue(t *testing.T) {
 	// Assert
 	assert.EqualError(t, err, errmsg.ErrLineBuildingInvalidLengthAttributeValue.Error())
 }
+
+func TestBuildStringEscapeChars_AllDelimiters(t *testing.T) {
+	// Arrange
+	input := "esc|\\^&ape"
+	// Act
+	result := buildStringEscapeChars(input, config)
+	// Assert
+	assert.Equal(t, "esc&|&\\&^&&ape", result)
+}
+
+func TestBuildStringEscapeChars_Unicode(t *testing.T) {
+	// Arrange
+	input := "^őáúäö|"
+	// Act
+	result := buildStringEscapeChars(input, config)
+	// Assert
+	assert.Equal(t, "&^őáúäö&|", result)
+}

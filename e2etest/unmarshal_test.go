@@ -673,3 +673,18 @@ func TestEncodingVeryLongCharsets(t *testing.T) {
 	// Teardown
 	teardown()
 }
+
+func TestEscapedCharactersMessageUnmarshal(t *testing.T) {
+	// Arrange
+	messageString := `H|\^&|||Echo|||||LIS|||LIS2-A2|20060306164429 
+P|1|1171984|||Patient^Test||19590422|M 
+O|1|0651439A||^^^ABOD Full|R||||||||||Blood^Patient
+R|1|^^^ABOD&|Full&&Interp|B Pos|||||F||brentp||20060306164429|M0002
+L|1|N `
+	var message lis02a2.StandardPOCRMessage
+	// Act
+	err := astm.Unmarshal([]byte(messageString), &message, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "ABOD|Full&Interp", message.PatientOrderCommentedResults[0].OrderCommentedResults[0].CommentedResults[0].Result.UniversalTestID.ManufacturersTestType)
+}
