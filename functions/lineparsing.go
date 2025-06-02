@@ -18,6 +18,9 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 		return false, errmsg.ErrLineParsingEmptyInput
 	}
 
+	// Setup inputFields variable to split the inputLine into
+	var inputFields []string
+
 	// Handle header special case
 	if inputLine[0] == 'H' {
 		// Check if the inputLine is long enough to contain delimiters
@@ -29,10 +32,14 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 		config.Delimiters.Repeat = string(inputLine[2])
 		config.Delimiters.Component = string(inputLine[3])
 		config.Delimiters.Escape = string(inputLine[4])
+		// Place the fix segment into the inputFields
+		inputFields = []string{inputLine[0:1], inputLine[1:5]}
+		// Add the rest of the inputLine split by the field delimiter
+		inputFields = append(inputFields, splitStringWithEscape(inputLine[6:], config.Delimiters.Field, config.Delimiters.Escape)...)
+	} else {
+		// Split the input with the field delimiter
+		inputFields = splitStringWithEscape(inputLine, config.Delimiters.Field, config.Delimiters.Escape)
 	}
-
-	// Split the input with the field delimiter
-	inputFields := strings.Split(inputLine, config.Delimiters.Field)
 
 	// Check for minimum number of input fields (first two fields are mandatory)
 	if len(inputFields) < 2 {
@@ -99,7 +106,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 		if targetFieldAnnotation.IsArray {
 			// |rep1\rep2\rep3|
 			// Field is an array
-			repeats := strings.Split(inputField, config.Delimiters.Repeat)
+			repeats := splitStringWithEscape(inputField, config.Delimiters.Repeat, config.Delimiters.Escape)
 			arrayType := reflect.SliceOf(targetValues[i].Type().Elem())
 			arrayValue := reflect.MakeSlice(arrayType, len(repeats), len(repeats))
 			for j, repeat := range repeats {
@@ -124,7 +131,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 		} else if targetFieldAnnotation.IsComponent {
 			// |comp1^comp2^comp3|
 			// Field is a component
-			components := strings.Split(inputField, config.Delimiters.Component)
+			components := splitStringWithEscape(inputField, config.Delimiters.Component, config.Delimiters.Escape)
 			// Not enough components in the inputField
 			if len(components) < targetFieldAnnotation.ComponentPos {
 				// Error if the component is required, skip otherwise
@@ -162,7 +169,7 @@ func ParseLine(inputLine string, targetStruct interface{}, recordAnnotation mode
 
 func parseSubstructure(inputString string, targetStruct interface{}, config *astmmodels.Configuration) (err error) {
 	// Split the input with the field delimiter
-	inputFields := strings.Split(inputString, config.Delimiters.Component)
+	inputFields := splitStringWithEscape(inputString, config.Delimiters.Component, config.Delimiters.Escape)
 
 	// Process the target structure
 	targetTypes, targetValues, _, err := ProcessStructReflection(targetStruct)
@@ -215,10 +222,11 @@ func setField(value string, field reflect.Value, annotation models.AstmFieldAnno
 	// Set the field value
 	switch field.Kind() {
 	case reflect.String:
+		escaped := filterStringEscapeChars(value, config.Delimiters.Escape)
 		if field.Type().ConvertibleTo(reflect.TypeOf("")) {
-			field.Set(reflect.ValueOf(value).Convert(field.Type()))
+			field.Set(reflect.ValueOf(escaped).Convert(field.Type()))
 		} else {
-			field.Set(reflect.ValueOf(value))
+			field.Set(reflect.ValueOf(escaped))
 		}
 		return nil
 	case reflect.Int:
@@ -273,4 +281,40 @@ func setField(value string, field reflect.Value, annotation models.AstmFieldAnno
 	}
 	// Return error if no type match was found (each successful parsing returns nil)
 	return errmsg.ErrLineParsingUnsupportedDataType
+}
+
+func splitStringWithEscape(input string, delimiter string, escape string) (result []string) {
+	delim := delimiter[0]
+	esc := escape[0]
+	start := 0
+	for i := 0; i < len(input); i++ {
+		if input[i] == delim {
+			result = append(result, input[start:i])
+			start = i + 1
+		}
+		if i == len(input)-1 {
+			result = append(result, input[start:i+1])
+		}
+		if input[i] == esc {
+			i++
+			continue
+		}
+	}
+	return result
+}
+
+func filterStringEscapeChars(input string, escape string) string {
+	var builder strings.Builder
+	esc := escape[0]
+	for i := 0; i < len(input); i++ {
+		if input[i] == esc {
+			i++
+			if i < len(input) {
+				builder.WriteRune(rune(input[i]))
+			}
+		} else {
+			builder.WriteRune(rune(input[i]))
+		}
+	}
+	return builder.String()
 }

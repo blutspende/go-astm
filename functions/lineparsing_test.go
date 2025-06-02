@@ -388,3 +388,83 @@ func TestParseLine_ShortDateDontKeepTimeZone(t *testing.T) {
 	// Teardown
 	teardown()
 }
+
+func TestSplitStringWithEscape_NoEscape(t *testing.T) {
+	// Arrange
+	input := "no&|split"
+	// Act
+	result := splitStringWithEscape(input, config.Delimiters.Field, config.Delimiters.Escape)
+	// Assert
+	assert.Len(t, result, 1)
+	assert.Equal(t, "no&|split", result[0])
+}
+
+func TestSplitStringWithEscape_Mixed(t *testing.T) {
+	// Arrange
+	input := "no&^split^second&&^third"
+	// Act
+	result := splitStringWithEscape(input, config.Delimiters.Component, config.Delimiters.Escape)
+	// Assert
+	assert.Len(t, result, 3)
+	assert.Equal(t, "no&^split", result[0])
+	assert.Equal(t, "second&&", result[1])
+	assert.Equal(t, "third", result[2])
+}
+
+func TestSplitStringWithEscape_EmptyFields(t *testing.T) {
+	// Arrange
+	input := "first||third"
+	// Act
+	result := splitStringWithEscape(input, config.Delimiters.Field, config.Delimiters.Escape)
+	// Assert
+	assert.Len(t, result, 3)
+	assert.Equal(t, "first", result[0])
+	assert.Equal(t, "", result[1])
+	assert.Equal(t, "third", result[2])
+}
+
+func TestSplitStringWithEscape_EmptyInput(t *testing.T) {
+	// Arrange
+	input := ""
+	// Act
+	result := splitStringWithEscape(input, config.Delimiters.Field, config.Delimiters.Escape)
+	// Assert
+	assert.Len(t, result, 0)
+}
+
+func TestFilterEscapeChars_Delimiters(t *testing.T) {
+	// Arrange
+	input := "escaped&| and&^ and&&"
+	// Act
+	result := filterStringEscapeChars(input, config.Delimiters.Escape)
+	// Assert
+	assert.Equal(t, "escaped| and^ and&", result)
+}
+
+func TestFilterEscapeChars_Multiple(t *testing.T) {
+	// Arrange
+	input := "esc&&&|ape"
+	// Act
+	result := filterStringEscapeChars(input, config.Delimiters.Escape)
+	// Assert
+	assert.Equal(t, "esc&|ape", result)
+}
+
+// Note: this should be invalid, but for simplicity we allow it by escaping the nothing
+func TestFilterEscapeChars_AtTheEnd(t *testing.T) {
+	// Arrange
+	input := "escape&"
+	// Act
+	result := filterStringEscapeChars(input, config.Delimiters.Escape)
+	// Assert
+	assert.Equal(t, "escape", result)
+}
+
+func TestFilterEscapeChars_Empty(t *testing.T) {
+	// Arrange
+	input := ""
+	// Act
+	result := filterStringEscapeChars(input, config.Delimiters.Escape)
+	// Assert
+	assert.Equal(t, "", result)
+}
