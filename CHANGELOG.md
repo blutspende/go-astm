@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.1.1] - 2025-06-10
+
+### Added
+- Escape character support
+- Configuration to enable/disable output escaping
+
+### Changed
+
+### Fixed
+
 ## [3.1.0] - 2025-05-16
 
 ### Added

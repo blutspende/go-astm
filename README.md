@@ -10,14 +10,16 @@ Library for handling the ASTM protocol in Go.
   - Line breaks automatically identified (default is \n)
   - Encoding from-to raw bytes and automatic timezone conversions are included using blooblab-common
 
-3 functions are provided:
+3 main functions and a utility is provided:
 - `Marshal`: Converts a Go structure to an array of byte arrays
 - `Unmarshal`: Converts a byte array to a Go structure
 - `IdentifyMessage`: Identifies the type of message without decoding it
+- `GetNewDefaultConfiguration`: Returns a copy of the default configuration
 ``` go
 func Marshal(sourceStruct interface{}, configuration ...models.Configuration) (result [][]byte, err error) 
 func Unmarshal(messageData []byte, targetStruct interface{}, configuration ...models.Configuration) (err error)
-func IdentifyMessage(messageData []byte, configuration ...models.Configuration) (messageType messagetype.MessageType, err error) 
+func IdentifyMessage(messageData []byte, configuration ...models.Configuration) (messageType messagetype.MessageType, err error)
+func GetNewDefaultConfiguration() astmmodels.Configuration
 ```
 
 # Setting up configuration
@@ -34,6 +36,7 @@ type Configuration struct {
 	DefaultDecimalPrecision    int
 	RoundLastDecimal           bool
 	KeepShortDateTimeZone      bool
+    EscapeOutputStrings        bool
 	Delimiters                 Delimiters
 	TimeLocation               *time.Location
 }
@@ -50,6 +53,7 @@ var DefaultConfiguration = Configuration{
 	DefaultDecimalPrecision:    3,
 	RoundLastDecimal:           true,
 	KeepShortDateTimeZone:      true,
+	EscapeOutputStrings:        false,
 	Delimiters:                 DefaultDelimiters,
 	TimeLocation:               nil,
 }
@@ -90,6 +94,8 @@ If it is set to true, floating point numbers are rounded up or down (based on co
 ## KeepShortDateTimeZone
 As short dates are only year, month, day, representing the date as midnight of that day in the `time.Time`, time zone conversions can lead to the change of day (eg.: 23:00 the day before). Because logically the short date represents a whole day, it can be more important to preserve the actual date as is then to have the time in UTC. However `time.Time` (and most database representations) must have a time zone, so the only solution is to keep the original time zone unconverted.
 If this flag is set to true, the timezone is kept in local time for the short date format. If set to false, the time is converted to UTC just like long dates. This applies both for marshal and unmarshal, so with the same configuration the string format of the date will be intact.
+## EscapeOutputStrings
+If set to true, the output strings are escaped according to the delimiters. Meaning that an escape character is put before each occurrence of the delimiters (including the escape character itself). If set to false, the output strings are not escaped, and will be output directly even if they contain delimiters. Default is false. This is only relevant for marshal.
 ## Delimiters
 Used for building the protocol's record structure. When the configuration is provided for marshal the default is automatically used if any of the delimiter's fields are empty. If all fields are set, the default can be overridden. Each field should contain exactly one character. Unmarshal automatically detects the delimiters in the header record. This is only relevant for marshal.
 ``` go
@@ -105,8 +111,11 @@ For internal use only. Should be ignored.
 
 # Usage of the library functions
 
+## Getting a configuration: GetNewDefaultConfiguration
+The `GetNewDefaultConfiguration` function returns a copy of the default configuration. This can be used to then modify the configuration for specific use cases while leaving the rest as default. This is the safe way to get a configuration instance, as it removes the need to check changes of the configuration structure in projects that use go-astm after updating its version. Directly creating a new configuration instance can lead to unexpected behaviour if not all the values are set, especially if new values are added in future versions. The default aims to keep behaviour backwards compatible in case new functionalities are introduced.
+
 ## Identifying a message: IdentifyMessage
-Identifying the type of message without decoding it. Return values are options from `github.com/blutspende/bloodlab-common/messagetype` enum definitions. Currently, there are 3 valid types and unidentified as possible return values.
+Identifies the type of message without decoding it. Return values are options from `github.com/blutspende/bloodlab-common/messagetype` enum definitions. Currently, there are 3 valid types and unidentified as possible return values.
 It can be used for example as follows:
 ``` go
 messageType, err := astm.IdentifyMessage([]byte(astm), config)
