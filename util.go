@@ -4,7 +4,7 @@ import (
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 )
 
-func GetNewDefaultConfiguration() astmmodels.Configuration {
+func NewDefaultConfiguration() astmmodels.Configuration {
 	config := astmmodels.DefaultConfiguration
 	return config
 }
