@@ -19,6 +19,7 @@ type Configuration struct {
 	DefaultDecimalPrecision    int
 	RoundLastDecimal           bool
 	KeepShortDateTimeZone      bool
+	EscapeOutputStrings        bool
 	Delimiters                 Delimiters
 	TimeLocation               *time.Location
 }
@@ -33,6 +34,7 @@ var DefaultConfiguration = Configuration{
 	DefaultDecimalPrecision:    3,
 	RoundLastDecimal:           true,
 	KeepShortDateTimeZone:      true,
+	EscapeOutputStrings:        false,
 	Delimiters:                 DefaultDelimiters,
 	TimeLocation:               nil,
 }

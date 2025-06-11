@@ -559,3 +559,51 @@ func TestBuildLine_InvalidAttributeValue(t *testing.T) {
 	// Assert
 	assert.EqualError(t, err, errmsg.ErrLineBuildingInvalidLengthAttributeValue.Error())
 }
+
+func TestBuildStringEscapeChars_AllDelimiters(t *testing.T) {
+	// Arrange
+	input := "esc|\\^&ape"
+	// Act
+	result := buildStringEscapeChars(input, config)
+	// Assert
+	assert.Equal(t, "esc&|&\\&^&&ape", result)
+}
+
+func TestBuildStringEscapeChars_Unicode(t *testing.T) {
+	// Arrange
+	input := "^őáúäö|"
+	// Act
+	result := buildStringEscapeChars(input, config)
+	// Assert
+	assert.Equal(t, "&^őáúäö&|", result)
+}
+
+func TestBuildLine_EscapedChars(t *testing.T) {
+	// Arrange
+	source := SimpleRecord{
+		First: "esc^ape",
+	}
+	config.EscapeOutputStrings = true
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|esc&^ape", result)
+	// Teardown
+	teardown()
+}
+
+func TestBuildLine_EscapedCharsNoEscape(t *testing.T) {
+	// Arrange
+	source := SimpleRecord{
+		First: "esc^ape",
+	}
+	config.EscapeOutputStrings = false
+	// Act
+	result, err := BuildLine(source, "T", 1, config)
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, "T|1|esc^ape", result)
+	// Teardown
+	teardown()
+}

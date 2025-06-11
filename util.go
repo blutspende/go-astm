@@ -4,6 +4,11 @@ import (
 	"github.com/blutspende/go-astm/v3/models/astmmodels"
 )
 
+func NewDefaultConfiguration() astmmodels.Configuration {
+	config := astmmodels.DefaultConfiguration
+	return config
+}
+
 func loadConfiguration(configuration ...astmmodels.Configuration) (config *astmmodels.Configuration, err error) {
 	if len(configuration) > 0 {
 		config = &configuration[0]

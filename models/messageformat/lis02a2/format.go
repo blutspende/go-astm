@@ -33,7 +33,7 @@ type Header struct {
 	AccessPassword          string    `astm:"4"`           // 6.4
 	SenderNameOrID          string    `astm:"5"`           // 6.5
 	SenderStreetAddress     string    `astm:"6"`           // 6.6
-	Field6                  string    `astm:"7"`           // 6.7
+	Reserved                string    `astm:"7"`           // 6.7
 	SenderTelephone         string    `astm:"8"`           // 6.8
 	CharacteristicsOfSender string    `astm:"9"`           // 6.9
 	ReceiverID              string    `astm:"10"`          // 6.10
