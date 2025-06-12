@@ -371,7 +371,7 @@ func TestTransmissionWithoutLTerminator(t *testing.T) {
 	// Arrange
 	messageString := "H|\\^&|||\r"
 	messageString += "P|1||DIA-27-079-5-1\r"
-	var message lis02a2.StandardPOCRMessage
+	var message lis02a2.ResultMessage
 	config.Encoding = encoding.Windows1252
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
@@ -431,20 +431,20 @@ func multiMessage() string {
 func TestMultiMessage(t *testing.T) {
 	// Arrange
 	messageString := multiMessage()
-	var message lis02a2.StandardMultiPOCRMessage
+	var message lis02a2.ResultMultiMessage
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
 	assert.Nil(t, err)
 	assert.NotNil(t, message)
-	assert.Len(t, message.Messages, 4)
+	assert.Len(t, message.ResultMessages, 4)
 }
 
 func TestMultiMessageWithSingleMessageInput(t *testing.T) {
 	// Note: single message also works, because there is no check for extra unparsed lines
 	// Arrange
 	messageString := multiMessage()
-	var message lis02a2.StandardPOCRMessage
+	var message lis02a2.ResultMessage
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
@@ -458,7 +458,7 @@ func TestFailOnUndisciplinedMultipleCRCRatEndOfLine(t *testing.T) {
 	messageString += "O|1|||^^^SARS-CoV-2 NeutraLISA||20220715071342\u000d\u000d"
 	messageString += "R|1|^^^SARS-CoV-2 NeutraLISA|99,66|% IH|\u000d\u000d"
 	messageString += "L|1|N\u000d\u000d"
-	var message lis02a2.StandardPOCRMessage
+	var message lis02a2.ResultMessage
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
@@ -477,20 +477,20 @@ func TestMultipleMessagesInOne(t *testing.T) {
 	messageString += "O|1|||^^^SARS-CoV-2 NeutraLISA||20220715071343\u000d\u000d"
 	messageString += "R|1|^^^SARS-CoV-2 NeutraLISA|99,66|% IH|\u000d\u000d"
 	messageString += "L|1|N\u000d\u000d"
-	var message lis02a2.StandardMultiPOCRMessage
+	var message lis02a2.ResultMultiMessage
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Len(t, message.Messages, 2)
-	assert.Equal(t, "DIA-04-066-7-2", message.Messages[1].PatientOrderCommentedResults[0].Patient.LabAssignedPatientID)
-	assert.Equal(t, "12,5", message.Messages[0].PatientOrderCommentedResults[0].OrderCommentedResults[0].CommentedResults[0].Result.DataMeasurementValue)
-	assert.Equal(t, "99,66", message.Messages[1].PatientOrderCommentedResults[0].OrderCommentedResults[0].CommentedResults[0].Result.DataMeasurementValue)
+	assert.Len(t, message.ResultMessages, 2)
+	assert.Equal(t, "DIA-04-066-7-2", message.ResultMessages[1].PatientGroups[0].Patient.LabAssignedPatientID)
+	assert.Equal(t, "12,5", message.ResultMessages[0].PatientGroups[0].OrderGroups[0].ResultGroups[0].Result.DataMeasurementValue)
+	assert.Equal(t, "99,66", message.ResultMessages[1].PatientGroups[0].OrderGroups[0].ResultGroups[0].Result.DataMeasurementValue)
 }
 
 func TestNullValuesShouldGiveQualifiedError(t *testing.T) {
 	// Arrange
-	var message lis02a2.StandardMultiPOCRMessage
+	var message lis02a2.ResultMultiMessage
 	// Act
 	err := astm.Unmarshal(nil, &message, config)
 	// Assert
@@ -510,7 +510,7 @@ func TestUnmarshalMultipleOrdersAndResultsForOnePatient(t *testing.T) {
 	messageString += "R|1|^^^Weak_D1|0^0^0.0|||||F||saidam||20240626193019|5030100461|\r"
 	messageString += "R|2|^^^Weak_D1|Negative|||||F||SCHMMI||20240626193019|5030100461|\r"
 	messageString += "L|1|N\r"
-	var message lis02a2.StandardPOCRMessage
+	var message lis02a2.ResultMessage
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
@@ -600,7 +600,7 @@ type YumizenPatientOrderResultMessage struct {
 	Histograms         []YumizenStream           `astm:"M,subname:HISTOGRAM"`
 	Matrices           []YumizenStream           `astm:"M,subname:MATRIX"`
 	TraceabilityRecord YumizenTraceabilityRecord `astm:"M,subname:REAGENT"`
-	CommentedResults   []lis02a2.CommentedResult
+	CommentedResults   []lis02a2.ResultGroup
 }
 type YumizenTraceabilityRecord struct {
 	MessageType       string   `astm:"3"`
@@ -681,10 +681,10 @@ P|1|1171984|||Patient^Test||19590422|M
 O|1|0651439A||^^^ABOD Full|R||||||||||Blood^Patient
 R|1|^^^ABOD&|Full&&Interp|B Pos|||||F||brentp||20060306164429|M0002
 L|1|N `
-	var message lis02a2.StandardPOCRMessage
+	var message lis02a2.ResultMessage
 	// Act
 	err := astm.Unmarshal([]byte(messageString), &message, config)
 	// Assert
 	assert.Nil(t, err)
-	assert.Equal(t, "ABOD|Full&Interp", message.PatientOrderCommentedResults[0].OrderCommentedResults[0].CommentedResults[0].Result.UniversalTestID.ManufacturersTestType)
+	assert.Equal(t, "ABOD|Full&Interp", message.PatientGroups[0].OrderGroups[0].ResultGroups[0].Result.UniversalTestID.ManufacturersTestType)
 }

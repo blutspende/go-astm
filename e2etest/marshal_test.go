@@ -396,16 +396,16 @@ func TestMarshalMultipleOrder(t *testing.T) {
 
 func TestShorthandOnStandardMessage(t *testing.T) {
 	// Arrange
-	msg := lis02a2.StandardPOCRMessage{
+	msg := lis02a2.ResultMessage{
 		Header: lis02a2.Header{
 			SenderNameOrID: "LIS",
 			ReceiverID:     "NonExistentTestSystem",
 			DateAndTime:    time.Now(),
 		},
-		PatientOrderCommentedResults: []lis02a2.PatientOrderCommentedResult{
+		PatientGroups: []lis02a2.PatientGroup{
 			{
 				Patient: lis02a2.Patient{},
-				OrderCommentedResults: []lis02a2.OrderCommentedResult{
+				OrderGroups: []lis02a2.OrderGroup{
 					{
 						Order: lis02a2.Order{
 							SpecimenID: "VAL24981209",
