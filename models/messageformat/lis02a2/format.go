@@ -127,11 +127,6 @@ type Result struct {
 	DateTimeCompleted                        time.Time               `astm:"13,longdate"` // 9.13
 	InstrumentIdentification                 string                  `astm:"14"`          // 9.14
 }
-type Comment struct {
-	CommentSource string `astm:"3"` // 10.3
-	CommentText   string `astm:"4"` // 10.4
-	CommentType   string `astm:"5"` // 10.5
-}
 type Query struct {
 	StartingRangeIDNumber           string `astm:"3"`  // 11.3
 	EndingRangeIDNumber             string `astm:"4"`  // 11.4
@@ -145,19 +140,24 @@ type Query struct {
 	UserField2                      string `astm:"12"` // 11.12
 	RequestInformationStatus        string `astm:"13"` // 11.13
 }
+type Comment struct {
+	CommentSource string `astm:"3"` // 10.3
+	CommentText   string `astm:"4"` // 10.4
+	CommentType   string `astm:"5"` // 10.5
+}
 type Manufacturer struct {
-	F2  string `astm:"3"`  // 14.3
-	F3  string `astm:"4"`  // 14.4
-	F4  string `astm:"5"`  // 14.5
-	F5  string `astm:"6"`  // 14.6
-	F6  string `astm:"7"`  // 14.7
-	F7  string `astm:"8"`  // 14.8
-	F8  string `astm:"9"`  // 14.9
-	F9  string `astm:"10"` // 14.10
-	F10 string `astm:"11"` // 14.11
-	F11 string `astm:"12"` // 14.12
-	F12 string `astm:"13"` // 14.13
-	F13 string `astm:"14"` // 14.14
+	F3  string `astm:"3"`  // 14.3
+	F4  string `astm:"4"`  // 14.4
+	F5  string `astm:"5"`  // 14.5
+	F6  string `astm:"6"`  // 14.6
+	F7  string `astm:"7"`  // 14.7
+	F8  string `astm:"8"`  // 14.8
+	F9  string `astm:"9"`  // 14.9
+	F10 string `astm:"10"` // 14.10
+	F11 string `astm:"11"` // 14.11
+	F12 string `astm:"12"` // 14.12
+	F13 string `astm:"13"` // 14.13
+	F14 string `astm:"14"` // 14.14
 }
 type Terminator struct { //Hasta la vista...
 	TerminatorCode string `astm:"3"` // 12.3
@@ -165,36 +165,39 @@ type Terminator struct { //Hasta la vista...
 
 // Message structures //
 
-type CommentedResult struct {
+type PatientGroup struct {
+	Patient     Patient   `astm:"P"`
+	Comments    []Comment `astm:"C,optional"`
+	OrderGroups []OrderGroup
+}
+type OrderGroup struct {
+	Order        Order `astm:"O"`
+	ResultGroups []ResultGroup
+}
+type ResultGroup struct {
 	Result   Result    `astm:"R"`
 	Comments []Comment `astm:"C,optional"`
 }
-type OrderCommentedResult struct {
-	Order            Order `astm:"O"`
-	CommentedResults []CommentedResult
+type PatientOrder struct {
+	Patient Patient `astm:"P"`
+	Orders  []Order `astm:"O"`
 }
-type PatientOrderCommentedResult struct {
-	Patient               Patient   `astm:"P"`
-	Comment               []Comment `astm:"C,optional"`
-	OrderCommentedResults []OrderCommentedResult
+
+// Messages //
+
+type ResultMessage struct {
+	Header        Header       `astm:"H"`
+	Manufacturer  Manufacturer `astm:"M,optional"`
+	PatientGroups []PatientGroup
+	Terminator    Terminator `astm:"L"`
 }
-type StandardPOCRMessage struct {
-	Header                       Header       `astm:"H"`
-	Manufacturer                 Manufacturer `astm:"M,optional"`
-	PatientOrderCommentedResults []PatientOrderCommentedResult
-	Terminator                   Terminator `astm:"L"`
-}
-type StandardMultiPOCRMessage struct {
-	Messages []StandardPOCRMessage
+type ResultMultiMessage struct {
+	ResultMessages []ResultMessage
 }
 type QueryMessage struct {
 	Header     Header     `astm:"H"`
 	Queries    []Query    `astm:"Q"`
 	Terminator Terminator `astm:"L"`
-}
-type PatientOrder struct {
-	Patient Patient `astm:"P"`
-	Orders  []Order `astm:"O"`
 }
 type OrderMessage struct {
 	Header        Header `astm:"H"`

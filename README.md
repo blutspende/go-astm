@@ -137,17 +137,17 @@ switch (messageType) {
 ## Reading an ASTM message: Unmarshal
 The following Go code decodes an ASTM message provided as a string and stores all its information in the message structure.
 ``` go
-var message lis02a2.StandardPOCRMessage
+var message lis02a2.ResultMessage
 err := astm.Unmarshal([]byte(textdata), &message, config)
 if err != nil {
   log.Fatal(err)		
 }
 ```
-The Unmarshal can also be used for multiple messages, providing a multi-message structure like `StandardMultiPOCRMessage`:
+The Unmarshal can also be used for multiple messages, providing a multi-message structure like `ResultMultiMessage`:
 ``` go
-  var message lis02a2.StandardMultiPOCRMessage
+  var message lis02a2.ResultMultiMessage
   astm.Unmarshal([]byte(textdata), &message, config)
-  for _, message := range message.Messages {
+  for _, message := range message.ResultMessages {
 	fmt.Printf("%+v", message)
   }
 ```
