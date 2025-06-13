@@ -36,7 +36,7 @@ func IdentifyMessage(messageData []byte, configuration ...astmmodels.Configurati
 	expressionQuery := "^(HQ+)+L?$"
 	expressionOrder := "^(H(PM?C?M?OM?C?M?)+)+L?$"
 	expressionOrderAndResult := "^(H(PM*C?M*OM*C?M*(RM*C?M*)+)+)+L?$"
-	expressionManyOrderAndResult := "^(H(PM*C?M*(OM*C?M*(RM*C?M*)+)*)+)L?$"
+	expressionManyOrderAndResult := "^(H(PM*C?M*(OM*C?M*(RM*C?M*)+)*)L?)+$"
 	// Check the first characters against the regexes and return the message type
 	switch {
 	case regexp.MustCompile(expressionQuery).MatchString(firstChars):
