@@ -1,10 +1,13 @@
 package functions
 
 import (
-	"github.com/blutspende/go-astm/v3/errmsg"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/blutspende/go-astm/v3/errmsg"
+	"github.com/blutspende/go-astm/v3/models/astmmodels"
+	"github.com/blutspende/go-astm/v3/models/messageformat/lis02a2"
+	"github.com/stretchr/testify/assert"
 )
 
 // Note: structures come from functions_test.go
@@ -190,6 +193,52 @@ func TestParseLine_RecordTypeNameMismatch(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	assert.False(t, nameOk)
+}
+
+func TestParseLine_PatientEscapeSequence(t *testing.T) {
+	// Arrange
+	input := `P|1||||\ZTest1\ \ZTest2\^\ZTest3\|||U|||||\ZTest4\`
+	target := lis02a2.Patient{}
+	cfg := &astmmodels.DefaultConfiguration
+	cfg.Delimiters = astmmodels.Delimiters{
+		Field:     "|",
+		Repeat:    "@",
+		Component: "^",
+		Escape:    "\\",
+	}
+
+	// Act
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("P"), 1, cfg)
+	// Assert
+	assert.Nil(t, err)
+	assert.True(t, nameOk)
+	assert.Equal(t, "ZTest1 ZTest2", target.LastName)
+	assert.Equal(t, "ZTest3", target.FirstName)
+	assert.Equal(t, "U", target.Gender)
+	assert.Equal(t, "ZTest4", target.AttendingPhysicianID)
+}
+
+func TestParseLine_PatientEscapeSequenceEmptyFirstName(t *testing.T) {
+	// Arrange
+	input := `P|1||||\ZTest1\ \ZTest2\^|||U|||||\ZTest4\`
+	target := lis02a2.Patient{}
+	cfg := &astmmodels.DefaultConfiguration
+	cfg.Delimiters = astmmodels.Delimiters{
+		Field:     "|",
+		Repeat:    "@",
+		Component: "^",
+		Escape:    "\\",
+	}
+
+	// Act
+	nameOk, err := ParseLine(input, &target, createStructAnnotation("P"), 1, cfg)
+	// Assert
+	assert.Nil(t, err)
+	assert.True(t, nameOk)
+	assert.Equal(t, "ZTest1 ZTest2", target.LastName)
+	assert.Equal(t, "", target.FirstName)
+	assert.Equal(t, "U", target.Gender)
+	assert.Equal(t, "ZTest4", target.AttendingPhysicianID)
 }
 
 func TestParseLine_EmptyInput(t *testing.T) {
